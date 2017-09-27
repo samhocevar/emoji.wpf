@@ -2,18 +2,18 @@
 <package >
   <metadata>
     <id>$id$</id>
-    <version>0.0.1-experimental</version>
+    <version>0.0.2-experimental</version>
     <title>$title$</title>
-    <authors>Sam Hocevar</authors>
+    <authors>Sam Hocevar &lt;sam@hocevar.net&gt;</authors>
     <owners>Sam Hocevar</owners>
     <licenseUrl>http://www.wtfpl.net/txt/copying/</licenseUrl>
     <projectUrl>https://github.com/samhocevar/emoji.wpf</projectUrl>
-    <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
+    <iconUrl>https://github.com/samhocevar/emoji.wpf/raw/master/Resources/icon.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
     <summary>$description$</summary>
     <releaseNotes>Experimental proof of concept.</releaseNotes>
     <copyright>Copyright © 2017 Sam Hocevar</copyright>
-    <tags>Emoji WPF</tags>
+    <tags>Emoji Unicode WPF XAML</tags>
   </metadata>
 </package>
