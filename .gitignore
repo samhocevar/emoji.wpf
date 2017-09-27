@@ -10,3 +10,5 @@ bin/
 *.opendb
 *.sdf
 *.VC.db
+# NuGet cruft
+*.nupkg
