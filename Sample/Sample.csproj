@@ -41,20 +41,12 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
-    <Page Include="SampleWindow.xaml">
+    <Page Include="Sample.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="SampleWindow.xaml.cs">
-      <DependentUpon>SampleWindow.xaml</DependentUpon>
+    <Compile Include="Sample.xaml.cs">
+      <DependentUpon>Sample.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

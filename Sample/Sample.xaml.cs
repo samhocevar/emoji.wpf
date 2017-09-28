@@ -10,22 +10,33 @@
 //  See http://www.wtfpl.net/ for more details.
 //
 
+using System;
 using System.Windows;
 using System.Windows.Documents;
 
 namespace Sample
 {
     /// <summary>
-    /// Interaction logic for SampleWindow.xaml
+    /// Interaction logic for Sample.xaml
     /// </summary>
     public partial class SampleWindow : Window
     {
+        [STAThread]
+        public static void Main()
+        {
+            Application app = new Application();
+            app.StartupUri = new Uri("Sample.xaml", UriKind.Relative);
+            app.Run();
+        }
+
         public SampleWindow()
         {
             InitializeComponent();
 
             string text = "Hi🙌, I♥emojis☺\nEdit me!\n🍰✈✏📞☘️💩";
             SampleTextBox.Document = new FlowDocument(new Paragraph(new Run(text)));
+            SampleTextBox.Focus();
         }
     }
 }
+
