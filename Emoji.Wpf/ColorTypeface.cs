@@ -42,6 +42,11 @@ namespace Emoji.Wpf
                     && m_layer_indices.ContainsKey(glyph);
         }
 
+        public IDictionary<int, ushort> CharacterToGlyphMap
+        {
+            get => m_gtf.CharacterToGlyphMap;
+        }
+
         public struct WidthList
         {
             public WidthList(GlyphTypeface gtf) { m_gtf = gtf; }

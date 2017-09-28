@@ -15,28 +15,42 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Documents;
 
-namespace Sample
+namespace FontViewer
 {
     /// <summary>
-    /// Interaction logic for Sample.xaml
+    /// Interaction logic for FontViewer.xaml
     /// </summary>
-    public partial class SampleWindow : Window
+    public partial class FontViewerWindow : Window
     {
         [STAThread]
         public static void Main()
         {
             Application app = new Application();
-            app.StartupUri = new Uri("Sample.xaml", UriKind.Relative);
+            app.StartupUri = new Uri("FontViewer.xaml", UriKind.Relative);
             app.Run();
         }
 
-        public SampleWindow()
+        public class Glyph
+        {
+            public string Lol { get; set; }
+
+            public Glyph(string str)
+            {
+                Lol = str;
+            }
+        }
+
+        public FontViewerWindow()
         {
             InitializeComponent();
 
-            string text = "Hi🙌, I♥emojis☺\nEdit me!\n🍰✈✏📞☘️💩\n";
-            SampleTextBox.Document = new FlowDocument(new Paragraph(new Run(text)));
-            SampleTextBox.Focus();
+            var glyph_list = new ObservableCollection<Glyph>();
+            var font = new Emoji.Wpf.ColorTypeface("Segoe UI Emoji");
+            foreach (var kv in font.CharacterToGlyphMap)
+            {
+                glyph_list.Add(new Glyph(char.ConvertFromUtf32(kv.Key).ToString()));
+            }
+            EmojiFontList.ItemsSource = glyph_list;
         }
     }
 }

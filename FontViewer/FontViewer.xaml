@@ -1,0 +1,19 @@
+﻿<Window x:Class="FontViewer.FontViewerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FontViewer"
+        xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
+        mc:Ignorable="d"
+        Title="Emoji.Wpf Font Viewer" Height="350" Width="525">
+    <StackPanel Orientation="Vertical" Height="Auto">
+        <TextBlock Text="List of glyphs in font" Margin="5"/>
+        <Grid>
+            <Grid.Resources>
+                <!--<x:GlyphList x:Key="glyphlist"/>-->
+            </Grid.Resources>
+            <ListBox Name="EmojiFontList" Width="Auto" Height="Auto" Margin="5" DisplayMemberPath="Lol" ScrollViewer.VerticalScrollBarVisibility="Visible" />
+        </Grid>
+    </StackPanel>
+</Window>

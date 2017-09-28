@@ -9,6 +9,7 @@
         Title="Emoji.Wpf Sample" Height="350" Width="525">
     <StackPanel Orientation="Vertical">
         <TextBlock Text="Type in your stuff" Margin="5"/>
-        <emoji:RichTextBox Name="SampleTextBox" FontSize="24" Margin="5" Height="275" MaxHeight="275"/>
+        <emoji:RichTextBox Name="SampleTextBox" VerticalScrollBarVisibility="Auto"
+                           FontSize="24" Margin="5" Height="275" MaxHeight="275"/>
     </StackPanel>
 </Window>
