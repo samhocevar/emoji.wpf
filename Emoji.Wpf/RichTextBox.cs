@@ -40,7 +40,9 @@ namespace Emoji.Wpf
         {
             // Debug the bounding box
             //dc.DrawRectangle(Brushes.Bisque, new Pen(Brushes.LightCoral, 1.0), new Rect(0, 0, Width, Height));
+            dc.PushTransform(new TranslateTransform(0, m_fontsize * m_font.Baseline));
             m_font.RenderGlyph(dc, m_codepoint, m_fontsize);
+            dc.Pop();
         }
 
         private ColorTypeface m_font;
