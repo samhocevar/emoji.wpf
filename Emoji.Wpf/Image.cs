@@ -22,7 +22,7 @@ namespace Emoji.Wpf
     /// </summary>
     public class Image : Canvas
     {
-        public Image() => UpdateCodepoint(Text);
+        public Image() => OnTextChanged(Text);
         public Image(string text) => Text = text;
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
@@ -41,25 +41,70 @@ namespace Emoji.Wpf
             // Debug the bounding box
             //dc.DrawRectangle(Brushes.Bisque, new Pen(Brushes.LightCoral, 1.0), new Rect(0, 0, Width, Height));
 
-            if (m_codepoint != 0 && Width > 0 && Height > 0)
+            if (m_codepoint != 0)
             {
-                double font_size = Math.Min(Width / m_font.Widths[m_codepoint],
-                                            Height / m_font.Height);
-                m_font.RenderGlyph(dc, m_codepoint, font_size);
+                if (Width > 0 && Height > 0)
+                {
+                    double font_size = Math.Min(Width / m_font.Widths[m_codepoint],
+                                                Height / m_font.Height);
+                    double startx = 0.5 * (Width - m_font.Widths[m_codepoint] * font_size);
+                    double starty = font_size * m_font.Baseline;
+                    dc.DrawRectangle(Background, null, new Rect(0, 0, Width, Height));
+                    dc.PushTransform(new TranslateTransform(startx, starty));
+                    m_font.RenderGlyph(dc, m_codepoint, font_size);
+                    dc.Pop();
+                }
+            }
+            else
+            {
+                m_textblock.FontSize = Math.Min(Width, Height) * 0.75;
+                m_textblock.Width = Width;
+                m_textblock.Height = Height;
+                m_textblock.Background = Background;
             }
         }
 
         private static void TextChangedCallback(DependencyObject o, DependencyPropertyChangedEventArgs e)
         {
-            (o as Image).UpdateCodepoint((string)e.NewValue);
+            (o as Image).OnTextChanged((string)e.NewValue);
         }
 
-        private void UpdateCodepoint(string str)
+        private void OnTextChanged(string str)
         {
+            int codepoint = 0;
+
+            // Find the codepoint for the string.
             if (str.Length >= 2 && str[0] >= 0xd800 && str[0] <= 0xdbff)
-                m_codepoint = Char.ConvertToUtf32(str[0], str[1]);
+                codepoint = Char.ConvertToUtf32(str[0], str[1]);
             else
-                m_codepoint = str.Length == 0 ? 0 : str[0];
+                codepoint = str.Length == 0 ? 0 : str[0];
+
+            // Check whether the Emoji font knows about this codepoint;
+            // otherwise, fall back to a simple TextBlock.
+            if (m_font.HasCodepoint(codepoint))
+            {
+                m_codepoint = codepoint;
+                Children.Clear();
+            }
+            else
+            {
+                m_codepoint = 0;
+                m_textblock.Text = str;
+                if (Children.Count == 0)
+                    Children.Add(m_textblock);
+            }
+        }
+
+        public Brush Foreground
+        {
+            get => m_textblock.Foreground;
+            set => m_textblock.Foreground = value;
+        }
+
+        public FontFamily FontFamily
+        {
+            get => m_textblock.FontFamily;
+            set => m_textblock.FontFamily = value;
         }
 
         public string Text
@@ -72,6 +117,8 @@ namespace Emoji.Wpf
             nameof(Text), typeof(string), typeof(Image), new FrameworkPropertyMetadata("", TextChangedCallback));
 
         private int m_codepoint;
+        private TextBlock m_textblock = new TextBlock() { TextAlignment = TextAlignment.Center };
+
         private static ColorTypeface m_font = new ColorTypeface("Segoe UI Emoji");
     }
 }

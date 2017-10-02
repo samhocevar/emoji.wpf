@@ -75,7 +75,6 @@ namespace Emoji.Wpf
             ushort gid = m_gtf.CharacterToGlyphMap[codepoint];
             int start = m_layer_indices[gid], stop = start + m_layer_counts[gid];
             int palette = 0; // FIXME: support multiple palettes?
-            Point pos = new Point(0, size * Baseline);
 
             for (int i = start; i < stop; ++i)
             {
@@ -83,7 +82,7 @@ namespace Emoji.Wpf
                 // one glyph.
                 GlyphRun r = new GlyphRun(m_gtf, 0, false, size,
                                           new ushort[] { m_glyph_layers[i] },
-                                          pos, new double[] { 0 },
+                                          new Point(), new double[] { 0 },
                                           null, null, null, // FIXME: check what this is?
                                           null, null, null);
                 Brush b = new SolidColorBrush(m_colors[m_palettes[palette] + m_glyph_palettes[i]]);
