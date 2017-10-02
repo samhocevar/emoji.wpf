@@ -13,7 +13,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Windows;
-using System.Windows.Documents;
 
 namespace FontViewer
 {
@@ -32,11 +31,13 @@ namespace FontViewer
 
         public class Glyph
         {
-            public string Lol { get; set; }
+            public string UnicodeDesc { get; set; }
+            public string UnicodeText { get; set; }
 
-            public Glyph(string str)
+            public Glyph(int codepoint)
             {
-                Lol = str;
+                UnicodeDesc = string.Format("U+{0:X4}", codepoint);
+                UnicodeText = char.ConvertFromUtf32(codepoint).ToString();
             }
         }
 
@@ -47,9 +48,8 @@ namespace FontViewer
             var glyph_list = new ObservableCollection<Glyph>();
             var font = new Emoji.Wpf.ColorTypeface("Segoe UI Emoji");
             foreach (var kv in font.CharacterToGlyphMap)
-            {
-                glyph_list.Add(new Glyph(char.ConvertFromUtf32(kv.Key).ToString()));
-            }
+                glyph_list.Add(new Glyph(kv.Key));
+
             EmojiFontList.ItemsSource = glyph_list;
         }
     }

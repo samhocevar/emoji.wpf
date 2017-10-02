@@ -38,8 +38,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ColorTypeface.cs" />
-    <Compile Include="EmojiRichTextBox.cs" />
+    <Compile Include="Image.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RichTextBox.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

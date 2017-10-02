@@ -42,9 +42,21 @@ namespace Emoji.Wpf
                     && m_layer_indices.ContainsKey(glyph);
         }
 
+        private Dictionary<int, ushort> m_characters;
+
         public IDictionary<int, ushort> CharacterToGlyphMap
         {
-            get => m_gtf.CharacterToGlyphMap;
+            get
+            {
+                if (m_characters == null)
+                {
+                    m_characters = new Dictionary<int, ushort>();
+                    foreach (var kv in m_gtf.CharacterToGlyphMap)
+                        if (m_layer_indices.ContainsKey(kv.Value))
+                            m_characters.Add(kv.Key, kv.Value);
+                }
+                return m_characters;
+            }
         }
 
         public struct WidthList

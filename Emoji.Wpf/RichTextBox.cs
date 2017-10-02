@@ -78,18 +78,26 @@ namespace Emoji.Wpf
         // Do not serialize our child element, as it is only for rendering
         protected new bool ShouldSerializeInlines(XamlDesignerSerializationManager m) => false;
 
-        public string Text
+        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
-            get => m_text;
-            set
+            base.OnPropertyChanged(e);
+
+            if (e.Property == TextProperty)
             {
-                m_text = value;
-                int codepoint = StringToCodepoint(m_text);
-                Inlines.Add(new ColorGlyph(m_font, codepoint));
+                Inlines.Clear();
+                int codepoint = StringToCodepoint(Text);
+                Inlines.Add(new InlineUIContainer(new ColorGlyph(m_font, codepoint)));
             }
         }
 
-        private string m_text;
+        public string Text
+        {
+            get { return (string)GetValue(TextProperty); }
+            set { SetValue(TextProperty, value); }
+        }
+
+        public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
+            "Text", typeof(string), typeof(Emoji), new PropertyMetadata("☺"));
     }
 
     public class RichTextBox : System.Windows.Controls.RichTextBox

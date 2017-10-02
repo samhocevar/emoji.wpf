@@ -3,17 +3,27 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:FontViewer"
         xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
         mc:Ignorable="d"
-        Title="Emoji.Wpf Font Viewer" Height="350" Width="525">
-    <StackPanel Orientation="Vertical" Height="Auto">
-        <TextBlock Text="List of glyphs in font" Margin="5"/>
-        <Grid>
-            <Grid.Resources>
-                <!--<x:GlyphList x:Key="glyphlist"/>-->
-            </Grid.Resources>
-            <ListBox Name="EmojiFontList" Width="Auto" Height="Auto" Margin="5" DisplayMemberPath="Lol" ScrollViewer.VerticalScrollBarVisibility="Visible" />
-        </Grid>
-    </StackPanel>
+        Title="Emoji.Wpf Font Viewer" Width="800" Height="600">
+    <ListView Name="EmojiFontList" Width="Auto" Height="Auto" Margin="5"
+              ScrollViewer.VerticalScrollBarVisibility="Visible"
+              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+        <ListView.ItemsPanel>
+            <ItemsPanelTemplate>
+                <WrapPanel/>
+            </ItemsPanelTemplate>
+        </ListView.ItemsPanel>
+        <ListView.ItemTemplate>
+            <DataTemplate>
+                <StackPanel Orientation="Vertical" Margin="5">
+                    <emoji:Image Text="{Binding UnicodeText}" Width="40" Height="40"/>
+                    <TextBlock Text="{Binding UnicodeDesc}" FontSize="10"/>
+                    <StackPanel.ToolTip>
+                        <emoji:Image Text="{Binding UnicodeText}" Width="300" Height="300"/>
+                    </StackPanel.ToolTip>
+                </StackPanel>
+            </DataTemplate>
+        </ListView.ItemTemplate>
+    </ListView>
 </Window>
