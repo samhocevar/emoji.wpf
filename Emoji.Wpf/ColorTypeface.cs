@@ -143,7 +143,8 @@ namespace Emoji.Wpf
         {
             COLR = 0x434f4c52,
             CPAL = 0x4350414c,
-            GDEF = 0x46454447,
+            GDEF = 0x47444546,
+            GSUB = 0x47535542,
         }
 
         private void ReadFontStream(Stream s)
@@ -167,12 +168,17 @@ namespace Emoji.Wpf
                 tables[header] = new TableLocation(offset, length);
             }
 
-            if (tables.ContainsKey(TableHeader.GDEF))
+            if (tables.ContainsKey(TableHeader.GSUB))
             {
-                // Read the GDEF table
-                // https://www.microsoft.com/typography/otspec/gdef.htm
-                b.BaseStream.Seek(tables[TableHeader.GDEF].Offset, SeekOrigin.Begin);
-                ushort version = b.ReadUInt16();
+                // Read the GSUB table
+                // https://www.microsoft.com/typography/otspec/gsub.htm
+                b.BaseStream.Seek(tables[TableHeader.GSUB].Offset, SeekOrigin.Begin);
+                ushort major_version = b.ReadUInt16();
+                ushort minor_version = b.ReadUInt16();
+                short script_offset = b.ReadInt16();
+                short feature_offset = b.ReadInt16();
+                short lookup_offset = b.ReadInt16();
+                int variations_offset = minor_version == 1 ? b.ReadInt32() : 0;
             }
 
             if (tables.ContainsKey(TableHeader.COLR) && tables.ContainsKey(TableHeader.CPAL))
