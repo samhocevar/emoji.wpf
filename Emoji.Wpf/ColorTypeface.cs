@@ -35,11 +35,13 @@ namespace Emoji.Wpf
 
         public bool HasCodepoint(int codepoint)
         {
+            // Just check that the character is mapped to a glyph
+            return m_gtf.CharacterToGlyphMap.ContainsKey(codepoint);
             // Check that the character is mapped to a glyph, and that the glyph
             // has colour information. Otherwise, we are not interested.
-            ushort glyph;
-            return m_gtf.CharacterToGlyphMap.TryGetValue(codepoint, out glyph)
-                    && m_layer_indices.ContainsKey(glyph);
+            //ushort glyph;
+            //return m_gtf.CharacterToGlyphMap.TryGetValue(codepoint, out glyph)
+            //        && m_layer_indices.ContainsKey(glyph);
         }
 
         private Dictionary<int, ushort> m_characters;
@@ -47,17 +49,7 @@ namespace Emoji.Wpf
 
         public IDictionary<int, ushort> CharacterToGlyphMap
         {
-            get
-            {
-                if (m_characters == null)
-                {
-                    m_characters = new Dictionary<int, ushort>();
-                    foreach (var kv in m_gtf.CharacterToGlyphMap)
-                        if (m_layer_indices.ContainsKey(kv.Value))
-                            m_characters[kv.Key] = kv.Value;
-                }
-                return m_characters;
-            }
+            get => m_gtf.CharacterToGlyphMap;
         }
 
         public IDictionary<ushort, int> GlyphToCharacterMap
@@ -89,21 +81,33 @@ namespace Emoji.Wpf
 
         public void RenderGlyph(DrawingContext dc, ushort gid, double size)
         {
-            int start = m_layer_indices[gid], stop = start + m_layer_counts[gid];
-            int palette = 0; // FIXME: support multiple palettes?
-
-            for (int i = start; i < stop; ++i)
+            if (m_layer_indices.ContainsKey(gid))
             {
-                // We do not need to provide advances since we only render
-                // one glyph.
-                GlyphRun r = new GlyphRun(m_gtf, 0, false, size,
-                                          new ushort[] { m_glyph_layers[i] },
-                                          new Point(), new double[] { 0 },
-                                          null, null, null, // FIXME: check what this is?
-                                          null, null, null);
-                Brush b = new SolidColorBrush(m_colors[m_palettes[palette] + m_glyph_palettes[i]]);
+                int start = m_layer_indices[gid], stop = start + m_layer_counts[gid];
+                int palette = 0; // FIXME: support multiple palettes?
 
-                dc.DrawGlyphRun(b, r);
+                for (int i = start; i < stop; ++i)
+                {
+                    // We do not need to provide advances since we only render
+                    // one glyph.
+                    GlyphRun r = new GlyphRun(m_gtf, 0, false, size,
+                                              new ushort[] { m_glyph_layers[i] },
+                                              new Point(), new double[] { 0 },
+                                              null, null, null, // FIXME: check what this is?
+                                              null, null, null);
+                    Brush b = new SolidColorBrush(m_colors[m_palettes[palette] + m_glyph_palettes[i]]);
+
+                    dc.DrawGlyphRun(b, r);
+                }
+            }
+            else
+            {
+                GlyphRun r = new GlyphRun(m_gtf, 0, false, size,
+                                          new ushort[] { gid },
+                                          new Point(), new double[] { 0 },
+                                          null, null, null,
+                                          null, null, null);
+                dc.DrawGlyphRun(Brushes.Black, r);
             }
         }
 

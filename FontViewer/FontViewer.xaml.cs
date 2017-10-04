@@ -51,12 +51,6 @@ namespace FontViewer
 
             var glyph_list = new ObservableCollection<Glyph>();
             var font = new Emoji.Wpf.ColorTypeface("Segoe UI Emoji");
-            for (int code = 0x20; code < 0x7f; ++code)
-                if (font.CharacterToGlyphMap.ContainsKey(code))
-                    glyph_list.Add(new Glyph(code, font.CharacterToGlyphMap[code]));
-            //foreach (int code in m_ordering)
-            //    if (font.CharacterToGlyphMap.ContainsKey(code))
-            //        glyph_list.Add(new Glyph(code, 0));
             foreach (var kv in font.GlyphToCharacterMap)
                 glyph_list.Add(new Glyph(kv.Value, kv.Key));
 
