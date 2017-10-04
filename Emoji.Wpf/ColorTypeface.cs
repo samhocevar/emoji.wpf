@@ -25,7 +25,6 @@ namespace Emoji.Wpf
         {
             if (TryGetGlyphTypeface(out m_gtf))
             {
-                Widths = new WidthList(m_gtf);
                 using (var s = m_gtf.GetFontStream())
                 {
                     ReadFontStream(s);
@@ -44,13 +43,7 @@ namespace Emoji.Wpf
             //        && m_layer_indices.ContainsKey(glyph);
         }
 
-        private Dictionary<int, ushort> m_characters;
         private Dictionary<ushort, int> m_glyphs;
-
-        public IDictionary<int, ushort> CharacterToGlyphMap
-        {
-            get => m_gtf.CharacterToGlyphMap;
-        }
 
         public IDictionary<ushort, int> GlyphToCharacterMap
         {
@@ -68,14 +61,8 @@ namespace Emoji.Wpf
             }
         }
 
-        public struct WidthList
-        {
-            public WidthList(GlyphTypeface gtf) { m_gtf = gtf; }
-            public double this[ushort glyph] => m_gtf.AdvanceWidths[glyph];
-            private GlyphTypeface m_gtf;
-        }
-
-        public readonly WidthList Widths;
+        public IDictionary<int, ushort> CharacterToGlyphMap { get => m_gtf.CharacterToGlyphMap; }
+        public IDictionary<ushort, double> Widths { get => m_gtf.AdvanceWidths; }
         public double Height { get => m_gtf.Height; }
         public double Baseline { get => m_gtf.Baseline; }
 
