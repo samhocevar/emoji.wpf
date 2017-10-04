@@ -32,7 +32,7 @@ namespace Emoji.Wpf
         {
             base.OnVisualParentChanged(oldParent);
             m_fontsize = ((Parent as InlineUIContainer).Parent as Emoji).FontSize;
-            Width = m_fontsize * m_font.Widths[m_codepoint];
+            Width = m_fontsize * m_font.Widths[m_font.CharacterToGlyphMap[m_codepoint]];
             Height = m_fontsize * m_font.Height;
         }
 
@@ -41,7 +41,7 @@ namespace Emoji.Wpf
             // Debug the bounding box
             //dc.DrawRectangle(Brushes.Bisque, new Pen(Brushes.LightCoral, 1.0), new Rect(0, 0, Width, Height));
             dc.PushTransform(new TranslateTransform(0, m_fontsize * m_font.Baseline));
-            m_font.RenderGlyph(dc, m_codepoint, m_fontsize);
+            m_font.RenderGlyph(dc, m_font.CharacterToGlyphMap[m_codepoint], m_fontsize);
             dc.Pop();
         }
 

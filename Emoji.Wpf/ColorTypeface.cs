@@ -43,6 +43,7 @@ namespace Emoji.Wpf
         }
 
         private Dictionary<int, ushort> m_characters;
+        private Dictionary<ushort, int> m_glyphs;
 
         public IDictionary<int, ushort> CharacterToGlyphMap
         {
@@ -53,16 +54,32 @@ namespace Emoji.Wpf
                     m_characters = new Dictionary<int, ushort>();
                     foreach (var kv in m_gtf.CharacterToGlyphMap)
                         if (m_layer_indices.ContainsKey(kv.Value))
-                            m_characters.Add(kv.Key, kv.Value);
+                            m_characters[kv.Key] = kv.Value;
                 }
                 return m_characters;
+            }
+        }
+
+        public IDictionary<ushort, int> GlyphToCharacterMap
+        {
+            get
+            {
+                if (m_glyphs == null)
+                {
+                    m_glyphs = new Dictionary<ushort, int>();
+                    foreach (var kv in m_layer_indices)
+                        m_glyphs[kv.Key] = 0;
+                    foreach (var kv in m_gtf.CharacterToGlyphMap)
+                        m_glyphs[kv.Value] = kv.Key;
+                }
+                return m_glyphs;
             }
         }
 
         public struct WidthList
         {
             public WidthList(GlyphTypeface gtf) { m_gtf = gtf; }
-            public double this[int codepoint] => m_gtf.AdvanceWidths[m_gtf.CharacterToGlyphMap[codepoint]];
+            public double this[ushort glyph] => m_gtf.AdvanceWidths[glyph];
             private GlyphTypeface m_gtf;
         }
 
@@ -70,9 +87,8 @@ namespace Emoji.Wpf
         public double Height { get => m_gtf.Height; }
         public double Baseline { get => m_gtf.Baseline; }
 
-        public void RenderGlyph(DrawingContext dc, int codepoint, double size)
+        public void RenderGlyph(DrawingContext dc, ushort gid, double size)
         {
-            ushort gid = m_gtf.CharacterToGlyphMap[codepoint];
             int start = m_layer_indices[gid], stop = start + m_layer_counts[gid];
             int palette = 0; // FIXME: support multiple palettes?
 
@@ -111,49 +127,66 @@ namespace Emoji.Wpf
             }
         }
 
+        private class TableLocation
+        {
+            public TableLocation(int offset, int length)
+            {
+                Offset = offset;
+                Length = length;
+            }
+
+            public int Offset { get; }
+            public int Length { get; }
+        }
+
+        private enum TableHeader : uint
+        {
+            COLR = 0x434f4c52,
+            CPAL = 0x4350414c,
+            GDEF = 0x46454447,
+        }
+
         private void ReadFontStream(Stream s)
         {
-            int colr_offset = -1, colr_length = -1;
-            int cpal_offset = -1, cpal_length = -1;
+            Dictionary<TableHeader, TableLocation> tables = new Dictionary<TableHeader, TableLocation>();
 
             // Read font header
             var b = new BEBinaryReader(s);
-            uint header = b.ReadUInt32();
+            uint font_header = b.ReadUInt32();
             int table_count = b.ReadUInt16();
             b.BaseStream.Seek(6, SeekOrigin.Current);
 
             // Read available table information
             for (int i = 0; i < table_count; ++i)
             {
-                int table_header = b.ReadInt32();
-                int table_checksum = b.ReadInt32();
-                int table_offset = b.ReadInt32();
-                int table_length = b.ReadInt32();
+                TableHeader header = (TableHeader)b.ReadUInt32();
+                uint checksum = b.ReadUInt32();
+                int offset = b.ReadInt32();
+                int length = b.ReadInt32();
 
-                if (table_header == 0x434f4c52) // COLR
-                {
-                    colr_offset = table_offset;
-                    colr_length = table_length;
-                }
-                else if (table_header == 0x4350414c) // CPAL
-                {
-                    cpal_offset = table_offset;
-                    cpal_length = table_length;
-                }
+                tables[header] = new TableLocation(offset, length);
             }
 
-            if (colr_offset != -1 && cpal_offset != -1)
+            if (tables.ContainsKey(TableHeader.GDEF))
+            {
+                // Read the GDEF table
+                // https://www.microsoft.com/typography/otspec/gdef.htm
+                b.BaseStream.Seek(tables[TableHeader.GDEF].Offset, SeekOrigin.Begin);
+                ushort version = b.ReadUInt16();
+            }
+
+            if (tables.ContainsKey(TableHeader.COLR) && tables.ContainsKey(TableHeader.CPAL))
             {
                 // Read the COLR table
                 // https://www.microsoft.com/typography/otspec/colr.htm
-                b.BaseStream.Seek(colr_offset, SeekOrigin.Begin);
+                b.BaseStream.Seek(tables[TableHeader.COLR].Offset, SeekOrigin.Begin);
                 ushort version = b.ReadUInt16();
                 int glyph_count = b.ReadUInt16();
                 int glyphs_offset = b.ReadInt32();
                 int layers_offset = b.ReadInt32();
                 int layer_count = b.ReadUInt16();
 
-                b.BaseStream.Seek(colr_offset + glyphs_offset, SeekOrigin.Begin);
+                b.BaseStream.Seek(tables[TableHeader.COLR].Offset + glyphs_offset, SeekOrigin.Begin);
                 for (int i = 0; i < glyph_count; ++i)
                 {
                     ushort gid = b.ReadUInt16();
@@ -161,7 +194,7 @@ namespace Emoji.Wpf
                     m_layer_counts[gid] = b.ReadUInt16();
                 }
 
-                b.BaseStream.Seek(colr_offset + layers_offset, SeekOrigin.Begin);
+                b.BaseStream.Seek(tables[TableHeader.COLR].Offset + layers_offset, SeekOrigin.Begin);
                 m_glyph_layers = new ushort[layer_count];
                 m_glyph_palettes = new ushort[layer_count];
                 for (int i = 0; i < layer_count; ++i)
@@ -172,7 +205,7 @@ namespace Emoji.Wpf
 
                 // Read the CPAL table
                 // https://www.microsoft.com/typography/otspec/cpal.htm
-                b.BaseStream.Seek(cpal_offset, SeekOrigin.Begin);
+                b.BaseStream.Seek(tables[TableHeader.CPAL].Offset, SeekOrigin.Begin);
                 ushort palette_version = b.ReadUInt16();
                 int entry_count = b.ReadUInt16();
                 int palette_count = b.ReadUInt16();
@@ -185,7 +218,7 @@ namespace Emoji.Wpf
                     m_palettes[i] = b.ReadUInt16();
                 }
 
-                b.BaseStream.Seek(cpal_offset + colors_offset, SeekOrigin.Begin);
+                b.BaseStream.Seek(tables[TableHeader.CPAL].Offset + colors_offset, SeekOrigin.Begin);
                 m_colors = new Color[color_count];
                 for (int i = 0; i < color_count; ++i)
                 {

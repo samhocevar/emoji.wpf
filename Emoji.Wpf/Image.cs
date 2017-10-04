@@ -22,7 +22,7 @@ namespace Emoji.Wpf
     /// </summary>
     public class Image : Canvas
     {
-        public Image() => OnTextChanged(Text);
+        public Image() {}
         public Image(string text) => Text = text;
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
@@ -41,26 +41,24 @@ namespace Emoji.Wpf
             // Debug the bounding box
             //dc.DrawRectangle(Brushes.Bisque, new Pen(Brushes.LightCoral, 1.0), new Rect(0, 0, Width, Height));
 
-            if (m_codepoint != 0)
-            {
-                if (Width > 0 && Height > 0)
-                {
-                    double font_size = Math.Min(Width / m_font.Widths[m_codepoint],
-                                                Height / m_font.Height);
-                    double startx = 0.5 * (Width - m_font.Widths[m_codepoint] * font_size);
-                    double starty = font_size * m_font.Baseline;
-                    dc.DrawRectangle(Background, null, new Rect(0, 0, Width, Height));
-                    dc.PushTransform(new TranslateTransform(startx, starty));
-                    m_font.RenderGlyph(dc, m_codepoint, font_size);
-                    dc.Pop();
-                }
-            }
-            else
+            if (m_codepoint == 0 && m_glyph == 0)
             {
                 m_textblock.FontSize = Math.Min(Width, Height) * 0.75;
                 m_textblock.Width = Width;
                 m_textblock.Height = Height;
                 m_textblock.Background = Background;
+            }
+            else if (Width > 0 && Height > 0)
+            {
+                ushort glyph = m_glyph > 0 ? m_glyph : m_font.CharacterToGlyphMap[m_codepoint];
+                double font_size = Math.Min(Width / m_font.Widths[glyph],
+                                            Height / m_font.Height);
+                double startx = 0.5 * (Width - m_font.Widths[glyph] * font_size);
+                double starty = font_size * m_font.Baseline;
+                dc.DrawRectangle(Background, null, new Rect(0, 0, Width, Height));
+                dc.PushTransform(new TranslateTransform(startx, starty));
+                m_font.RenderGlyph(dc, glyph, font_size);
+                dc.Pop();
             }
         }
 
@@ -71,6 +69,14 @@ namespace Emoji.Wpf
 
         private void OnTextChanged(string str)
         {
+            if (str.StartsWith("G+"))
+            {
+                m_codepoint = 0;
+                m_glyph = 0;
+                ushort.TryParse(str.Substring(2), out m_glyph);
+                return;
+            }
+
             int codepoint = 0;
 
             // Find the codepoint for the string.
@@ -84,11 +90,14 @@ namespace Emoji.Wpf
             if (m_font.HasCodepoint(codepoint))
             {
                 m_codepoint = codepoint;
+                m_glyph = m_font.CharacterToGlyphMap[codepoint];
                 Children.Clear();
+                return;
             }
             else
             {
                 m_codepoint = 0;
+                m_glyph = 0;
                 m_textblock.Text = str;
                 if (Children.Count == 0)
                     Children.Add(m_textblock);
@@ -117,6 +126,7 @@ namespace Emoji.Wpf
             nameof(Text), typeof(string), typeof(Image), new FrameworkPropertyMetadata("", TextChangedCallback));
 
         private int m_codepoint;
+        private ushort m_glyph;
         private TextBlock m_textblock = new TextBlock() { TextAlignment = TextAlignment.Center };
 
         private static ColorTypeface m_font = new ColorTypeface("Segoe UI Emoji");
