@@ -103,14 +103,16 @@ namespace Emoji.Wpf
         /// </summary>
         private class BEBinaryReader : BinaryReader
         {
-            public BEBinaryReader(Stream s) : base(s) {}
+            public BEBinaryReader(Stream s) : base(s) { }
 
-            public override short  ReadInt16()  => BitConverter.ToInt16(ReadReverse(2), 0);
+            public override short ReadInt16() => BitConverter.ToInt16(ReadReverse(2), 0);
             public override ushort ReadUInt16() => BitConverter.ToUInt16(ReadReverse(2), 0);
-            public override int    ReadInt32()  => BitConverter.ToInt32(ReadReverse(4), 0);
-            public override uint   ReadUInt32() => BitConverter.ToUInt32(ReadReverse(4), 0);
-            public override long   ReadInt64()  => BitConverter.ToInt64(ReadReverse(8), 0);
-            public override ulong  ReadUInt64() => BitConverter.ToUInt64(ReadReverse(8), 0);
+            public override int ReadInt32() => BitConverter.ToInt32(ReadReverse(4), 0);
+            public override uint ReadUInt32() => BitConverter.ToUInt32(ReadReverse(4), 0);
+            public override long ReadInt64() => BitConverter.ToInt64(ReadReverse(8), 0);
+            public override ulong ReadUInt64() => BitConverter.ToUInt64(ReadReverse(8), 0);
+
+            public void SeekAt(int offset) => BaseStream.Seek(offset, SeekOrigin.Begin);
 
             private byte[] ReadReverse(int count)
             {
@@ -130,7 +132,7 @@ namespace Emoji.Wpf
             public int Length { get; }
         }
 
-        private enum TableHeader : uint
+        private enum Tag : uint
         {
             COLR = 0x434f4c52,
             CPAL = 0x4350414c,
@@ -140,88 +142,126 @@ namespace Emoji.Wpf
 
         private void ReadFontStream(Stream s)
         {
-            Dictionary<TableHeader, TableLocation> tables = new Dictionary<TableHeader, TableLocation>();
-
             // Read font header
             var b = new BEBinaryReader(s);
             uint font_header = b.ReadUInt32();
             int table_count = b.ReadUInt16();
-            b.BaseStream.Seek(6, SeekOrigin.Current);
+            b.SeekAt(12);
 
             // Read available table information
+            Dictionary<Tag, int> tables = new Dictionary<Tag, int>();
             for (int i = 0; i < table_count; ++i)
             {
-                TableHeader header = (TableHeader)b.ReadUInt32();
+                Tag tag = (Tag)b.ReadUInt32();
                 uint checksum = b.ReadUInt32();
                 int offset = b.ReadInt32();
-                int length = b.ReadInt32();
-
-                tables[header] = new TableLocation(offset, length);
+                int length = b.ReadInt32(); // Ignored, lol
+                tables[tag] = offset;
             }
 
-            if (tables.ContainsKey(TableHeader.GSUB))
+            // Parse tables that are relevant to us
+            int table_offset;
+            if (tables.TryGetValue(Tag.GSUB, out table_offset))
+                ReadGSUB(b, table_offset);
+            if (tables.TryGetValue(Tag.COLR, out table_offset))
+                ReadCOLR(b, table_offset);
+            if (tables.TryGetValue(Tag.CPAL, out table_offset))
+                ReadCPAL(b, table_offset);
+        }
+
+        // Read the GSUB table
+        // https://www.microsoft.com/typography/otspec/gsub.htm
+        // https://www.microsoft.com/typography/otspec/chapter2.htm
+        private void ReadGSUB(BEBinaryReader b, int offset)
+        {
+            b.SeekAt(offset);
+            ushort major_version = b.ReadUInt16();
+            ushort minor_version = b.ReadUInt16();
+            int script_list_offset = b.ReadInt16();
+            int feature_list_offset = b.ReadInt16();
+            int lookup_list_offset = b.ReadInt16();
+            int variations_list_offset = minor_version == 1 ? b.ReadInt32() : 0;
+
+            // Read script list table
+            Dictionary<Tag, int> scripts = new Dictionary<Tag, int>();
+            b.SeekAt(offset + script_list_offset);
+            int script_count = b.ReadInt16();
+            for (int i = 0; i < script_count; ++i)
             {
-                // Read the GSUB table
-                // https://www.microsoft.com/typography/otspec/gsub.htm
-                b.BaseStream.Seek(tables[TableHeader.GSUB].Offset, SeekOrigin.Begin);
-                ushort major_version = b.ReadUInt16();
-                ushort minor_version = b.ReadUInt16();
-                short script_offset = b.ReadInt16();
-                short feature_offset = b.ReadInt16();
-                short lookup_offset = b.ReadInt16();
-                int variations_offset = minor_version == 1 ? b.ReadInt32() : 0;
+                Tag tag = (Tag)b.ReadUInt32();
+                scripts[tag] = b.ReadUInt16();
             }
 
-            if (tables.ContainsKey(TableHeader.COLR) && tables.ContainsKey(TableHeader.CPAL))
+            // Read feature list table
+            Dictionary<Tag, int> features = new Dictionary<Tag, int>();
+            b.SeekAt(offset + feature_list_offset);
+            int feature_count = b.ReadInt16();
+            for (int i = 0; i < feature_count; ++i)
             {
-                // Read the COLR table
-                // https://www.microsoft.com/typography/otspec/colr.htm
-                b.BaseStream.Seek(tables[TableHeader.COLR].Offset, SeekOrigin.Begin);
-                ushort version = b.ReadUInt16();
-                int glyph_count = b.ReadUInt16();
-                int glyphs_offset = b.ReadInt32();
-                int layers_offset = b.ReadInt32();
-                int layer_count = b.ReadUInt16();
+                Tag tag = (Tag)b.ReadUInt32();
+                features[tag] = b.ReadUInt16();
+            }
 
-                b.BaseStream.Seek(tables[TableHeader.COLR].Offset + glyphs_offset, SeekOrigin.Begin);
-                for (int i = 0; i < glyph_count; ++i)
-                {
-                    ushort gid = b.ReadUInt16();
-                    m_layer_indices[gid] = b.ReadUInt16();
-                    m_layer_counts[gid] = b.ReadUInt16();
-                }
+            // Read lookup list table
+            List<int> lookups = new List<int>();
+            b.SeekAt(offset + lookup_list_offset);
+            int lookup_count = b.ReadInt16();
+            for (int i = 0; i < lookup_count; ++i)
+                lookups.Add(b.ReadInt16());
+        }
 
-                b.BaseStream.Seek(tables[TableHeader.COLR].Offset + layers_offset, SeekOrigin.Begin);
-                m_glyph_layers = new ushort[layer_count];
-                m_glyph_palettes = new ushort[layer_count];
-                for (int i = 0; i < layer_count; ++i)
-                {
-                    m_glyph_layers[i] = b.ReadUInt16();
-                    m_glyph_palettes[i] = b.ReadUInt16();
-                }
+        // Read the COLR table
+        // https://www.microsoft.com/typography/otspec/colr.htm
+        private void ReadCOLR(BEBinaryReader b, int offset)
+        {
+            b.SeekAt(offset);
+            ushort version = b.ReadUInt16();
+            int glyph_count = b.ReadUInt16();
+            int glyphs_offset = b.ReadInt32();
+            int layers_offset = b.ReadInt32();
+            int layer_count = b.ReadUInt16();
 
-                // Read the CPAL table
-                // https://www.microsoft.com/typography/otspec/cpal.htm
-                b.BaseStream.Seek(tables[TableHeader.CPAL].Offset, SeekOrigin.Begin);
-                ushort palette_version = b.ReadUInt16();
-                int entry_count = b.ReadUInt16();
-                int palette_count = b.ReadUInt16();
-                int color_count = b.ReadUInt16();
-                int colors_offset = b.ReadInt32();
+            b.SeekAt(offset + glyphs_offset);
+            for (int i = 0; i < glyph_count; ++i)
+            {
+                ushort gid = b.ReadUInt16();
+                m_layer_indices[gid] = b.ReadUInt16();
+                m_layer_counts[gid] = b.ReadUInt16();
+            }
 
-                m_palettes = new ushort[palette_count];
-                for (int i = 0; i < palette_count; ++i)
-                {
-                    m_palettes[i] = b.ReadUInt16();
-                }
+            b.SeekAt(offset + layers_offset);
+            m_glyph_layers = new ushort[layer_count];
+            m_glyph_palettes = new ushort[layer_count];
+            for (int i = 0; i < layer_count; ++i)
+            {
+                m_glyph_layers[i] = b.ReadUInt16();
+                m_glyph_palettes[i] = b.ReadUInt16();
+            }
+        }
 
-                b.BaseStream.Seek(tables[TableHeader.CPAL].Offset + colors_offset, SeekOrigin.Begin);
-                m_colors = new Color[color_count];
-                for (int i = 0; i < color_count; ++i)
-                {
-                    byte[] tmp = b.ReadBytes(4);
-                    m_colors[i] = Color.FromArgb(tmp[3], tmp[2], tmp[1], tmp[0]);
-                }
+        // Read the CPAL table
+        // https://www.microsoft.com/typography/otspec/cpal.htm
+        private void ReadCPAL(BEBinaryReader b, int offset)
+        {
+            b.SeekAt(offset);
+            ushort palette_version = b.ReadUInt16();
+            int entry_count = b.ReadUInt16();
+            int palette_count = b.ReadUInt16();
+            int color_count = b.ReadUInt16();
+            int colors_offset = b.ReadInt32();
+
+            m_palettes = new ushort[palette_count];
+            for (int i = 0; i < palette_count; ++i)
+            {
+                m_palettes[i] = b.ReadUInt16();
+            }
+
+            b.SeekAt(offset + colors_offset);
+            m_colors = new Color[color_count];
+            for (int i = 0; i < color_count; ++i)
+            {
+                byte[] tmp = b.ReadBytes(4);
+                m_colors[i] = Color.FromArgb(tmp[3], tmp[2], tmp[1], tmp[0]);
             }
         }
 
