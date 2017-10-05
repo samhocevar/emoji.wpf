@@ -128,7 +128,7 @@ namespace Emoji.Wpf
                 subtable_offsets[i] = offset + b.ReadUInt16();
 
             // Extension substitution tables need an extra indirection
-            if (type == 0x0007)
+            if (type == 7)
             {
                 for (int i = 0; i < subtable_offsets.Length; ++i)
                 {
@@ -143,12 +143,73 @@ namespace Emoji.Wpf
             {
                 switch (type)
                 {
-                case 0x0001: ReadGSUBLookupType1(b, subtable_offset); break;
-                case 0x0004: ReadGSUBLookupType4(b, subtable_offset); break;
-                case 0x0006: ReadGSUBLookupType6(b, subtable_offset); break;
-                default: break;
+                case 1: ReadGSUBLookupType1(b, subtable_offset); break;
+                case 4: ReadGSUBLookupType4(b, subtable_offset); break;
+                case 6: ReadGSUBLookupType6(b, subtable_offset); break;
+                default: break; // FIXME: unsupported for now
                 }
             }
+        }
+
+        private List<LigatureDef> m_ligatures = new List<LigatureDef>();
+
+        private class LigatureDef
+        {
+            internal struct List
+            {
+                internal struct Item
+                {
+                    public ushort[] Sequence { get; set; }
+                    public ushort Result { get; set; }
+                }
+
+                public Item[] Ligatures;
+            }
+
+            public Coverage Coverage { get; set; }
+            public List[] Rules { get; set; }
+        }
+
+        private class Coverage
+        {
+            public Coverage(BEBinaryReader b, int offset)
+            {
+                b.SeekAt(offset);
+                m_format = b.ReadUInt16();
+
+                if (m_format == 1)
+                {
+                    m_data = new ushort[b.ReadUInt16()];
+                    for (int i = 0; i < m_data.Length; ++i)
+                        m_data[i] = b.ReadUInt16();
+                }
+                else if (m_format == 2)
+                {
+                    m_data = new ushort[3 * b.ReadUInt16()];
+                    for (int i = 0; i < m_data.Length; i += 3)
+                    {
+                        m_data[i + 0] = b.ReadUInt16();
+                        m_data[i + 1] = b.ReadUInt16();
+                        m_data[i + 2] = b.ReadUInt16(); // Coverage index
+                    }
+                }
+            }
+
+            private int GetCoverageIndex(ushort gid)
+            {
+                if (m_format == 1)
+                    return Array.BinarySearch(m_data, gid);
+
+                if (m_format == 2)
+                    for (int i = 0; i < m_data.Length; i += 3)
+                        if (m_data[i] <= gid && gid <= m_data[i + 1])
+                            return gid - m_data[i] + m_data[i + 2];
+
+                return -1;
+            }
+
+            private int m_format;
+            private ushort[] m_data;
         }
 
         // LookupType 1: Single Substitution Subtable
@@ -157,28 +218,118 @@ namespace Emoji.Wpf
             b.SeekAt(offset);
 
             int format = b.ReadUInt16();
-            int coverage_offset = b.ReadUInt16();
-            switch (format)
+            int coverage_offset = offset + b.ReadUInt16();
+            if (format == 1)
             {
-                case 1:
-                    int delta = b.ReadUInt16();
-                    break;
-                case 2:
-                    int[] substitutes = new int[b.ReadUInt16()];
-                    for (int i = 0; i < substitutes.Length; ++i)
-                        substitutes[i] = b.ReadUInt16();
-                    break;
+                // Single Substitution Format 1
+                int delta = b.ReadUInt16();
+                Coverage cov = new Coverage(b, coverage_offset);
             }
+            else if (format == 2)
+            {
+                // Single Substitution Format 2
+                int[] substitutes = new int[b.ReadUInt16()];
+                for (int i = 0; i < substitutes.Length; ++i)
+                    substitutes[i] = b.ReadUInt16();
+                Coverage cov = new Coverage(b, coverage_offset);
+            }
+
+            // FIXME: store the substitution information somewhere!
         }
 
+        // LookupType 4: Ligature Substitution Subtable
         void ReadGSUBLookupType4(BEBinaryReader b, int offset)
         {
             b.SeekAt(offset);
+
+            int format = b.ReadUInt16();
+            int coverage_offset = offset + b.ReadUInt16();
+            if (format == 1)
+            {
+                // Ligature Substitution Format 1
+                LigatureDef lig = new LigatureDef();
+
+                int[] ligset_offsets = new int[b.ReadUInt16()];
+                for (int i = 0; i < ligset_offsets.Length; ++i)
+                    ligset_offsets[i] = offset + b.ReadInt16();
+
+                lig.Coverage = new Coverage(b, coverage_offset);
+                lig.Rules = new LigatureDef.List[ligset_offsets.Length];
+
+                // There are as many ligature sets as glyphs in the coverage
+                for (int i = 0; i < ligset_offsets.Length; ++i)
+                {
+                    b.SeekAt(ligset_offsets[i]);
+                    int[] lig_offsets = new int[b.ReadUInt16()];
+                    for (int j = 0; j < lig_offsets.Length; ++j)
+                        lig_offsets[j] = ligset_offsets[i] + b.ReadInt16();
+
+                    lig.Rules[i].Ligatures = new LigatureDef.List.Item[lig_offsets.Length];
+
+                    // All possible ligatures starting with this glyph
+                    for (int j = 0; j < lig_offsets.Length; ++j)
+                    {
+                        b.SeekAt(lig_offsets[j]);
+                        lig.Rules[i].Ligatures[j].Result = b.ReadUInt16();
+                        // The implicit 0th element of the ligature is the ith
+                        // glyph in the coverage.
+                        ushort[] sequence = new ushort[b.ReadUInt16() - 1];
+                        for (int k = 0; k < sequence.Length; ++k)
+                            sequence[k] = b.ReadUInt16();
+                        lig.Rules[i].Ligatures[j].Sequence = sequence;
+                    }
+                }
+
+                m_ligatures.Add(lig);
+            }
         }
 
         void ReadGSUBLookupType6(BEBinaryReader b, int offset)
         {
             b.SeekAt(offset);
+
+            int format = b.ReadUInt16();
+            if (format == 1)
+            {
+                // FIXME: unsupported
+            }
+            else if (format == 2)
+            {
+                // FIXME: unsupported
+            }
+            else if (format == 3)
+            {
+                int[] backtrack_offsets = new int[b.ReadUInt16()];
+                for (int i = 0; i < backtrack_offsets.Length; ++i)
+                    backtrack_offsets[i] = b.ReadInt16();
+
+                int[] input_offsets = new int[b.ReadUInt16()];
+                for (int i = 0; i < input_offsets.Length; ++i)
+                    input_offsets[i] = b.ReadInt16();
+
+                int[] lookahead_offsets = new int[b.ReadUInt16()];
+                for (int i = 0; i < lookahead_offsets.Length; ++i)
+                    lookahead_offsets[i] = b.ReadInt16();
+
+                int substitution_count = b.ReadUInt16();
+                for (int i = 0; i < substitution_count; ++i)
+                {
+                    int sequence_index = b.ReadUInt16();
+                    int lookup_index = b.ReadUInt16();
+                }
+
+                Coverage[] backtracks = new Coverage[backtrack_offsets.Length];
+                for (int i = 0; i < backtrack_offsets.Length; ++i)
+                    backtracks[i] = new Coverage(b, offset + backtrack_offsets[i]);
+
+                Coverage[] inputs = new Coverage[input_offsets.Length];
+                for (int i = 0; i < input_offsets.Length; ++i)
+                    inputs[i] = new Coverage(b, offset + input_offsets[i]);
+
+                Coverage[] lookaheads = new Coverage[lookahead_offsets.Length];
+                for (int i = 0; i < lookahead_offsets.Length; ++i)
+                    lookaheads[i] = new Coverage(b, offset + lookahead_offsets[i]);
+            }
         }
 
         // Read the COLR table
