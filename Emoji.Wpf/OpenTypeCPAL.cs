@@ -29,8 +29,6 @@ namespace Emoji.Wpf
             int colors_offset = b.ReadInt32();
 
             m_palettes = b.ReadUInt16Table(palette_count);
-            for (int i = 0; i < m_palettes.Length; ++i)
-                m_palettes[i] = b.ReadUInt16();
 
             b.SeekAt(offset + colors_offset);
             for (int i = 0; i < m_colors.Length; ++i)
