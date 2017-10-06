@@ -34,6 +34,14 @@ namespace Emoji.Wpf
             public override long ReadInt64() => BitConverter.ToInt64(ReadReverse(8), 0);
             public override ulong ReadUInt64() => BitConverter.ToUInt64(ReadReverse(8), 0);
 
+            public ushort[] ReadUInt16Table(int count)
+            {
+                ushort[] ret = new ushort[count];
+                for (int i = 0; i < count; ++i)
+                    ret[i] = ReadUInt16();
+                return ret;
+            }
+
             public string ReadTag() => Encoding.ASCII.GetString(ReadBytes(4));
 
             public void SeekAt(int offset) => BaseStream.Seek(offset, SeekOrigin.Begin);
@@ -109,9 +117,7 @@ namespace Emoji.Wpf
 
             // Read lookup list table
             b.SeekAt(offset + lookup_list_offset);
-            int[] lookups = new int[b.ReadInt16()];
-            for (int i = 0; i < lookups.Length; ++i)
-                lookups[i] = b.ReadInt16();
+            ushort[] lookups = b.ReadUInt16Table(b.ReadUInt16());
 
             foreach (int lookup_offset in lookups)
                 ReadGSUBLookup(b, offset + lookup_list_offset + lookup_offset);
@@ -178,21 +184,9 @@ namespace Emoji.Wpf
                 m_format = b.ReadUInt16();
 
                 if (m_format == 1)
-                {
-                    m_data = new ushort[b.ReadUInt16()];
-                    for (int i = 0; i < m_data.Length; ++i)
-                        m_data[i] = b.ReadUInt16();
-                }
+                    m_data = b.ReadUInt16Table(b.ReadUInt16());
                 else if (m_format == 2)
-                {
-                    m_data = new ushort[3 * b.ReadUInt16()];
-                    for (int i = 0; i < m_data.Length; i += 3)
-                    {
-                        m_data[i + 0] = b.ReadUInt16();
-                        m_data[i + 1] = b.ReadUInt16();
-                        m_data[i + 2] = b.ReadUInt16(); // Coverage index
-                    }
-                }
+                    m_data = b.ReadUInt16Table(3 * b.ReadUInt16());
             }
 
             private int GetCoverageIndex(ushort gid)
@@ -228,9 +222,7 @@ namespace Emoji.Wpf
             else if (format == 2)
             {
                 // Single Substitution Format 2
-                int[] substitutes = new int[b.ReadUInt16()];
-                for (int i = 0; i < substitutes.Length; ++i)
-                    substitutes[i] = b.ReadUInt16();
+                ushort[] substitutes = b.ReadUInt16Table(b.ReadUInt16());
                 Coverage cov = new Coverage(b, coverage_offset);
             }
 
@@ -249,9 +241,7 @@ namespace Emoji.Wpf
                 // Ligature Substitution Format 1
                 LigatureDef lig = new LigatureDef();
 
-                int[] ligset_offsets = new int[b.ReadUInt16()];
-                for (int i = 0; i < ligset_offsets.Length; ++i)
-                    ligset_offsets[i] = offset + b.ReadInt16();
+                ushort[] ligset_offsets = b.ReadUInt16Table(b.ReadUInt16());
 
                 lig.Coverage = new Coverage(b, coverage_offset);
                 lig.Rules = new LigatureDef.List[ligset_offsets.Length];
@@ -259,23 +249,21 @@ namespace Emoji.Wpf
                 // There are as many ligature sets as glyphs in the coverage
                 for (int i = 0; i < ligset_offsets.Length; ++i)
                 {
-                    b.SeekAt(ligset_offsets[i]);
-                    int[] lig_offsets = new int[b.ReadUInt16()];
-                    for (int j = 0; j < lig_offsets.Length; ++j)
-                        lig_offsets[j] = ligset_offsets[i] + b.ReadInt16();
+                    int ligset_offset = offset + ligset_offsets[i];
+
+                    b.SeekAt(ligset_offset);
+                    ushort[] lig_offsets = b.ReadUInt16Table(b.ReadUInt16());
 
                     lig.Rules[i].Ligatures = new LigatureDef.List.Item[lig_offsets.Length];
 
                     // All possible ligatures starting with this glyph
                     for (int j = 0; j < lig_offsets.Length; ++j)
                     {
-                        b.SeekAt(lig_offsets[j]);
+                        b.SeekAt(ligset_offset + lig_offsets[j]);
                         lig.Rules[i].Ligatures[j].Result = b.ReadUInt16();
                         // The implicit 0th element of the ligature is the ith
                         // glyph in the coverage.
-                        ushort[] sequence = new ushort[b.ReadUInt16() - 1];
-                        for (int k = 0; k < sequence.Length; ++k)
-                            sequence[k] = b.ReadUInt16();
+                        ushort[] sequence = b.ReadUInt16Table(b.ReadUInt16() - 1);
                         lig.Rules[i].Ligatures[j].Sequence = sequence;
                     }
                 }
@@ -299,17 +287,9 @@ namespace Emoji.Wpf
             }
             else if (format == 3)
             {
-                int[] backtrack_offsets = new int[b.ReadUInt16()];
-                for (int i = 0; i < backtrack_offsets.Length; ++i)
-                    backtrack_offsets[i] = b.ReadInt16();
-
-                int[] input_offsets = new int[b.ReadUInt16()];
-                for (int i = 0; i < input_offsets.Length; ++i)
-                    input_offsets[i] = b.ReadInt16();
-
-                int[] lookahead_offsets = new int[b.ReadUInt16()];
-                for (int i = 0; i < lookahead_offsets.Length; ++i)
-                    lookahead_offsets[i] = b.ReadInt16();
+                ushort[] backtrack_offsets = b.ReadUInt16Table(b.ReadUInt16());
+                ushort[] input_offsets = b.ReadUInt16Table(b.ReadUInt16());
+                ushort[] lookahead_offsets = b.ReadUInt16Table(b.ReadUInt16());
 
                 int substitution_count = b.ReadUInt16();
                 for (int i = 0; i < substitution_count; ++i)
@@ -319,14 +299,15 @@ namespace Emoji.Wpf
                 }
 
                 Coverage[] backtracks = new Coverage[backtrack_offsets.Length];
+                Coverage[] inputs = new Coverage[input_offsets.Length];
+                Coverage[] lookaheads = new Coverage[lookahead_offsets.Length];
+
                 for (int i = 0; i < backtrack_offsets.Length; ++i)
                     backtracks[i] = new Coverage(b, offset + backtrack_offsets[i]);
 
-                Coverage[] inputs = new Coverage[input_offsets.Length];
                 for (int i = 0; i < input_offsets.Length; ++i)
                     inputs[i] = new Coverage(b, offset + input_offsets[i]);
 
-                Coverage[] lookaheads = new Coverage[lookahead_offsets.Length];
                 for (int i = 0; i < lookahead_offsets.Length; ++i)
                     lookaheads[i] = new Coverage(b, offset + lookahead_offsets[i]);
             }
@@ -370,10 +351,11 @@ namespace Emoji.Wpf
 
             int version = b.ReadUInt16();
             int entry_count = b.ReadUInt16(); // XXX: unused?
-            m_palettes = new ushort[b.ReadUInt16()];
+            int palette_count = b.ReadUInt16();
             m_colors = new Color[b.ReadUInt16()];
             int colors_offset = b.ReadInt32();
 
+            m_palettes = b.ReadUInt16Table(palette_count);
             for (int i = 0; i < m_palettes.Length; ++i)
                 m_palettes[i] = b.ReadUInt16();
 
