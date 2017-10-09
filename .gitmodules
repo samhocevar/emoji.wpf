@@ -1,0 +1,4 @@
+[submodule "typography"]
+	path = Typography
+	url = git@github.com:samhocevar/fork-typography.git
+	branch = emoji.wpf
