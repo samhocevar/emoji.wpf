@@ -246,6 +246,8 @@ namespace Emoji.Wpf
 
                 for (int i = 0; i < lookahead_offsets.Length; ++i)
                     lookaheads[i] = new Coverage(b, offset + lookahead_offsets[i]);
+
+                // FIXME: unsupported
             }
         }
     }

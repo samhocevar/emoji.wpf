@@ -50,7 +50,7 @@ namespace Emoji.Wpf
             }
             else if (Width > 0 && Height > 0)
             {
-                ushort glyph = m_glyph > 0 ? m_glyph : m_font.CharacterToGlyphMap[m_codepoint];
+                ushort glyph = m_glyph > 0 ? m_glyph : m_font.CharacterToGlyphIndex(m_codepoint);
                 double font_size = Math.Min(Width / m_font.Widths[glyph],
                                             Height / m_font.Height);
                 double startx = 0.5 * (Width - m_font.Widths[glyph] * font_size);
@@ -90,7 +90,7 @@ namespace Emoji.Wpf
             if (m_font.HasCodepoint(codepoint))
             {
                 m_codepoint = codepoint;
-                m_glyph = m_font.CharacterToGlyphMap[codepoint];
+                m_glyph = m_font.CharacterToGlyphIndex(codepoint);
                 Children.Clear();
                 return;
             }

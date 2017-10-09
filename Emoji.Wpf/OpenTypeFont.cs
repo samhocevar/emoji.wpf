@@ -18,27 +18,64 @@ namespace Emoji.Wpf
 {
     public partial class ColorTypeface : Typeface
     {
+        internal class GlyphIndexList : List<ushort>, Typography.OpenFont.Tables.IGlyphIndexList
+        {
+            public void AddGlyph(int index, ushort glyphIndex)
+            {
+                Insert(index, glyphIndex);
+            }
+
+            public void Replace(int index, ushort newGlyphIndex)
+            {
+                this[index] = newGlyphIndex;
+            }
+
+            public void Replace(int index, int removeLen, ushort newGlyhIndex)
+            {
+                this[index] = newGlyhIndex;
+                RemoveRange(index + 1, removeLen - 1);
+            }
+
+            public void Replace(int index, ushort[] newGlyhIndices)
+            {
+                for (int i = 0; i < newGlyhIndices.Length; ++i)
+                    this[index + i] = newGlyhIndices[i];
+            }
+        }
+
         public ColorTypeface(string name)
           : base(name)
         {
             if (TryGetGlyphTypeface(out m_gtf))
             {
+                // New strategy: use Typography.OpenFont
+                using (var s = m_gtf.GetFontStream())
+                {
+                    var r = new Typography.OpenFont.OpenFontReader();
+                    m_openfont = r.Read(s, Typography.OpenFont.ReadFlags.Full);
+                }
+
                 using (var s = m_gtf.GetFontStream())
                 {
                     ReadFontStream(s);
                 }
             }
-        }
 
-        public bool HasCodepoint(int codepoint)
-        {
-            // Just check that the character is mapped to a glyph
-            return m_gtf.CharacterToGlyphMap.ContainsKey(codepoint);
-            // Check that the character is mapped to a glyph, and that the glyph
-            // has colour information. Otherwise, we are not interested.
-            //ushort glyph;
-            //return m_gtf.CharacterToGlyphMap.TryGetValue(codepoint, out glyph)
-            //        && m_layer_indices.ContainsKey(glyph);
+#if FALSE // debug stuff
+            var font = m_openfont;
+
+            GlyphIndexList gl = new GlyphIndexList();
+
+            gl.Add(font.LookupIndex(0x1f431)); // U+1F431 CAT FACE
+            gl.Add(font.LookupIndex( 0x200d)); //  U+200D ZERO WIDTH JOINER
+            gl.Add(font.LookupIndex(0x1f453)); // U+1F453 EYEGLASSES
+
+            //gl.Add(font.LookupIndex(0x1f46a)); // U+1F46A FAMILY
+            //gl.Add(font.LookupIndex(0x1f3fe)); // U+1F3FE EMOJI MODIFIER FITZPATRICK TYPE-5
+
+            foreach (var lookup_table in font.GSUBTable.LookupList)
+                lookup_table.DoSubstitution(gl, 0, gl.Count);
+#endif
         }
 
         private Dictionary<ushort, int> m_glyphs;
@@ -52,14 +89,20 @@ namespace Emoji.Wpf
                     m_glyphs = new Dictionary<ushort, int>();
                     foreach (var kv in m_layer_indices)
                         m_glyphs[kv.Key] = 0;
-                    foreach (var kv in m_gtf.CharacterToGlyphMap)
-                        m_glyphs[kv.Value] = kv.Key;
+                    for (int codepoint = 0; codepoint < 0xfffff; ++codepoint)
+                    {
+                        ushort gid = CharacterToGlyphIndex(codepoint);
+                        if (gid != 0)
+                            m_glyphs[gid] = codepoint;
+                    }
                 }
                 return m_glyphs;
             }
         }
 
-        public IDictionary<int, ushort> CharacterToGlyphMap { get => m_gtf.CharacterToGlyphMap; }
+        public bool HasCodepoint(int codepoint) => CharacterToGlyphIndex(codepoint) != 0;
+        public ushort CharacterToGlyphIndex(int codepoint) => m_openfont.LookupIndex(codepoint);
+
         public IDictionary<ushort, double> Widths { get => m_gtf.AdvanceWidths; }
         public double Height { get => m_gtf.Height; }
         public double Baseline { get => m_gtf.Baseline; }
@@ -97,6 +140,7 @@ namespace Emoji.Wpf
         }
 
         protected GlyphTypeface m_gtf;
+        protected Typography.OpenFont.Typeface m_openfont;
 
         private Dictionary<ushort, ushort> m_layer_indices = new Dictionary<ushort, ushort>();
         private Dictionary<ushort, ushort> m_layer_counts = new Dictionary<ushort, ushort>();
