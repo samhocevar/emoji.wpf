@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>$id$</id>
-    <version>0.0.4-experimental</version>
+    <version>0.0.5-experimental</version>
     <title>$title$</title>
     <authors>Sam Hocevar &lt;sam@hocevar.net&gt;</authors>
     <owners>Sam Hocevar</owners>
@@ -16,4 +16,7 @@
     <copyright>Copyright © 2017 Sam Hocevar</copyright>
     <tags>Emoji Unicode WPF XAML</tags>
   </metadata>
+  <files>
+    <file src="bin/Release/Typography.OpenFont.dll" target="lib\net30"/>
+  </files>
 </package>
