@@ -54,11 +54,6 @@ namespace Emoji.Wpf
                     var r = new Typography.OpenFont.OpenFontReader();
                     m_openfont = r.Read(s, Typography.OpenFont.ReadFlags.Full);
                 }
-
-                using (var s = m_gtf.GetFontStream())
-                {
-                    ReadFontStream(s);
-                }
             }
 
 #if FALSE // debug stuff
@@ -87,8 +82,9 @@ namespace Emoji.Wpf
                 if (m_glyphs == null)
                 {
                     m_glyphs = new Dictionary<ushort, int>();
-                    foreach (var kv in m_layer_indices)
-                        m_glyphs[kv.Key] = 0;
+                    if (m_openfont.COLRTable != null)
+                        foreach (var kv in m_openfont.COLRTable.LayerIndices)
+                            m_glyphs[kv.Key] = 0;
                     for (int codepoint = 0; codepoint < 0xfffff; ++codepoint)
                     {
                         ushort gid = CharacterToGlyphIndex(codepoint);
@@ -109,21 +105,26 @@ namespace Emoji.Wpf
 
         public void RenderGlyph(DrawingContext dc, ushort gid, double size)
         {
-            if (m_layer_indices.ContainsKey(gid))
+            ushort layer_index;
+            if (m_openfont.COLRTable != null && m_openfont.CPALTable != null
+                 && m_openfont.COLRTable.LayerIndices.TryGetValue(gid, out layer_index))
             {
-                int start = m_layer_indices[gid], stop = start + m_layer_counts[gid];
+                int start = layer_index, stop = layer_index + m_openfont.COLRTable.LayerCounts[gid];
                 int palette = 0; // FIXME: support multiple palettes?
 
                 for (int i = start; i < stop; ++i)
                 {
+                    ushort sub_gid = m_openfont.COLRTable.GlyphLayers[i];
                     // We do not need to provide advances since we only render
                     // one glyph.
                     GlyphRun r = new GlyphRun(m_gtf, 0, false, size,
-                                              new ushort[] { m_glyph_layers[i] },
+                                              new ushort[] { sub_gid },
                                               new Point(), new double[] { 0 },
                                               null, null, null, // FIXME: check what this is?
                                               null, null, null);
-                    Brush b = new SolidColorBrush(m_colors[m_palettes[palette] + m_glyph_palettes[i]]);
+                    int cid = m_openfont.CPALTable.Palettes[palette] + m_openfont.COLRTable.GlyphPalettes[i];
+                    byte[] c = m_openfont.CPALTable.Colors[cid];
+                    Brush b = new SolidColorBrush(Color.FromArgb(c[3], c[2], c[1], c[0]));
 
                     dc.DrawGlyphRun(b, r);
                 }
@@ -141,13 +142,6 @@ namespace Emoji.Wpf
 
         protected GlyphTypeface m_gtf;
         protected Typography.OpenFont.Typeface m_openfont;
-
-        private Dictionary<ushort, ushort> m_layer_indices = new Dictionary<ushort, ushort>();
-        private Dictionary<ushort, ushort> m_layer_counts = new Dictionary<ushort, ushort>();
-        private ushort[] m_glyph_layers = new ushort[0];
-        private ushort[] m_glyph_palettes = new ushort[0];
-        private ushort[] m_palettes = new ushort[0];
-        private Color[] m_colors = new Color[0];
     }
 }
 
