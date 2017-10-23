@@ -10,50 +10,32 @@
 //  See http://www.wtfpl.net/ for more details.
 //
 
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
 
 namespace Emoji.Wpf
 {
-    public partial class ColorTypeface : Typeface
+    public class ColorTypeface
     {
-        internal class GlyphIndexList : List<ushort>, Typography.OpenFont.Tables.IGlyphIndexList
+        public static readonly string DefaultFont = "Segoe UI Emoji";
+        //public static readonly string DefaultFont = "c:\\Program Files\\Mozilla Firefox\\fonts\\EmojiOneMozilla.ttf";
+
+        public ColorTypeface() => Init(DefaultFont);
+        public ColorTypeface(string name) => Init(name);
+
+        private void Init(string name)
         {
-            public void AddGlyph(int index, ushort glyphIndex)
-            {
-                Insert(index, glyphIndex);
-            }
+            // Get a GlyphTypeface either from a typeface or from a file path
+            Typeface typeface = new Typeface(name);
+            if (!typeface.TryGetGlyphTypeface(out m_gtf))
+                m_gtf = new GlyphTypeface(new Uri(name));
 
-            public void Replace(int index, ushort newGlyphIndex)
+            using (var s = m_gtf.GetFontStream())
             {
-                this[index] = newGlyphIndex;
-            }
-
-            public void Replace(int index, int removeLen, ushort newGlyhIndex)
-            {
-                this[index] = newGlyhIndex;
-                RemoveRange(index + 1, removeLen - 1);
-            }
-
-            public void Replace(int index, ushort[] newGlyhIndices)
-            {
-                for (int i = 0; i < newGlyhIndices.Length; ++i)
-                    this[index + i] = newGlyhIndices[i];
-            }
-        }
-
-        public ColorTypeface(string name)
-          : base(name)
-        {
-            if (TryGetGlyphTypeface(out m_gtf))
-            {
-                // New strategy: use Typography.OpenFont
-                using (var s = m_gtf.GetFontStream())
-                {
-                    var r = new Typography.OpenFont.OpenFontReader();
-                    m_openfont = r.Read(s, Typography.OpenFont.ReadFlags.Full);
-                }
+                var r = new Typography.OpenFont.OpenFontReader();
+                m_openfont = r.Read(s, Typography.OpenFont.ReadFlags.Full);
             }
 
 #if FALSE // debug stuff
@@ -123,8 +105,9 @@ namespace Emoji.Wpf
                                               null, null, null, // FIXME: check what this is?
                                               null, null, null);
                     int cid = m_openfont.CPALTable.Palettes[palette] + m_openfont.COLRTable.GlyphPalettes[i];
-                    byte[] c = m_openfont.CPALTable.Colors[cid];
-                    Brush b = new SolidColorBrush(Color.FromArgb(c[3], c[2], c[1], c[0]));
+                    byte R, G, B, A;
+                    m_openfont.CPALTable.GetColor(cid, out R, out G, out B, out A);
+                    Brush b = new SolidColorBrush(Color.FromArgb(A, R, G, B));
 
                     dc.DrawGlyphRun(b, r);
                 }
@@ -142,6 +125,31 @@ namespace Emoji.Wpf
 
         protected GlyphTypeface m_gtf;
         protected Typography.OpenFont.Typeface m_openfont;
+
+        internal class GlyphIndexList : List<ushort>, Typography.OpenFont.Tables.IGlyphIndexList
+        {
+            public void AddGlyph(int index, ushort glyphIndex)
+            {
+                Insert(index, glyphIndex);
+            }
+
+            public void Replace(int index, ushort newGlyphIndex)
+            {
+                this[index] = newGlyphIndex;
+            }
+
+            public void Replace(int index, int removeLen, ushort newGlyhIndex)
+            {
+                this[index] = newGlyhIndex;
+                RemoveRange(index + 1, removeLen - 1);
+            }
+
+            public void Replace(int index, ushort[] newGlyhIndices)
+            {
+                for (int i = 0; i < newGlyhIndices.Length; ++i)
+                    this[index + i] = newGlyhIndices[i];
+            }
+        }
     }
 }
 

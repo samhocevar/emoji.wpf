@@ -129,7 +129,7 @@ namespace Emoji.Wpf
         private ushort m_glyph;
         private TextBlock m_textblock = new TextBlock() { TextAlignment = TextAlignment.Center };
 
-        private static ColorTypeface m_font = new ColorTypeface("Segoe UI Emoji");
+        private static ColorTypeface m_font = new ColorTypeface();
     }
 }
 

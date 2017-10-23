@@ -36,7 +36,7 @@ namespace FontViewer
             public string UnicodeText { get; set; }
             public string GlyphDesc { get; set; }
 
-            public Glyph(int codepoint, int glyph)
+            public Glyph(int codepoint, ushort glyph)
             {
                 UnicodeDesc = codepoint > 0 ? string.Format("U+{0:X4}", codepoint) : "";
                 GlyphDesc = string.Format("#{0}", glyph);
@@ -49,12 +49,28 @@ namespace FontViewer
         {
             InitializeComponent();
 
-            var glyph_list = new ObservableCollection<Glyph>();
-            var font = new Emoji.Wpf.ColorTypeface("Segoe UI Emoji");
-            foreach (var kv in font.GlyphToCharacterMap)
-                glyph_list.Add(new Glyph(kv.Value, kv.Key));
+            var emoji_list = new ObservableCollection<Glyph>();
+            var font = new Emoji.Wpf.ColorTypeface();
 
-            EmojiFontList.ItemsSource = glyph_list;
+            List<ushort> glyph_list = new List<ushort>(font.GlyphToCharacterMap.Keys);
+            glyph_list.Sort();
+            var glyph_array = glyph_list.ToArray();
+
+            SortedDictionary<int, ushort> codepoint_dict = new SortedDictionary<int, ushort>();
+            foreach (var kv in font.GlyphToCharacterMap)
+                codepoint_dict[kv.Value] = kv.Key;
+
+            int h = 0;
+            foreach (var kv in codepoint_dict)
+            {
+                if (h++ < 5) continue;
+                emoji_list.Add(new Glyph(kv.Key, kv.Value));
+                int i = Array.BinarySearch(glyph_array, kv.Value);
+                while (i++ >= 0 && i < glyph_array.Length && font.GlyphToCharacterMap[glyph_array[i]] == 0)
+                    emoji_list.Add(new Glyph(0, glyph_array[i]));
+            }
+
+            EmojiFontList.ItemsSource = emoji_list;
         }
 
         private static readonly List<int> m_ordering = new List<int>()

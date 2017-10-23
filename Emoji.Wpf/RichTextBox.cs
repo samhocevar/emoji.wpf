@@ -53,7 +53,7 @@ namespace Emoji.Wpf
     // Inheriting from Span makes it easy to parse the tree for copy-paste
     public class Emoji : Span
     {
-        static ColorTypeface m_font = new ColorTypeface("Segoe UI Emoji");
+        static ColorTypeface m_font = new ColorTypeface();
 
         // Need an empty constructor for serialisation (undo/redo)
         public Emoji() {}
