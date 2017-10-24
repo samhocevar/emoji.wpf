@@ -30,6 +30,8 @@ namespace FontViewer
             app.Run();
         }
 
+        public FontViewerWindow() => InitializeComponent();
+
         public class Glyph
         {
             public string UnicodeDesc { get; set; }
@@ -58,9 +60,9 @@ namespace FontViewer
             }
         }
 
-        public FontViewerWindow()
+        public override void EndInit()
         {
-            InitializeComponent();
+            base.EndInit();
 
             var emoji_list = new ObservableCollection<Glyph>();
             var font = new Emoji.Wpf.ColorTypeface();

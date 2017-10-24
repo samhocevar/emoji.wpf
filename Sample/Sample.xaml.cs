@@ -30,9 +30,11 @@ namespace Sample
             app.Run();
         }
 
-        public SampleWindow()
+        public SampleWindow() => InitializeComponent();
+
+        public override void EndInit()
         {
-            InitializeComponent();
+            base.EndInit();
 
             string text = "Hi🙌, I♥emojis☺\nEdit me!\n🍰✈✏📞☘️💩\n";
             SampleTextBox.Document = new FlowDocument(new Paragraph(new Run(text)));
