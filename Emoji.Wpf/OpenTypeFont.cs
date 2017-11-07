@@ -81,10 +81,8 @@ namespace Emoji.Wpf
         public bool HasCodepoint(int codepoint) => CharacterToGlyphIndex(codepoint) != 0;
         public ushort CharacterToGlyphIndex(int codepoint) => m_openfont.LookupIndex(codepoint);
 
-        public List<ushort> StringToGlyphIndices(string s)
+        public IEnumerable<ushort> StringToGlyphIndices(string s)
         {
-            // Generate a glyph list
-            GlyphIndexList gil = new GlyphIndexList();
             for (int i = 0; i < s.Length; ++i)
             {
                 char ch = s[i];
@@ -92,24 +90,34 @@ namespace Emoji.Wpf
                 if (ch >= 0xd800 && ch <= 0xdbff && i + 1 < s.Length
                      && s[i + 1] >= 0xdc00 && s[i + 1] <= 0xdfff)
                     codepoint = char.ConvertToUtf32(ch, s[++i]);
-                gil.Add(CharacterToGlyphIndex(codepoint));
+                yield return CharacterToGlyphIndex(codepoint);
             }
+        }
 
-            // Apply ligatures
-            for (int i = 0; i < gil.Count; )
+        public IEnumerable<ushort> ApplyLigatures(IEnumerable<ushort> glyphs)
+        {
+            GlyphIndexList gil = new GlyphIndexList();
+            gil.AddRange(glyphs);
+
+            // Apply ligatures... twice, because we don't know what we are doing
+            for (int step = 0; step < 1; ++step)
             {
-                bool changed = false;
-                foreach (var lookup in m_openfont.GSUBTable.LookupList)
-                    if (lookup.DoSubstitutionAt(gil, i, gil.Count - i))
-                        changed = true;
-                if (!changed)
-                    ++i;
+                for (int i = 0; i < gil.Count;)
+                {
+                    bool changed = false;
+                    foreach (var lookup in m_openfont.GSUBTable.LookupList)
+                        if (lookup.DoSubstitutionAt(gil, i, gil.Count - i))
+                            changed = true;
+                    if (!changed)
+                        ++i;
+                }
             }
 
             return gil;
         }
 
-        public IDictionary<ushort, double> Widths { get => m_gtf.AdvanceWidths; }
+        public IDictionary<ushort, double> AdvanceWidths { get => m_gtf.AdvanceWidths; }
+        public IDictionary<ushort, double> AdvanceHeights { get => m_gtf.AdvanceHeights; }
         public double Height { get => m_gtf.Height; }
         public double Baseline { get => m_gtf.Baseline; }
 

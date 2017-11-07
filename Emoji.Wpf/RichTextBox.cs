@@ -32,7 +32,8 @@ namespace Emoji.Wpf
         {
             base.OnVisualParentChanged(oldParent);
             m_fontsize = ((Parent as InlineUIContainer).Parent as Emoji).FontSize;
-            Width = m_fontsize * m_font.Widths[m_font.CharacterToGlyphIndex(m_codepoint)];
+            // FIXME: compute the total length
+            Width = m_fontsize * m_font.AdvanceWidths[m_font.CharacterToGlyphIndex(m_codepoint)];
             Height = m_fontsize * m_font.Height;
         }
 

@@ -11,6 +11,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -38,27 +39,34 @@ namespace Emoji.Wpf
 
         protected override void OnRender(DrawingContext dc)
         {
-            // Debug the bounding box
-            //dc.DrawRectangle(Brushes.Bisque, new Pen(Brushes.LightCoral, 1.0), new Rect(0, 0, Width, Height));
-
-            if (m_codepoint == 0 && m_glyph == 0)
+            if (Width > 0 && Height > 0)
             {
-                m_textblock.FontSize = Math.Min(Width, Height) * 0.75;
-                m_textblock.Width = Width;
-                m_textblock.Height = Height;
-                m_textblock.Background = Background;
-            }
-            else if (Width > 0 && Height > 0)
-            {
-                ushort glyph = m_glyph > 0 ? m_glyph : m_font.CharacterToGlyphIndex(m_codepoint);
-                double font_size = Math.Min(Width / m_font.Widths[glyph],
-                                            Height / m_font.Height);
-                double startx = 0.5 * (Width - m_font.Widths[glyph] * font_size);
-                double starty = font_size * m_font.Baseline;
                 dc.DrawRectangle(Background, null, new Rect(0, 0, Width, Height));
-                dc.PushTransform(new TranslateTransform(startx, starty));
-                m_font.RenderGlyph(dc, glyph, font_size);
-                dc.Pop();
+
+                // Debug the bounding box
+                //dc.DrawRectangle(Brushes.Bisque, new Pen(Brushes.LightCoral, 1.0), new Rect(0, 0, Width, Height));
+
+                double total_width = 0.0;
+                foreach (ushort glyph in m_glyphs)
+                    total_width += m_font.AdvanceWidths[glyph];
+
+                double font_size = Math.Min(Width / total_width,
+                                            Height / m_font.Height);
+                double startx = 0.5 * (Width - total_width * font_size);
+                double starty = font_size * m_font.Baseline;
+
+                // Debug the glyph bounding box
+                //dc.DrawRectangle(Brushes.LightYellow, new Pen(Brushes.Orange, 1.0), new Rect(startx, 0, total_width * font_size, m_font.Height * font_size));
+
+                foreach (ushort glyph in m_glyphs)
+                {
+                    if (glyph == 665 || glyph == 390)
+                        continue; // FIXME: just a test; but we need to ignore these one day!
+                    dc.PushTransform(new TranslateTransform(startx, starty + m_font.AdvanceHeights[glyph]));
+                    m_font.RenderGlyph(dc, glyph, font_size);
+                    dc.Pop();
+                    startx += m_font.AdvanceWidths[glyph] * font_size;
+                }
             }
         }
 
@@ -71,37 +79,27 @@ namespace Emoji.Wpf
         {
             if (str.StartsWith("G+"))
             {
-                m_codepoint = 0;
-                m_glyph = 0;
-                ushort.TryParse(str.Substring(2), out m_glyph);
+                m_glyphs.Clear();
+                ushort glyph = 0;
+                ushort.TryParse(str.Substring(2), out glyph);
+                m_glyphs.Add(glyph);
                 return;
             }
 
-            int codepoint = 0;
+            m_glyphs = new List<ushort>(m_font.ApplyLigatures(m_font.StringToGlyphIndices(str)));
 
-            // Find the codepoint for the string.
-            if (str.Length >= 2 && str[0] >= 0xd800 && str[0] <= 0xdbff)
-                codepoint = Char.ConvertToUtf32(str[0], str[1]);
-            else
-                codepoint = str.Length == 0 ? 0 : str[0];
-
+#if false
             // Check whether the Emoji font knows about this codepoint;
             // otherwise, fall back to a simple TextBlock.
-            if (m_font.HasCodepoint(codepoint))
+            if (!m_font.HasCodepoint(codepoint))
             {
-                m_codepoint = codepoint;
-                m_glyph = m_font.CharacterToGlyphIndex(codepoint);
-                Children.Clear();
-                return;
-            }
-            else
-            {
-                m_codepoint = 0;
                 m_glyph = 0;
                 m_textblock.Text = str;
                 if (Children.Count == 0)
                     Children.Add(m_textblock);
             }
+#endif
+            Children.Clear();
         }
 
         public Brush Foreground
@@ -125,8 +123,7 @@ namespace Emoji.Wpf
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
             nameof(Text), typeof(string), typeof(Image), new FrameworkPropertyMetadata("", TextChangedCallback));
 
-        private int m_codepoint;
-        private ushort m_glyph;
+        private List<ushort> m_glyphs = new List<ushort>();
         private TextBlock m_textblock = new TextBlock() { TextAlignment = TextAlignment.Center };
 
         private static ColorTypeface m_font = new ColorTypeface();
