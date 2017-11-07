@@ -38,25 +38,11 @@ namespace FontViewer
             public string UnicodeText { get; set; }
             public string GlyphDesc { get; set; }
 
-            public Glyph(string s, ushort glyph)
+            public Glyph(string s, string desc, string glyphdesc)
             {
-                UnicodeDesc = "";
-                for (int i = 0; i < s.Length; )
-                {
-                    int codepoint = char.ConvertToUtf32(s, i);
-                    UnicodeDesc += string.Format("U+{0:X4}\n", codepoint);
-                    i += codepoint >= 0x10000 ? 2 : 1;
-                }
-                GlyphDesc = string.Format("#{0}", glyph);
-                UnicodeText = glyph == 0 ? " " + s : string.Format("G+{0}", glyph);
-            }
-
-            public Glyph(int codepoint, ushort glyph)
-            {
-                UnicodeDesc = codepoint > 0 ? string.Format("U+{0:X4}", codepoint) : "";
-                GlyphDesc = string.Format("#{0}", glyph);
-                UnicodeText = codepoint > 0 ? char.ConvertFromUtf32(codepoint).ToString()
-                                            : string.Format("G+{0}", glyph);
+                UnicodeText = s;
+                UnicodeDesc = desc;
+                GlyphDesc = glyphdesc;
             }
         }
 
@@ -67,8 +53,9 @@ namespace FontViewer
             var emoji_list = new ObservableCollection<Glyph>();
             var font = new Emoji.Wpf.ColorTypeface();
 
+            string foo =
+                "👩‍❤️‍💋‍👨"; // 11 chars, 8 codepoints, ? ligatures
 #if false
-            foreach (string s in new string[] {
                 "\ud83d\udc82\u200d\u2640\ud83c\udffb", // 6 chars, 4 codepoints, 2 ligatures, 1 glyph
                 "💂‍♀🏻", // 4 chars
                 "👨🏻", // 3 chars
@@ -76,24 +63,36 @@ namespace FontViewer
                 "🐨", // 2 chars
                 "👦🏻", // 3 chars
                 "🐱‍🐉", // 6 chars
-            })
 #endif
+            m_emoji = new List<string>() { foo };
+
             foreach (string s in m_emoji)
             {
-                var l1 = font.StringToGlyphIndices(s);
-                var l2 = l1;
-                if (l1.Count != 1)
+                List<ushort> l1 = new List<ushort>(font.StringToGlyphIndices(s));
+                List<ushort> l2 = new List<ushort>(font.ApplyLigatures(l1));
+
+                Console.WriteLine("String {0} ({1} characters) -> {2} glyphs ({4}) -> {3} glyphs ({5})",
+                    s, s.Length, l1.Count, l2.Count,
+                    string.Join(", ", l1.ConvertAll(x => x.ToString()).ToArray()),
+                    string.Join(", ", l2.ConvertAll(x => x.ToString()).ToArray()));
+
+                foreach (ushort g in l1)
+                    emoji_list.Add(new Glyph("G+" + g.ToString(), "", string.Format("#{0}", g)));
+                foreach (ushort g in l2)
+                    emoji_list.Add(new Glyph("G+" + g.ToString(), "", string.Format("#{0}", g)));
+
+                string desc = "";
+                for (int i = 0; i < s.Length; )
                 {
-                    Console.WriteLine("String {0} ({1} characters) -> {2} glyphs ({4}) -> {3} glyphs ({5})",
-                        s, s.Length, l1.Count, l2.Count,
-                        string.Join(", ", l1.ConvertAll(x => x.ToString()).ToArray()),
-                        string.Join(", ", l2.ConvertAll(x => x.ToString()).ToArray()));
+                    int codepoint = i + 1 < s.Length ? char.ConvertToUtf32(s, i) : s[i];
+                    desc += string.Format("U+{0:X4}\n", codepoint);
+                    i += codepoint >= 0x10000 ? 2 : 1;
                 }
 
-                if (l1.Count == 1)
-                    emoji_list.Add(new Glyph(s, l1[0]));
-                else
-                    emoji_list.Add(new Glyph(s, 0));
+                emoji_list.Add(new Glyph(s, desc, string.Join("\n", l1.ConvertAll(x => string.Format("#{0}", x)).ToArray())));
+                emoji_list.Add(new Glyph(s, desc, string.Join("\n", l2.ConvertAll(x => string.Format("#{0}", x)).ToArray())));
+                //else
+                //    emoji_list.Add(new Glyph(desc, 0));
             }
 
 #if false
@@ -119,7 +118,7 @@ namespace FontViewer
             EmojiFontList.ItemsSource = emoji_list;
         }
 
-        private static readonly List<string> m_emoji = new List<string>()
+        private static List<string> m_emoji = new List<string>()
         {
             "\U0001F600",
             "\U0001F601",
