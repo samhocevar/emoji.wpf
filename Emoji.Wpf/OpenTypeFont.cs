@@ -19,19 +19,29 @@ namespace Emoji.Wpf
 {
     public class ColorTypeface
     {
-        public static readonly string DefaultFont = "Segoe UI Emoji";
-        //public static readonly string DefaultFont = "c:\\Program Files\\Mozilla Firefox\\fonts\\EmojiOneMozilla.ttf";
+        private static readonly string[] m_fallback_fonts =
+        {
+            "Segoe UI Emoji",
+            @"c:\Program Files\Mozilla Firefox\fonts\EmojiOneMozilla.ttf",
+        };
 
-        public ColorTypeface() => Init(DefaultFont);
+        public ColorTypeface() => Init(null);
         public ColorTypeface(string name) => Init(name);
 
         private void Init(string name)
         {
-            // Get a GlyphTypeface either from a typeface or from a file path
-            Typeface typeface = new Typeface(name);
-            if (!typeface.TryGetGlyphTypeface(out m_gtf))
-                m_gtf = new GlyphTypeface(new Uri(name));
+            // Get a GlyphTypeface either from a system typeface or from a
+            // file path.
+            if (name != null)
+                m_gtf = GetGlyphTypeface(name);
 
+            // If not found, look for other possible emoji fonts such as
+            // the Firefox one. Fall back to Arial, a font available since
+            // Windows 3.1 \o/
+            foreach (var f in m_fallback_fonts)
+                m_gtf = m_gtf ?? GetGlyphTypeface(f);
+
+            // Read the actual font data using Typography.OpenFont
             using (var s = m_gtf.GetFontStream())
             {
                 var r = new Typography.OpenFont.OpenFontReader();
@@ -53,6 +63,22 @@ namespace Emoji.Wpf
             foreach (var lookup_table in font.GSUBTable.LookupList)
                 lookup_table.DoSubstitution(gl, 0, gl.Count);
 #endif
+        }
+
+        private GlyphTypeface GetGlyphTypeface(string name)
+        {
+            Typeface typeface = new Typeface(name);
+            if (typeface.TryGetGlyphTypeface(out var gtf))
+                return gtf;
+
+            try
+            {
+                return new GlyphTypeface(new Uri(name));
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private Dictionary<ushort, int> m_glyphs;
