@@ -16,6 +16,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
+using Typography.TextLayout;
+
 namespace Emoji.Wpf
 {
     /// <summary>
@@ -47,9 +49,10 @@ namespace Emoji.Wpf
                 //dc.DrawRectangle(Brushes.Bisque, new Pen(Brushes.LightCoral, 1.0), new Rect(0, 0, Width, Height));
 
                 double total_width = 0.0;
-                foreach (ushort glyph in m_glyphs)
-                    total_width += m_font.AdvanceWidths[glyph];
+                foreach (var glyph in m_glyphs)
+                    total_width = Math.Max(total_width, glyph.ExactRight);
 
+                // Compute font size in pixels
                 double font_size = Math.Min(Width / total_width,
                                             Height / m_font.Height);
                 double startx = 0.5 * (Width - total_width * font_size);
@@ -58,14 +61,12 @@ namespace Emoji.Wpf
                 // Debug the glyph bounding box
                 //dc.DrawRectangle(Brushes.LightYellow, new Pen(Brushes.Orange, 1.0), new Rect(startx, 0, total_width * font_size, m_font.Height * font_size));
 
-                foreach (ushort glyph in m_glyphs)
+                foreach (var glyph in m_glyphs)
                 {
-                    if (glyph == 665 || glyph == 390)
-                        continue; // FIXME: just a test; but we need to ignore these one day!
-                    dc.PushTransform(new TranslateTransform(startx, starty + m_font.AdvanceHeights[glyph]));
-                    m_font.RenderGlyph(dc, glyph, font_size);
+                    dc.PushTransform(new TranslateTransform(startx + glyph.ExactX * font_size,
+                                                            starty + glyph.ExactY * font_size));
+                    m_font.RenderGlyph(dc, glyph.glyphIndex, font_size);
                     dc.Pop();
-                    startx += m_font.AdvanceWidths[glyph] * font_size;
                 }
             }
         }
@@ -82,11 +83,11 @@ namespace Emoji.Wpf
                 m_glyphs.Clear();
                 ushort glyph = 0;
                 ushort.TryParse(str.Substring(2), out glyph);
-                m_glyphs.Add(glyph);
+                m_glyphs.Add(new GlyphPlan(glyph, 0, 0, 0));
                 return;
             }
 
-            m_glyphs = new List<ushort>(m_font.StringToGlyphIndices(str));
+            m_glyphs = new List<GlyphPlan>(m_font.StringToGlyphPlanList(str));
 
 #if false
             // Check whether the Emoji font knows about this codepoint;
@@ -123,10 +124,10 @@ namespace Emoji.Wpf
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
             nameof(Text), typeof(string), typeof(Image), new FrameworkPropertyMetadata("", TextChangedCallback));
 
-        private List<ushort> m_glyphs = new List<ushort>();
+        private List<GlyphPlan> m_glyphs = new List<GlyphPlan>();
         private TextBlock m_textblock = new TextBlock() { TextAlignment = TextAlignment.Center };
 
-        private static ColorTypeface m_font = new ColorTypeface();
+        private static EmojiTypeface m_font = new EmojiTypeface();
     }
 }
 

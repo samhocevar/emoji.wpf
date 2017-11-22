@@ -22,7 +22,7 @@ namespace Emoji.Wpf
 {
     public class ColorGlyph : Canvas
     {
-        public ColorGlyph(ColorTypeface font, int codepoint)
+        public ColorGlyph(EmojiTypeface font, int codepoint)
         {
             m_font = font;
             m_codepoint = codepoint;
@@ -46,7 +46,7 @@ namespace Emoji.Wpf
             dc.Pop();
         }
 
-        private ColorTypeface m_font;
+        private EmojiTypeface m_font;
         private double m_fontsize;
         private int m_codepoint;
     }
@@ -54,7 +54,7 @@ namespace Emoji.Wpf
     // Inheriting from Span makes it easy to parse the tree for copy-paste
     public class Emoji : Span
     {
-        static ColorTypeface m_font = new ColorTypeface();
+        static EmojiTypeface m_font = new EmojiTypeface();
 
         // Need an empty constructor for serialisation (undo/redo)
         public Emoji() {}

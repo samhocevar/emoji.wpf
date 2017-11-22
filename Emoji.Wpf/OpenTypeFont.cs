@@ -20,16 +20,17 @@ using Typography.TextLayout;
 
 namespace Emoji.Wpf
 {
-    public class ColorTypeface
+    public class EmojiTypeface
     {
         private static readonly string[] m_fallback_fonts =
         {
             "Segoe UI Emoji",
+            @"c:\Windows\Fonts\seguiemj.ttf",
             @"c:\Program Files\Mozilla Firefox\fonts\EmojiOneMozilla.ttf",
         };
 
-        public ColorTypeface() => Init(null);
-        public ColorTypeface(string name) => Init(name);
+        public EmojiTypeface() => Init(null);
+        public EmojiTypeface(string name) => Init(name);
 
         private void Init(string name)
         {
@@ -50,6 +51,13 @@ namespace Emoji.Wpf
                 var r = new Typography.OpenFont.OpenFontReader();
                 m_openfont = r.Read(s, Typography.OpenFont.ReadFlags.Full);
             }
+
+            // Create a layout for glyphs
+            m_layout = new GlyphLayout();
+            m_layout.ScriptLang = ScriptLangs.Default;
+            m_layout.Typeface = m_openfont;
+            m_layout.PositionTechnique = PositionTechnique.OpenFont;
+            m_layout.FontSizeInPoints = 0.75f; // 1 pixel
 
 #if FALSE // debug stuff
             var font = m_openfont;
@@ -84,42 +92,16 @@ namespace Emoji.Wpf
             }
         }
 
-        private Dictionary<ushort, int> m_glyphs;
-
-        public IDictionary<ushort, int> GlyphToCharacterMap
-        {
-            get
-            {
-                if (m_glyphs == null)
-                {
-                    m_glyphs = new Dictionary<ushort, int>();
-                    if (m_openfont.COLRTable != null)
-                        foreach (var kv in m_openfont.COLRTable.LayerIndices)
-                            m_glyphs[kv.Key] = 0;
-                    for (int codepoint = 0; codepoint < 0xfffff; ++codepoint)
-                    {
-                        ushort gid = CharacterToGlyphIndex(codepoint);
-                        if (gid != 0)
-                            m_glyphs[gid] = codepoint;
-                    }
-                }
-                return m_glyphs;
-            }
-        }
-
+        // FIXME: this should be phased out when RichTextBox is upgraded
         public bool HasCodepoint(int codepoint) => CharacterToGlyphIndex(codepoint) != 0;
         public ushort CharacterToGlyphIndex(int codepoint) => m_openfont.LookupIndex(codepoint);
 
-        public IEnumerable<ushort> StringToGlyphIndices(string s)
+        public IEnumerable<GlyphPlan> StringToGlyphPlanList(string s)
         {
             var gl = new List<GlyphPlan>();
-            var layout = new GlyphLayout();
-            layout.ScriptLang = ScriptLangs.Default;
-            layout.Typeface = m_openfont;
-            layout.Layout(s.ToCharArray(), 0, s.Length, gl);
-
-            foreach (GlyphPlan g in gl)
-                yield return g.glyphIndex;
+            m_layout.Layout(s.ToCharArray(), 0, s.Length);
+            m_layout.ReadOutput(gl);
+            return gl;
         }
 
         public IDictionary<ushort, double> AdvanceWidths { get => m_gtf.AdvanceWidths; }
@@ -167,6 +149,7 @@ namespace Emoji.Wpf
 
         protected GlyphTypeface m_gtf;
         protected Typography.OpenFont.Typeface m_openfont;
+        protected GlyphLayout m_layout;
 
         internal class GlyphIndexList : List<ushort>, Typography.OpenFont.Tables.IGlyphIndexList
         {

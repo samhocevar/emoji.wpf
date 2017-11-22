@@ -37,6 +37,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data.cs" />
+    <Compile Include="Data.MsEmoji.cs" />
+    <Compile Include="Data.Ordering.cs" />
     <Compile Include="OpenTypeFont.cs" />
     <Compile Include="Image.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
