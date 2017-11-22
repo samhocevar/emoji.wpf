@@ -86,7 +86,7 @@ namespace Emoji.Wpf
                 return;
             }
 
-            m_glyphs = new List<ushort>(m_font.ApplyLigatures(m_font.StringToGlyphIndices(str)));
+            m_glyphs = new List<ushort>(m_font.StringToGlyphIndices(str));
 
 #if false
             // Check whether the Emoji font knows about this codepoint;

@@ -53,33 +53,25 @@ namespace FontViewer
             var emoji_list = new ObservableCollection<Glyph>();
             var font = new Emoji.Wpf.ColorTypeface();
 
-            string foo =
-                "👩‍❤️‍💋‍👨"; // 11 chars, 8 codepoints, ? ligatures
-#if false
-                "\ud83d\udc82\u200d\u2640\ud83c\udffb", // 6 chars, 4 codepoints, 2 ligatures, 1 glyph
-                "💂‍♀🏻", // 4 chars
-                "👨🏻", // 3 chars
-                "☺", // 1 char
-                "🐨", // 2 chars
-                "👦🏻", // 3 chars
-                "🐱‍🐉", // 6 chars
-#endif
-            m_emoji = new List<string>() { foo };
+            m_emoji.AddRange(new string[]
+            {
+                "\U0001f431\u200d\U0001f3cd", // Stunt Cat    1f431-200d-1f3cd
+                "\U0001f431\u200d\U0001f453", // Hipster Cat  1f431-200d-1f453
+                "\U0001f431\u200d\U0001f680", // Astro Cat    1f431-200d-1f680
+                "\U0001f431\u200d\U0001f464", // Ninja Cat    1f431-200d-1f464
+                "\U0001f431\u200d\U0001f409", // Dino Cat     1f431-200d-1f409
+                "\U0001f431\u200d\U0001f4bb", // Hacker Cat   1f431-200d-1f4bb
+            });
 
             foreach (string s in m_emoji)
             {
-                List<ushort> l1 = new List<ushort>(font.StringToGlyphIndices(s));
-                List<ushort> l2 = new List<ushort>(font.ApplyLigatures(l1));
+                List<ushort> l1 = new List<ushort>(font.StringToGlyphIndices(s)); // FIXME: do no ligatures here
+                List<ushort> l2 = new List<ushort>(font.StringToGlyphIndices(s));
 
                 Console.WriteLine("String {0} ({1} characters) -> {2} glyphs ({4}) -> {3} glyphs ({5})",
                     s, s.Length, l1.Count, l2.Count,
                     string.Join(", ", l1.ConvertAll(x => x.ToString()).ToArray()),
                     string.Join(", ", l2.ConvertAll(x => x.ToString()).ToArray()));
-
-                foreach (ushort g in l1)
-                    emoji_list.Add(new Glyph("G+" + g.ToString(), "", string.Format("#{0}", g)));
-                foreach (ushort g in l2)
-                    emoji_list.Add(new Glyph("G+" + g.ToString(), "", string.Format("#{0}", g)));
 
                 string desc = "";
                 for (int i = 0; i < s.Length; )
@@ -90,30 +82,8 @@ namespace FontViewer
                 }
 
                 emoji_list.Add(new Glyph(s, desc, string.Join("\n", l1.ConvertAll(x => string.Format("#{0}", x)).ToArray())));
-                emoji_list.Add(new Glyph(s, desc, string.Join("\n", l2.ConvertAll(x => string.Format("#{0}", x)).ToArray())));
-                //else
-                //    emoji_list.Add(new Glyph(desc, 0));
+                //emoji_list.Add(new Glyph(s, desc, string.Join("\n", l2.ConvertAll(x => string.Format("#{0}", x)).ToArray())));
             }
-
-#if false
-            List<ushort> glyph_list = new List<ushort>(font.GlyphToCharacterMap.Keys);
-            glyph_list.Sort();
-            var glyph_array = glyph_list.ToArray();
-
-            SortedDictionary<int, ushort> codepoint_dict = new SortedDictionary<int, ushort>();
-            foreach (var kv in font.GlyphToCharacterMap)
-                codepoint_dict[kv.Value] = kv.Key;
-
-            int h = 0;
-            foreach (var kv in codepoint_dict)
-            {
-                if (h++ < 5) continue;
-                emoji_list.Add(new Glyph(kv.Key, kv.Value));
-                int i = Array.BinarySearch(glyph_array, kv.Value);
-                while (i++ >= 0 && i < glyph_array.Length && font.GlyphToCharacterMap[glyph_array[i]] == 0)
-                    emoji_list.Add(new Glyph(0, glyph_array[i]));
-            }
-#endif
 
             EmojiFontList.ItemsSource = emoji_list;
         }

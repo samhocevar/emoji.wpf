@@ -18,5 +18,6 @@
   </metadata>
   <files>
     <file src="bin/Release/Typography.OpenFont.dll" target="lib\net30"/>
+    <file src="bin/Release/Typography.GlyphLayout.dll" target="lib\net30"/>
   </files>
 </package>

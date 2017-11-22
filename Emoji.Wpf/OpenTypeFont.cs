@@ -15,6 +15,9 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
 
+using Typography.OpenFont;
+using Typography.TextLayout;
+
 namespace Emoji.Wpf
 {
     public class ColorTypeface
@@ -67,7 +70,7 @@ namespace Emoji.Wpf
 
         private GlyphTypeface GetGlyphTypeface(string name)
         {
-            Typeface typeface = new Typeface(name);
+            var typeface = new System.Windows.Media.Typeface(name);
             if (typeface.TryGetGlyphTypeface(out var gtf))
                 return gtf;
 
@@ -109,37 +112,14 @@ namespace Emoji.Wpf
 
         public IEnumerable<ushort> StringToGlyphIndices(string s)
         {
-            for (int i = 0; i < s.Length; ++i)
-            {
-                char ch = s[i];
-                int codepoint = ch;
-                if (ch >= 0xd800 && ch <= 0xdbff && i + 1 < s.Length
-                     && s[i + 1] >= 0xdc00 && s[i + 1] <= 0xdfff)
-                    codepoint = char.ConvertToUtf32(ch, s[++i]);
-                yield return CharacterToGlyphIndex(codepoint);
-            }
-        }
+            var gl = new List<GlyphPlan>();
+            var layout = new GlyphLayout();
+            layout.ScriptLang = ScriptLangs.Default;
+            layout.Typeface = m_openfont;
+            layout.Layout(s.ToCharArray(), 0, s.Length, gl);
 
-        public IEnumerable<ushort> ApplyLigatures(IEnumerable<ushort> glyphs)
-        {
-            GlyphIndexList gil = new GlyphIndexList();
-            gil.AddRange(glyphs);
-
-            // Apply ligatures... twice, because we don't know what we are doing
-            for (int step = 0; step < 1; ++step)
-            {
-                for (int i = 0; i < gil.Count;)
-                {
-                    bool changed = false;
-                    foreach (var lookup in m_openfont.GSUBTable.LookupList)
-                        if (lookup.DoSubstitutionAt(gil, i, gil.Count - i))
-                            changed = true;
-                    if (!changed)
-                        ++i;
-                }
-            }
-
-            return gil;
+            foreach (GlyphPlan g in gl)
+                yield return g.glyphIndex;
         }
 
         public IDictionary<ushort, double> AdvanceWidths { get => m_gtf.AdvanceWidths; }
