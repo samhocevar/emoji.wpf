@@ -41,7 +41,7 @@ namespace Emoji.Wpf
 
         protected override void OnRender(DrawingContext dc)
         {
-            if (Width > 0 && Height > 0)
+            if (m_glyphs.Count > 0 && Width > 0 && Height > 0)
             {
                 dc.DrawRectangle(Background, null, new Rect(0, 0, Width, Height));
 
@@ -78,29 +78,29 @@ namespace Emoji.Wpf
 
         private void OnTextChanged(string str)
         {
-            if (str.StartsWith("G+"))
-            {
-                m_glyphs.Clear();
-                ushort glyph = 0;
-                ushort.TryParse(str.Substring(2), out glyph);
-                m_glyphs.Add(new GlyphPlan(glyph, 0, 0, 0));
-                return;
-            }
-
             m_glyphs = new List<GlyphPlan>(m_font.StringToGlyphPlanList(str));
 
-#if false
             // Check whether the Emoji font knows about this codepoint;
             // otherwise, fall back to a simple TextBlock.
-            if (!m_font.HasCodepoint(codepoint))
+            foreach (GlyphPlan g in m_glyphs)
             {
-                m_glyph = 0;
-                m_textblock.Text = str;
-                if (Children.Count == 0)
-                    Children.Add(m_textblock);
+                if (g.glyphIndex == 0)
+                {
+                    m_glyphs.Clear();
+                    m_textblock.Text = str;
+                    m_textblock.Width = Width;
+                    m_textblock.FontSize = Height * 0.75;
+                    if (Children.Count == 0)
+                        Children.Add(m_textblock);
+                    break;
+                }
             }
-#endif
-            Children.Clear();
+
+            // If the glyph list is valid, hide our TextBlock child
+            if (m_glyphs.Count > 0)
+            {
+                Children.Clear();
+            }
         }
 
         public Brush Foreground
