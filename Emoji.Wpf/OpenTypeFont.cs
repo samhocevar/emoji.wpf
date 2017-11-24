@@ -26,6 +26,7 @@ namespace Emoji.Wpf
         {
             "Segoe UI Emoji",
             @"c:\Windows\Fonts\seguiemj.ttf",
+            "Segoe UI Symbol", // Fallback for older versions of Windows
             @"c:\Program Files\Mozilla Firefox\fonts\EmojiOneMozilla.ttf",
         };
 
