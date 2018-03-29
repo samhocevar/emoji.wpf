@@ -63,10 +63,9 @@ namespace Emoji.Wpf
 
                 foreach (var glyph in m_glyphs)
                 {
-                    dc.PushTransform(new TranslateTransform(startx + glyph.ExactX * font_size,
-                                                            starty + glyph.ExactY * font_size));
-                    m_font.RenderGlyph(dc, glyph.glyphIndex, font_size);
-                    dc.Pop();
+                    var origin = new Point(startx + glyph.ExactX * font_size,
+                                           starty + glyph.ExactY * font_size);
+                    m_font.RenderGlyph(dc, glyph.glyphIndex, origin, font_size);
                 }
             }
         }

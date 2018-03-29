@@ -26,6 +26,7 @@ namespace Emoji.Wpf
         {
             m_font = font;
             m_codepoint = codepoint;
+            this.SnapsToDevicePixels = true;
         }
 
         protected override void OnVisualParentChanged(DependencyObject oldParent)
@@ -41,9 +42,8 @@ namespace Emoji.Wpf
         {
             // Debug the bounding box
             //dc.DrawRectangle(Brushes.Bisque, new Pen(Brushes.LightCoral, 1.0), new Rect(0, 0, Width, Height));
-            dc.PushTransform(new TranslateTransform(0, m_fontsize * m_font.Baseline));
-            m_font.RenderGlyph(dc, m_font.CharacterToGlyphIndex(m_codepoint), m_fontsize);
-            dc.Pop();
+            var origin = new Point(0, m_fontsize * m_font.Baseline);
+            m_font.RenderGlyph(dc, m_font.CharacterToGlyphIndex(m_codepoint), new Point(0, m_fontsize * m_font.Baseline), m_fontsize);
         }
 
         private EmojiTypeface m_font;

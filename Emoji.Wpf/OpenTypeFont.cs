@@ -110,7 +110,7 @@ namespace Emoji.Wpf
         public double Height { get => m_gtf.Height; }
         public double Baseline { get => m_gtf.Baseline; }
 
-        public void RenderGlyph(DrawingContext dc, ushort gid, double size)
+        public void RenderGlyph(DrawingContext dc, ushort gid, Point origin, double size)
         {
             ushort layer_index;
             if (m_openfont.COLRTable != null && m_openfont.CPALTable != null
@@ -126,7 +126,7 @@ namespace Emoji.Wpf
                     // one glyph.
                     GlyphRun r = new GlyphRun(m_gtf, 0, false, size,
                                               new ushort[] { sub_gid },
-                                              new Point(), new double[] { 0 },
+                                              origin, new double[] { 0 },
                                               null, null, null, // FIXME: check what this is?
                                               null, null, null);
                     int cid = m_openfont.CPALTable.Palettes[palette] + m_openfont.COLRTable.GlyphPalettes[i];
@@ -141,7 +141,7 @@ namespace Emoji.Wpf
             {
                 GlyphRun r = new GlyphRun(m_gtf, 0, false, size,
                                           new ushort[] { gid },
-                                          new Point(), new double[] { 0 },
+                                          origin, new double[] { 0 },
                                           null, null, null,
                                           null, null, null);
                 dc.DrawGlyphRun(Brushes.Black, r);
