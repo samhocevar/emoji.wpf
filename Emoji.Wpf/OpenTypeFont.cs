@@ -58,7 +58,6 @@ namespace Emoji.Wpf
             m_layout.ScriptLang = ScriptLangs.Default;
             m_layout.Typeface = m_openfont;
             m_layout.PositionTechnique = PositionTechnique.OpenFont;
-            m_layout.FontSizeInPoints = 0.75f; // 1 pixel
 
 #if FALSE // debug stuff
             var font = m_openfont;
@@ -97,12 +96,13 @@ namespace Emoji.Wpf
         public bool HasCodepoint(int codepoint) => CharacterToGlyphIndex(codepoint) != 0;
         public ushort CharacterToGlyphIndex(int codepoint) => m_openfont.LookupIndex(codepoint);
 
-        public IEnumerable<GlyphPlan> StringToGlyphPlanList(string s)
+        public GlyphPlanList StringToGlyphPlanList(string s)
         {
-            var gl = new List<GlyphPlan>();
+            GlyphPlanList l = new GlyphPlanList();
+            var scale = m_openfont.CalculateScaleToPixelFromPointSize(0.75f); // 0.75pt == 1 pixel
             m_layout.Layout(s.ToCharArray(), 0, s.Length);
-            m_layout.ReadOutput(gl);
-            return gl;
+            GlyphLayoutExtensions.GenerateGlyphPlan(m_layout.ResultUnscaledGlyphPositions, scale, true, l);
+            return l;
         }
 
         public IDictionary<ushort, double> AdvanceWidths { get => m_gtf.AdvanceWidths; }

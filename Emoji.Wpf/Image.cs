@@ -41,7 +41,7 @@ namespace Emoji.Wpf
 
         protected override void OnRender(DrawingContext dc)
         {
-            if (m_glyphs.Count > 0 && Width > 0 && Height > 0)
+            if (m_glyphplanlist.Count > 0 && Width > 0 && Height > 0)
             {
                 dc.DrawRectangle(Background, null, new Rect(0, 0, Width, Height));
 
@@ -49,8 +49,8 @@ namespace Emoji.Wpf
                 //dc.DrawRectangle(Brushes.Bisque, new Pen(Brushes.LightCoral, 1.0), new Rect(0, 0, Width, Height));
 
                 double total_width = 0.0;
-                foreach (var glyph in m_glyphs)
-                    total_width = Math.Max(total_width, glyph.ExactRight);
+                for (int i = 0; i < m_glyphplanlist.Count; ++i)
+                    total_width = Math.Max(total_width, m_glyphplanlist[i].ExactRight);
 
                 // Compute font size in pixels
                 double font_size = Math.Min(Width / total_width,
@@ -61,11 +61,12 @@ namespace Emoji.Wpf
                 // Debug the glyph bounding box
                 //dc.DrawRectangle(Brushes.LightYellow, new Pen(Brushes.Orange, 1.0), new Rect(startx, 0, total_width * font_size, m_font.Height * font_size));
 
-                foreach (var glyph in m_glyphs)
+                for (int i = 0; i < m_glyphplanlist.Count; ++i)
                 {
-                    var origin = new Point(startx + glyph.ExactX * font_size,
-                                           starty + glyph.ExactY * font_size);
-                    m_font.RenderGlyph(dc, glyph.glyphIndex, origin, font_size);
+                    var g = m_glyphplanlist[i];
+                    var origin = new Point(startx + g.ExactX * font_size,
+                                           starty + g.ExactY * font_size);
+                    m_font.RenderGlyph(dc, g.glyphIndex, origin, font_size);
                 }
             }
         }
@@ -77,15 +78,16 @@ namespace Emoji.Wpf
 
         private void OnTextChanged(string str)
         {
-            m_glyphs = new List<GlyphPlan>(m_font.StringToGlyphPlanList(str));
+            m_glyphplanlist = m_font.StringToGlyphPlanList(str);
 
             // Check whether the Emoji font knows about this codepoint;
             // otherwise, fall back to a simple TextBlock.
-            foreach (GlyphPlan g in m_glyphs)
+            for (int i = 0; i < m_glyphplanlist.Count; ++i)
             {
+                var g = m_glyphplanlist[i];
                 if (g.glyphIndex == 0)
                 {
-                    m_glyphs.Clear();
+                    m_glyphplanlist.Clear();
                     m_textblock.Text = str;
                     m_textblock.Width = Width;
                     m_textblock.FontSize = Height * 0.75;
@@ -96,7 +98,7 @@ namespace Emoji.Wpf
             }
 
             // If the glyph list is valid, hide our TextBlock child
-            if (m_glyphs.Count > 0)
+            if (m_glyphplanlist.Count > 0)
             {
                 Children.Clear();
             }
@@ -123,7 +125,7 @@ namespace Emoji.Wpf
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
             nameof(Text), typeof(string), typeof(Image), new FrameworkPropertyMetadata("", TextChangedCallback));
 
-        private List<GlyphPlan> m_glyphs = new List<GlyphPlan>();
+        private GlyphPlanList m_glyphplanlist = new GlyphPlanList();
         private TextBlock m_textblock = new TextBlock() { TextAlignment = TextAlignment.Center };
 
         private static EmojiTypeface m_font = new EmojiTypeface();
