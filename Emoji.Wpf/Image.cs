@@ -89,8 +89,10 @@ namespace Emoji.Wpf
                 {
                     m_glyphplanlist.Clear();
                     m_textblock.Text = str;
-                    m_textblock.Width = Width;
-                    m_textblock.FontSize = Height * 0.75;
+                    if (Width >= 0)
+                        m_textblock.Width = Width;
+                    if (Height >= 0)
+                        m_textblock.FontSize = Height * 0.75;
                     if (Children.Count == 0)
                         Children.Add(m_textblock);
                     break;
