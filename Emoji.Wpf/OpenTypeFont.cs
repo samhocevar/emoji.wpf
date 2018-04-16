@@ -97,12 +97,13 @@ namespace Emoji.Wpf
         public bool HasCodepoint(int codepoint) => CharacterToGlyphIndex(codepoint) != 0;
         public ushort CharacterToGlyphIndex(int codepoint) => m_openfont.LookupIndex(codepoint);
 
-        public GlyphPlanList StringToGlyphPlanList(string s)
+        public GlyphPlanList StringToGlyphPlanList(string s, double font_size)
         {
             GlyphPlanList l = new GlyphPlanList();
-            var scale = m_openfont.CalculateScaleToPixelFromPointSize(0.75f); // 0.75pt == 1 pixel
             m_layout.Layout(s.ToCharArray(), 0, s.Length);
-            GlyphLayoutExtensions.GenerateGlyphPlan(m_layout.ResultUnscaledGlyphPositions, scale, true, l);
+            var scale = m_openfont.CalculateScaleToPixelFromPointSize((float)font_size);
+            GlyphLayoutExtensions.GenerateGlyphPlan(m_layout.ResultUnscaledGlyphPositions, scale,
+                                                    snapToGrid: true, outputGlyphPlanList: l);
             return l;
         }
 

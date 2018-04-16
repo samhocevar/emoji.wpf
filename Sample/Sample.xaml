@@ -3,13 +3,34 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:clr="clr-namespace:System;assembly=mscorlib"
         xmlns:local="clr-namespace:Sample"
         xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
         mc:Ignorable="d"
         Title="Emoji.Wpf Sample" Height="350" Width="525">
+
+    <Window.Resources>
+        <clr:String x:Key="SampleText">Hello™ 👩🏽‍👩🏽‍👦🏽‍👦🏽😁♥🐨</clr:String>
+    </Window.Resources>
+
     <StackPanel Orientation="Vertical">
-        <TextBlock Text="Type in your stuff" Margin="5"/>
-        <emoji:RichTextBox Name="SampleTextBox" VerticalScrollBarVisibility="Auto"
-                           FontSize="20" Margin="5" Height="275" MaxHeight="275"/>
+
+        <GroupBox Header="wpf:TextBlock vs. emoji:TextBlock" Margin="4">
+            <StackPanel Orientation="Vertical">
+                <Border BorderBrush="LightGray" BorderThickness="1" CornerRadius="4" Margin="4" Padding="4" SnapsToDevicePixels="True">
+                    <TextBlock FontSize="24" Text="{StaticResource SampleText}"
+                               FontFamily="Segoe UI Emoji, Segoe UI, Arial"/>
+                </Border>
+                <Border BorderBrush="LightGray" BorderThickness="1" CornerRadius="4" Margin="4" Padding="4" SnapsToDevicePixels="True">
+                    <emoji:TextBlock FontSize="24" Text="{StaticResource SampleText}"
+                                     SnapsToDevicePixels="True" HorizontalAlignment="Left"/>
+                </Border>
+            </StackPanel>
+        </GroupBox>
+
+        <GroupBox Header="emoji:RichTextBox" Margin="4">
+            <emoji:RichTextBox Name="SampleTextBox" VerticalScrollBarVisibility="Auto"
+                               FontSize="20" Margin="5" Height="140" MaxHeight="140"/>
+        </GroupBox>
     </StackPanel>
 </Window>
