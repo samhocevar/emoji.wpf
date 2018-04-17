@@ -22,30 +22,14 @@ namespace Emoji.Wpf
 {
     public class EmojiTypeface
     {
-        private static readonly string[] m_fallback_fonts =
-        {
-            "Segoe UI Emoji",
-            @"c:\Windows\Fonts\seguiemj.ttf",
-            @"c:\Program Files\Mozilla Firefox\fonts\EmojiOneMozilla.ttf",
-            "Segoe UI Symbol", // Fallback for older versions of Windows
-            "Arial", // Fallback for even older versions of Windows
-        };
-
         public EmojiTypeface() => Init(null);
         public EmojiTypeface(string name) => Init(name);
 
         private void Init(string name)
         {
-            // Get a GlyphTypeface either from a system typeface or from a
-            // file path.
-            if (name != null)
-                m_gtf = GetGlyphTypeface(name);
-
-            // If not found, look for other possible emoji fonts such as
-            // the Firefox one. Fall back to Arial, a font available since
-            // Windows 3.1 \o/
-            foreach (var f in m_fallback_fonts)
-                m_gtf = m_gtf ?? GetGlyphTypeface(f);
+            m_gtf = GetGlyphTypeface(first_candidate: name);
+            if (m_gtf == null)
+                return;
 
             // Read the actual font data using Typography.OpenFont
             using (var s = m_gtf.GetFontStream())
@@ -77,20 +61,41 @@ namespace Emoji.Wpf
 #endif
         }
 
-        private GlyphTypeface GetGlyphTypeface(string name)
+        private GlyphTypeface GetGlyphTypeface(string first_candidate)
         {
-            var typeface = new System.Windows.Media.Typeface(name);
-            if (typeface.TryGetGlyphTypeface(out var gtf))
-                return gtf;
+            IList<string> all_candidates = new List<string>();
 
-            try
+            if (first_candidate != null)
+                all_candidates.Add(first_candidate);
+
+            // Some good Emoji font candidates
+            all_candidates.Add("Segoe UI Emoji");
+            all_candidates.Add(@"c:\Windows\Fonts\seguiemj.ttf");
+
+            // Maybe try the Firefox EmojiOne font?
+            var firefox_key = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\firefox.exe";
+            var firefox_path = Microsoft.Win32.Registry.GetValue(firefox_key, "Path", null);
+            if (firefox_path is string)
+                all_candidates.Add((firefox_path as string) + @"\fonts\EmojiOneMozilla.ttf");
+
+            // Last resort fallbacks
+            all_candidates.Add("Segoe UI Symbol"); // for older versions of Windows
+            all_candidates.Add("Arial"); // available since Windows 3.1!
+
+            foreach (var name in all_candidates)
             {
-                return new GlyphTypeface(new Uri(name));
+                var typeface = new System.Windows.Media.Typeface(name);
+                if (typeface.TryGetGlyphTypeface(out var gtf))
+                    return gtf;
+
+                try
+                {
+                    return new GlyphTypeface(new Uri(name));
+                }
+                catch {}
             }
-            catch
-            {
-                return null;
-            }
+
+            return null;
         }
 
         // FIXME: this should be phased out when RichTextBox is upgraded
