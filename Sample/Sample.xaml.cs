@@ -1,7 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017—2018 Sam Hocevar <sam@hocevar.net>
 //
 //  This program is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -11,9 +11,7 @@
 //
 
 using System;
-using System.Collections.ObjectModel;
 using System.Windows;
-using System.Windows.Documents;
 
 namespace Sample
 {
@@ -31,15 +29,6 @@ namespace Sample
         }
 
         public SampleWindow() => InitializeComponent();
-
-        public override void EndInit()
-        {
-            base.EndInit();
-
-            string text = "Hi🙌, I♥emojis☺\nEdit me!\n🍰✈✏📞☘️💩\n";
-            SampleTextBox.Document = new FlowDocument(new Paragraph(new Run(text)));
-            SampleTextBox.Focus();
-        }
     }
 }
 
