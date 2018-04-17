@@ -11,26 +11,23 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media;
-
 using Typography.TextLayout;
+
+using Controls = System.Windows.Controls;
 
 namespace Emoji.Wpf
 {
     /// <summary>
-    /// A backwards-compatible alias
+    /// A backwards compatibility alias
     /// </summary>
-    public class Image : TextBlock
-    {
-    }
+    public class Image : TextBlock { }
 
     /// <summary>
     /// A simple WPF Control that renders an emoji. It can be resized.
     /// </summary>
-    public class TextBlock : Canvas
+    public class TextBlock : Controls.Canvas
     {
         public TextBlock()
         {
@@ -130,6 +127,12 @@ namespace Emoji.Wpf
             set => m_textblock.FontFamily = value;
         }
 
+        public TextAlignment TextAlignment
+        {
+            get => m_textblock.TextAlignment;
+            set => m_textblock.TextAlignment = value;
+        }
+
         public string Text
         {
             get => (string)GetValue(TextProperty);
@@ -140,8 +143,7 @@ namespace Emoji.Wpf
             nameof(Text), typeof(string), typeof(TextBlock), new FrameworkPropertyMetadata("", TextChangedCallback));
 
         private GlyphPlanList m_glyphplanlist = new GlyphPlanList();
-        private System.Windows.Controls.TextBlock m_textblock
-            = new System.Windows.Controls.TextBlock() { TextAlignment = TextAlignment.Center };
+        private Controls.TextBlock m_textblock = new Controls.TextBlock();
 
         private static EmojiTypeface m_font = new EmojiTypeface();
     }
