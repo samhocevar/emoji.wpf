@@ -2,3 +2,6 @@
 	path = Typography
 	url = git@github.com:samhocevar/fork-typography.git
 	branch = emoji.wpf
+[submodule "unicode-emoji"]
+	path = Emoji.Wpf/UnicodeEmoji
+	url = ../unicode-emoji.git
