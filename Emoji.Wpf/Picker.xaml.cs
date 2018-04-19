@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -41,15 +42,24 @@ namespace Emoji.Wpf
         public string Text
         {
             get => TextBlock.Text;
-            set => TextBlock.Text = value;
+            set
+            {
+                var old_value = TextBlock.Text;
+                if (value != old_value)
+                {
+                    TextBlock.Text = value;
+                    TextChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Text)));
+                }
+            }
         }
+
+        public event PropertyChangedEventHandler TextChanged;
 
         private static IEnumerable<string> m_emoji_list = Data.GetSortedEmoji();
 
         private void OnEmojiSelected(object sender, RoutedEventArgs e)
         {
-            var button = sender as Button;
-            TextBlock.Text = button.DataContext as string;
+            Text = (sender as Button).DataContext as string;
             Button.IsChecked = false;
         }
 

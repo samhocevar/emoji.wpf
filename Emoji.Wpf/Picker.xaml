@@ -14,17 +14,29 @@
 
     <Popup IsOpen="{Binding IsChecked, ElementName=Button}" x:Name="Popup" StaysOpen="False">
         <ListView Name="EmojiFontList" ItemsSource="{Binding EmojiList}"
-                  Width="600" MaxHeight="600" Height="Auto" Margin="1" Padding="4"
+                  BorderThickness="0"
+                  Width="600" MaxHeight="600" Height="Auto" Padding="0" Margin="1"
                   ScrollViewer.VerticalScrollBarVisibility="Visible"
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <!-- Put everything in a WrapPanel for now to allow for variable width emojis -->
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <WrapPanel/>
                 </ItemsPanelTemplate>
             </ListView.ItemsPanel>
+            <!-- Get rid of the ugly padding and margin in default ListViewItem -->
+            <ListView.ItemContainerStyle>
+                <Style TargetType="{x:Type ListViewItem}">
+                    <Setter Property="Padding" Value="0"/>
+                    <Setter Property="Margin" Value="0"/>
+                    <Setter Property="BorderThickness" Value="0"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <!-- Now for our actual content -->
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Button Background="Transparent" BorderBrush="Transparent" Click="OnEmojiSelected">
+                    <Button Background="Transparent" BorderBrush="Transparent"
+                            Margin="0" Padding="2" Click="OnEmojiSelected">
                         <emoji:TextBlock FontSize="18" Text="{Binding Path=.}"/>
                     </Button>
                 </DataTemplate>
