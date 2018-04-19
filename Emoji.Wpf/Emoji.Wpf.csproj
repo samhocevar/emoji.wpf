@@ -37,10 +37,20 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Picker.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="Data.cs" />
     <Compile Include="Data.MsEmoji.cs" />
     <Compile Include="Data.Ordering.cs" />
     <Compile Include="OpenTypeFont.cs" />
+    <Compile Include="Picker.xaml.cs">
+      <DependentUpon>Picker.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RichTextBox.cs" />
     <Compile Include="TextBlock.cs" />
