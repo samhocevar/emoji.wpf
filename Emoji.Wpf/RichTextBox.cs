@@ -32,7 +32,7 @@ namespace Emoji.Wpf
         protected override void OnVisualParentChanged(DependencyObject oldParent)
         {
             base.OnVisualParentChanged(oldParent);
-            m_fontsize = ((Parent as InlineUIContainer).Parent as Emoji).FontSize;
+            m_fontsize = ((Parent as InlineUIContainer).Parent as EmojiElement).FontSize;
             // FIXME: compute the total length
             Width = m_fontsize * m_font.AdvanceWidths[m_font.CharacterToGlyphIndex(m_codepoint)];
             Height = m_fontsize * m_font.Height;
@@ -52,23 +52,23 @@ namespace Emoji.Wpf
     }
 
     // Inheriting from Span makes it easy to parse the tree for copy-paste
-    public class Emoji : Span
+    public class EmojiElement : Span
     {
         static EmojiTypeface m_font = new EmojiTypeface();
 
         // Need an empty constructor for serialisation (undo/redo)
-        public Emoji() {}
+        public EmojiElement() {}
 
-        public Emoji(string alt)
+        public EmojiElement(string alt)
         {
             BaselineAlignment = BaselineAlignment.Center;
             Text = alt;
         }
 
-        public static Emoji MakeFromString(string s)
+        public static EmojiElement MakeFromString(string s)
         {
             int codepoint = StringToCodepoint(s);
-            return m_font.HasCodepoint(codepoint) ? new Emoji(s) : null;
+            return m_font.HasCodepoint(codepoint) ? new EmojiElement(s) : null;
         }
 
         private static int StringToCodepoint(string s)
@@ -100,7 +100,7 @@ namespace Emoji.Wpf
         }
 
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
-            "Text", typeof(string), typeof(Emoji), new PropertyMetadata("☺"));
+            "Text", typeof(string), typeof(EmojiElement), new PropertyMetadata("☺"));
     }
 
     public class RichTextBox : System.Windows.Controls.RichTextBox
@@ -124,12 +124,12 @@ namespace Emoji.Wpf
                     break;
 
                 //var word = new TextRange(p, next);
-                //Console.WriteLine("Word '{0}' Inline {1}", word.Text, word.Start.Parent is Emoji ? "Emoji" : "not Emoji");
-                //Console.WriteLine(" ... p {0}", p.Parent is Emoji ? "Emoji" : p.Parent.GetType().ToString());
+                //Console.WriteLine("Word '{0}' Inline {1}", word.Text, word.Start.Parent is EmojiElement ? "Emoji" : "not Emoji");
+                //Console.WriteLine(" ... p {0}", p.Parent is EmojiElement ? "Emoji" : p.Parent.GetType().ToString());
 
                 var t = new TextRange(p, next);
-                clipboard += t.Start.Parent is Emoji ? (t.Start.Parent as Emoji).Text
-                                                     : t.Text;
+                clipboard += t.Start.Parent is EmojiElement ? (t.Start.Parent as EmojiElement).Text
+                                                            : t.Text;
             }
 
             Clipboard.SetText(clipboard);
@@ -171,7 +171,7 @@ namespace Emoji.Wpf
                     break;
 
                 TextRange word = new TextRange(cur, next);
-                Emoji emoji = Emoji.MakeFromString(word.Text);
+                var emoji = EmojiElement.MakeFromString(word.Text);
                 if (emoji != null)
                 {
                     // Test this so as to preserve caret position
@@ -190,7 +190,7 @@ namespace Emoji.Wpf
             m_pending_change = false;
         }
 
-        public TextPointer Replace(TextRange range, Emoji emoji)
+        public TextPointer Replace(TextRange range, EmojiElement emoji)
         {
             var run = range.Start.Parent as Run;
             if (run == null)
