@@ -39,34 +39,37 @@ namespace Emoji.Wpf
             set => TextBlock.FontSize = value;
         }
 
-        public string Text
+        public event PropertyChangedEventHandler SelectionChanged;
+
+        public string Selection
         {
-            get => TextBlock.Text;
+            get => m_text;
             set
             {
-                var old_value = TextBlock.Text;
-                if (value != old_value)
+                var old_value = m_text;
+                if (value != m_text)
                 {
+                    m_text = value;
                     var is_disabled = string.IsNullOrEmpty(value);
                     TextBlock.Text = is_disabled ? "???" : value;
                     TextBlock.Opacity = is_disabled ? 0.3 : 1.0;
-                    TextChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Text)));
+                    SelectionChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Selection)));
                 }
             }
         }
 
-        public event PropertyChangedEventHandler TextChanged;
+        private string m_text;
 
         private static IEnumerable<string> m_emoji_list = Data.GetSortedEmoji();
 
         private void OnEmojiSelected(object sender, RoutedEventArgs e)
         {
-            Text = (sender as Button).DataContext as string;
+            Selection = (sender as Button).DataContext as string;
             Button.IsChecked = false;
         }
 
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
-            "Text", typeof(string), typeof(Picker), new PropertyMetadata("☺"));
+            nameof(Selection), typeof(string), typeof(Picker), new PropertyMetadata("☺"));
     }
 
     public class BoolInverter : MarkupExtension, IValueConverter

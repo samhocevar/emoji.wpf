@@ -9,7 +9,7 @@
             mc:Ignorable="d">
 
     <ToggleButton x:Name="Button" IsHitTestVisible="{Binding ElementName=Popup, Path=IsOpen, Mode=OneWay, Converter={emoji:BoolInverter}}">
-        <emoji:TextBlock x:Name="TextBlock" Text="{Binding Text}"/>
+        <emoji:TextBlock x:Name="TextBlock" Text="{Binding Selection}"/>
     </ToggleButton>
 
     <Popup IsOpen="{Binding IsChecked, ElementName=Button}" x:Name="Popup" StaysOpen="False">

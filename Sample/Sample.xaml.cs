@@ -28,7 +28,10 @@ namespace Sample
             app.Run();
         }
 
-        public SampleWindow() => InitializeComponent();
+        public SampleWindow()
+        {
+            InitializeComponent();
+        }
     }
 }
 

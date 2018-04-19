@@ -32,7 +32,7 @@
         </GroupBox>
 
         <GroupBox DockPanel.Dock="Top" Header="emoji:Picker" Margin="4">
-            <emoji:Picker FontSize="40" Margin="4" Text="{StaticResource DefaultEmoji}"/>
+            <emoji:Picker FontSize="40" Margin="4" Selection="{StaticResource DefaultEmoji}"/>
         </GroupBox>
 
         <GroupBox Header="emoji:RichTextBox" Margin="4">
