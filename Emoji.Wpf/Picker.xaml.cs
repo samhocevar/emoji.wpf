@@ -47,7 +47,9 @@ namespace Emoji.Wpf
                 var old_value = TextBlock.Text;
                 if (value != old_value)
                 {
-                    TextBlock.Text = value;
+                    var is_disabled = string.IsNullOrEmpty(value);
+                    TextBlock.Text = is_disabled ? "???" : value;
+                    TextBlock.Opacity = is_disabled ? 0.3 : 1.0;
                     TextChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Text)));
                 }
             }
