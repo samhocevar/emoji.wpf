@@ -106,6 +106,7 @@ namespace Emoji.Wpf
                 // FIXME: I am not sure why the math below works
                 Height = FontSize / 0.75; // 1 pixel = 0.75pt
                 Width = m_glyphplanlist.AccumAdvanceX * 0.75;
+                InvalidateVisual();
             }
         }
 
