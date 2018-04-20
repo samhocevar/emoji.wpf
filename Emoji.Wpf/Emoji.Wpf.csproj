@@ -37,6 +37,11 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="UnicodeEmoji\emoji-test.txt">
+      <LogicalName>emoji-test.txt</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
     <Page Include="Picker.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -44,8 +49,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data.cs" />
-    <Compile Include="Data.MsEmoji.cs" />
-    <Compile Include="Data.Ordering.cs" />
     <Compile Include="OpenTypeFont.cs" />
     <Compile Include="Picker.xaml.cs">
       <DependentUpon>Picker.xaml</DependentUpon>

@@ -1,7 +1,7 @@
+﻿//
+//  Emoji.Wpf — Emoji support for WPF
 //
-//  Emoji.Wpf � Emoji support for WPF
-//
-//  Copyright � 2017 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017—2018 Sam Hocevar <sam@hocevar.net>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -10,55 +10,107 @@
 //  See http://www.wtfpl.net/ for more details.
 //
 
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Text.RegularExpressions;
 
-namespace Emoji.Wpf
+namespace Emoji.Wpf.Data
 {
-    public static partial class Data
+    public class Emoji
     {
-        public class EmojiSorter : IComparer<string>
+        public string Name { get; set; }
+        public string Text { get; set; }
+
+        public Group Group => SubGroup.Group;
+        public SubGroup SubGroup;
+
+        public static IEnumerable<Emoji> ListAll
         {
-            public EmojiSorter(Dictionary<int, int> order)
+            get
             {
-                m_order = order;
+                foreach (var group in Group.AllGroups)
+                    foreach (var emoji in group.EmojiList)
+                        yield return emoji;
             }
+        }
+    }
 
-            private Dictionary<int, int> m_order;
+    public class SubGroup
+    {
+        public string Name { get; set; }
+        public Group Group;
 
-            private static int StringToCodepoint(string s)
+        public IList<Emoji> EmojiList { get; } = new List<Emoji>();
+    }
+
+    public class Group
+    {
+        public string Name { get; set; }
+        public string Icon => SubGroups[0].EmojiList[0].Text;
+
+        public IList<SubGroup> SubGroups { get; } = new List<SubGroup>();
+
+        public IEnumerable<Emoji> EmojiList
+        {
+            get
             {
-                if (s.Length >= 2 && s[0] >= 0xd800 && s[0] <= 0xdbff)
-                    return char.ConvertToUtf32(s[0], s[1]);
-                return s.Length == 0 ? 0 : s[0];
-            }
-
-            private int Order(string s)
-            {
-                int n = StringToCodepoint(s);
-                return m_order.TryGetValue(n, out n) ? n : s[0];
-            }
-
-            int IComparer<string>.Compare(string x, string y)
-            {
-                int ret = Order(x).CompareTo(Order(y));
-                return ret == 0 ? x.CompareTo(y) : ret;
+                foreach (var subgroup in SubGroups)
+                    foreach (var emoji in subgroup.EmojiList)
+                        yield return emoji;
             }
         }
 
-        public static IDictionary<string, string> MsEmoji { get => (IDictionary<string, string>)m_ms_emoji; }
+        public static readonly IEnumerable<Group> AllGroups = GetAllGroups();
 
-        public static IEnumerable<string> GetSortedEmoji()
+        private static IEnumerable<Group> GetAllGroups()
         {
-            List<string> emoji_sequences = new List<string>();
-            foreach (string key in MsEmoji.Keys)
-                emoji_sequences.Add(key);
+            var match_group = new Regex(@"^# group: (.*)");
+            var match_subgroup = new Regex(@"^# subgroup: (.*)");
+            var match_sequence = new Regex(@"^([0-9A-F ]+[0-9A-F]).*; fully-qualified.*# [^ ]* (.*)");
+            var list = new List<Group>();
 
-            Dictionary<int, int> char_weights = new Dictionary<int, int>();
-            for (int i = 0; i < m_ordering.Count; ++i)
-                char_weights.Add(m_ordering[i], 0x100000 + i);
+            using (Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream("emoji-test.txt"))
+            using (StreamReader sr = new StreamReader(s))
+            {
+                Group last_group = null;
+                SubGroup last_subgroup = null;
 
-            emoji_sequences.Sort(new EmojiSorter(char_weights));
-            return emoji_sequences;
+                foreach (var line in sr.ReadToEnd().Split('\r', '\n'))
+                {
+                    var m = match_group.Match(line);
+                    if (m.Success)
+                    {
+                        last_group = new Group() { Name = m.Groups[1].ToString() };
+                        list.Add(last_group);
+                        continue;
+                    }
+
+                    m = match_subgroup.Match(line);
+                    if (m.Success)
+                    {
+                        last_subgroup = new SubGroup() { Name = m.Groups[1].ToString(), Group = last_group };
+                        last_group.SubGroups.Add(last_subgroup);
+                        continue;
+                    }
+
+                    m = match_sequence.Match(line);
+                    if (m.Success)
+                    {
+                        string sequence = m.Groups[1].ToString();
+                        string name = m.Groups[2].ToString();
+
+                        string text = "";
+                        foreach (var codepoint in sequence.Split(' '))
+                            text += char.ConvertFromUtf32(Convert.ToInt32(codepoint, 16));
+                        var emoji = new Emoji() { Name = name, Text = text, SubGroup = last_subgroup };
+                        last_subgroup.EmojiList.Add(emoji);
+                    }
+                }
+            }
+
+            return list;
         }
     }
 }

@@ -63,8 +63,8 @@ namespace FontViewer
             var emoji_list = new ObservableCollection<MyEmoji>();
             var font = new EmojiTypeface();
 
-            foreach (string emoji in Emoji.Wpf.Data.GetSortedEmoji())
-                emoji_list.Add(new MyEmoji(emoji, Emoji.Wpf.Data.MsEmoji[emoji]));
+            foreach (var emoji in Emoji.Wpf.Data.Emoji.ListAll)
+                emoji_list.Add(new MyEmoji(emoji.Text, emoji.Name));
 
             EmojiFontList.ItemsSource = emoji_list;
         }

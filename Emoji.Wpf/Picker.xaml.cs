@@ -31,7 +31,7 @@ namespace Emoji.Wpf
             InitializeComponent();
         }
 
-        public IEnumerable<string> EmojiList { get => m_emoji_list; }
+        public IEnumerable<Data.Group> EmojiGroups => Data.Group.AllGroups;
 
         public double FontSize
         {
@@ -60,11 +60,9 @@ namespace Emoji.Wpf
 
         private string m_text;
 
-        private static IEnumerable<string> m_emoji_list = Data.GetSortedEmoji();
-
         private void OnEmojiSelected(object sender, RoutedEventArgs e)
         {
-            Selection = (sender as Button).DataContext as string;
+            Selection = ((sender as Button).DataContext as Data.Emoji).Text;
             Button.IsChecked = false;
         }
 

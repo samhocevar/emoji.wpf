@@ -12,35 +12,58 @@
         <emoji:TextBlock x:Name="TextBlock" Text="{Binding Selection}"/>
     </ToggleButton>
 
-    <Popup IsOpen="{Binding IsChecked, ElementName=Button}" x:Name="Popup" StaysOpen="False">
-        <ListView Name="EmojiFontList" ItemsSource="{Binding EmojiList}"
-                  BorderThickness="0"
-                  Width="600" MaxHeight="600" Height="Auto" Padding="0" Margin="1"
-                  ScrollViewer.VerticalScrollBarVisibility="Visible"
-                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-            <!-- Put everything in a WrapPanel for now to allow for variable width emojis -->
-            <ListView.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <WrapPanel/>
-                </ItemsPanelTemplate>
-            </ListView.ItemsPanel>
-            <!-- Get rid of the ugly padding and margin in default ListViewItem -->
-            <ListView.ItemContainerStyle>
-                <Style TargetType="{x:Type ListViewItem}">
-                    <Setter Property="Padding" Value="0"/>
-                    <Setter Property="Margin" Value="0"/>
-                    <Setter Property="BorderThickness" Value="0"/>
-                </Style>
-            </ListView.ItemContainerStyle>
-            <!-- Now for our actual content -->
-            <ListView.ItemTemplate>
+    <Popup IsOpen="{Binding IsChecked, ElementName=Button}" x:Name="Popup" StaysOpen="False"
+           AllowsTransparency="True" Margin="0">
+
+        <TabControl ItemsSource="{Binding EmojiGroups}" Padding="0">
+            <TabControl.ItemTemplate>
                 <DataTemplate>
-                    <Button Background="Transparent" BorderBrush="Transparent"
-                            Margin="0" Padding="2" Click="OnEmojiSelected">
-                        <emoji:TextBlock FontSize="18" Text="{Binding Path=.}"/>
-                    </Button>
+                    <StackPanel Orientation="Horizontal">
+                        <emoji:TextBlock FontSize="18" Text="{Binding Icon}">
+                            <emoji:TextBlock.ToolTip>
+                                <TextBlock Text="{Binding Name}"/>
+                            </emoji:TextBlock.ToolTip>
+                        </emoji:TextBlock>
+                        <!--<TextBlock Text="{Binding Name}"/>-->
+                    </StackPanel>
                 </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+            </TabControl.ItemTemplate>
+            <TabControl.ContentTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Margin="4" Text="{Binding Name}" FontStyle="Italic"/>
+                        <ListView Name="EmojiListView" ItemsSource="{Binding EmojiList}"
+                                  BorderThickness="0"
+                                  MaxWidth="400" MaxHeight="400" Height="Auto" Padding="0" Margin="1"
+                                  ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <!-- Put everything in a WrapPanel for now to allow for variable width emojis -->
+                            <ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ListView.ItemsPanel>
+                            <!-- Get rid of the ugly padding and margin in default ListViewItem -->
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="{x:Type ListViewItem}">
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Margin" Value="0"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <!-- Now for our actual content -->
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Background="Transparent" BorderBrush="Transparent"
+                                            Margin="0" Padding="2" Click="OnEmojiSelected">
+                                        <emoji:TextBlock MinWidth="16" MinHeight="16" FontSize="18" Text="{Binding Path=Text}"/>
+                                    </Button>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </StackPanel>
+                </DataTemplate>
+            </TabControl.ContentTemplate>
+        </TabControl>
     </Popup>
 </StackPanel>
