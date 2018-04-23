@@ -112,7 +112,7 @@ namespace Emoji.Wpf.Data
                         {
                             int codepoint = Convert.ToInt32(item, 16);
                             if (codepoint >= 0x1f3fb && codepoint <= 0x1f3ff)
-                                is_skin_variation = true;
+                                is_skin_variation = (text.Length > 0);
                             text += char.ConvertFromUtf32(codepoint);
                         }
 
@@ -124,6 +124,8 @@ namespace Emoji.Wpf.Data
                         if (is_skin_variation)
                         {
                             // We assume this is a variation of the previous emoji
+                            if (last_emoji.VariationList.Count == 0)
+                                last_emoji.VariationList.Add(last_emoji);
                             last_emoji.VariationList.Add(emoji);
                         }
                         else

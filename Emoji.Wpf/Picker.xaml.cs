@@ -16,6 +16,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Markup;
 
@@ -62,17 +63,28 @@ namespace Emoji.Wpf
 
         private void OnEmojiSelected(object sender, RoutedEventArgs e)
         {
-            var emoji = (sender as Button).DataContext as Data.Emoji;
-            if (emoji.VariationList.Count > 0)
+            if (m_current_toggle != null)
             {
-                // FIXME: display a drop-down menu with the variations
+                m_current_toggle.IsChecked = false;
+                m_current_toggle.Focusable = false;
+                m_current_toggle = null;
             }
-            else
+
+            var emoji = (sender as Control).DataContext as Data.Emoji;
+            if (emoji.VariationList.Count == 0 || sender is Button)
             {
                 Selection = emoji.Text;
                 Button.IsChecked = false;
+                e.Handled = true;
+            }
+
+            if (sender is ToggleButton && emoji.VariationList.Count > 0)
+            {
+                m_current_toggle = sender as ToggleButton;
             }
         }
+
+        private ToggleButton m_current_toggle;
 
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
             nameof(Selection), typeof(string), typeof(Picker), new PropertyMetadata("☺"));
