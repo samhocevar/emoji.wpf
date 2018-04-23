@@ -102,6 +102,20 @@ namespace Emoji.Wpf
         public bool HasCodepoint(int codepoint) => CharacterToGlyphIndex(codepoint) != 0;
         public ushort CharacterToGlyphIndex(int codepoint) => m_openfont.LookupIndex(codepoint);
 
+        /// <summary>
+        /// Return whether the font can render the given string entirely
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public bool CanRender(string s)
+        {
+            m_layout.Layout(s.ToCharArray(), 0, s.Length);
+            for (int i = 0; i < m_layout.ResultUnscaledGlyphPositions.Count; ++i)
+                if (m_layout.ResultUnscaledGlyphPositions.GetGlyph(i, out var dummy) == 0)
+                    return false;
+            return true;
+        }
+
         public GlyphPlanList StringToGlyphPlanList(string s, double font_size)
         {
             GlyphPlanList l = new GlyphPlanList();

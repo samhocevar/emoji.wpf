@@ -26,6 +26,8 @@ namespace Emoji.Wpf.Data
         public Group Group => SubGroup.Group;
         public SubGroup SubGroup;
 
+        public IList<Emoji> VariationList { get; } = new List<Emoji>();
+
         public static IEnumerable<Emoji> ListAll
         {
             get
@@ -66,6 +68,8 @@ namespace Emoji.Wpf.Data
 
         private static IEnumerable<Group> GetAllGroups()
         {
+            var font = new EmojiTypeface();
+
             var match_group = new Regex(@"^# group: (.*)");
             var match_subgroup = new Regex(@"^# subgroup: (.*)");
             var match_sequence = new Regex(@"^([0-9A-F ]+[0-9A-F]).*; fully-qualified.*# [^ ]* (.*)");
@@ -76,6 +80,7 @@ namespace Emoji.Wpf.Data
             {
                 Group last_group = null;
                 SubGroup last_subgroup = null;
+                Emoji last_emoji = null;
 
                 foreach (var line in sr.ReadToEnd().Split('\r', '\n'))
                 {
@@ -100,12 +105,32 @@ namespace Emoji.Wpf.Data
                     {
                         string sequence = m.Groups[1].ToString();
                         string name = m.Groups[2].ToString();
+                        bool is_skin_variation = false;
 
                         string text = "";
-                        foreach (var codepoint in sequence.Split(' '))
-                            text += char.ConvertFromUtf32(Convert.ToInt32(codepoint, 16));
+                        foreach (var item in sequence.Split(' '))
+                        {
+                            int codepoint = Convert.ToInt32(item, 16);
+                            if (codepoint >= 0x1f3fb && codepoint <= 0x1f3ff)
+                                is_skin_variation = true;
+                            text += char.ConvertFromUtf32(codepoint);
+                        }
+
+                        // Only include emojis that we know how to render
+                        if (!font.CanRender(text))
+                            continue;
+
                         var emoji = new Emoji() { Name = name, Text = text, SubGroup = last_subgroup };
-                        last_subgroup.EmojiList.Add(emoji);
+                        if (is_skin_variation)
+                        {
+                            // We assume this is a variation of the previous emoji
+                            last_emoji.VariationList.Add(emoji);
+                        }
+                        else
+                        {
+                            last_emoji = emoji;
+                            last_subgroup.EmojiList.Add(emoji);
+                        }
                     }
                 }
             }

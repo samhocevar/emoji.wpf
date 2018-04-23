@@ -55,7 +55,8 @@
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <Button Background="Transparent" BorderBrush="Transparent"
-                                            Margin="0" Padding="2" Click="OnEmojiSelected">
+                                            Margin="0" Padding="2" Click="OnEmojiSelected"
+                                            ToolTip="{Binding Path=Name}">
                                         <emoji:TextBlock MinWidth="16" MinHeight="16" FontSize="18" Text="{Binding Path=Text}"/>
                                     </Button>
                                 </DataTemplate>

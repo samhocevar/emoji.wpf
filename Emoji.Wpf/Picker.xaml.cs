@@ -62,8 +62,16 @@ namespace Emoji.Wpf
 
         private void OnEmojiSelected(object sender, RoutedEventArgs e)
         {
-            Selection = ((sender as Button).DataContext as Data.Emoji).Text;
-            Button.IsChecked = false;
+            var emoji = (sender as Button).DataContext as Data.Emoji;
+            if (emoji.VariationList.Count > 0)
+            {
+                // FIXME: display a drop-down menu with the variations
+            }
+            else
+            {
+                Selection = emoji.Text;
+                Button.IsChecked = false;
+            }
         }
 
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
