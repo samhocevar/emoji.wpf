@@ -1,7 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017—2018 Sam Hocevar <sam@hocevar.net>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -11,7 +11,10 @@
 //
 
 using System;
+using System.ComponentModel;
+using System.Threading;
 using System.Windows;
+using System.Windows.Documents;
 using System.Windows.Media;
 using Typography.TextLayout;
 
@@ -27,18 +30,88 @@ namespace Emoji.Wpf
     /// <summary>
     /// A simple WPF Control that renders an emoji. It can be resized.
     /// </summary>
-    public class TextBlock : Controls.Canvas
+    public class TextBlock : Controls.TextBlock
     {
         public TextBlock()
         {
             SnapsToDevicePixels = true;
+
+            //m_base_dp.AddValueChanged(this, OnBaseTextChanged);
+            //Unloaded += (o, e) =>
+            //    m_base_dp.RemoveValueChanged(this, OnBaseTextChanged);
         }
 
-        public TextBlock(string text)
+        /// <summary>
+        /// Override System.Windows.Controls.TextBox.Text
+        /// </summary>
+        public new string Text
         {
-            SnapsToDevicePixels = true;
-            Text = text;
+            get => m_text_dp.GetValue(this) as string;
+            set => m_text_dp.SetValue(this, value);
         }
+
+        /// <summary>
+        /// Override System.Windows.Controls.TextBox.TextProperty
+        /// </summary>
+        public static new readonly DependencyProperty TextProperty = DependencyProperty.Register(
+                        nameof(Text), typeof(string), typeof(TextBlock),
+                        new FrameworkPropertyMetadata("", TextChangedCallback));
+
+        private static void TextChangedCallback(DependencyObject o, DependencyPropertyChangedEventArgs e)
+            => (o as TextBlock).OnTextChanged(o, new EventArgs());
+
+        private void OnTextChanged(object sender, EventArgs args)
+        {
+            base.Text = Text;
+            if (Inlines.FirstInline != m_inline)
+            {
+                Inlines.Clear();
+                Inlines.Add(m_inline);
+            }
+            m_canvas.Reset(Text, FontSize);
+        }
+
+        /// <summary>
+        /// Guard against recursive calls to OnTextChanged
+        /// </summary>
+        private bool m_updating = false;
+
+        private EmojiCanvas m_canvas = new EmojiCanvas();
+        private InlineUIContainer m_inline = new InlineUIContainer(m_canvas);
+
+        private static DependencyPropertyDescriptor m_text_dp =
+            DependencyPropertyDescriptor.FromProperty(TextProperty, typeof(TextBlock));
+        //private static DependencyPropertyDescriptor m_base_dp =
+        //    DependencyPropertyDescriptor.FromProperty(Controls.TextBlock.TextProperty, typeof(TextBlock));
+    }
+
+    public class EmojiCanvas : Controls.Canvas
+    {
+        public void Reset(string text, double fontsize)
+        {
+            if (text == m_text && fontsize == m_fontsize)
+                return;
+
+            m_text = text;
+            m_fontsize = fontsize;
+
+            m_glyphplanlist = m_font.StringToGlyphPlanList(m_text, m_fontsize);
+
+            // Check whether the Emoji font knows about all codepoints;
+            // otherwise, set Invalid to true.
+            Invalid = false;
+            for (int i = 0; i < m_glyphplanlist.Count; ++i)
+                if (m_glyphplanlist[i].glyphIndex == 0)
+                    Invalid = true;
+
+            // Try to compute our own widget size
+            // FIXME: I am not sure why the math below works
+            Height = m_fontsize / 0.75; // 1 pixel = 0.75pt
+            Width = m_glyphplanlist.AccumAdvanceX * 0.75;
+            InvalidateVisual();
+        }
+
+        public bool Invalid { get; private set; }
 
         protected override void OnRender(DrawingContext dc)
         {
@@ -53,9 +126,9 @@ namespace Emoji.Wpf
                 // Compute font size in pixels
                 double total_width = m_glyphplanlist.AccumAdvanceX;
                 double font_size = Math.Min(ActualWidth / total_width,
-                                            ActualHeight / FontSize);
+                                            ActualHeight / m_fontsize);
                 double startx = 0;
-                double starty = FontSize * m_font.Baseline;
+                double starty = m_fontsize * m_font.Baseline;
 
                 // Debug the glyph bounding box
                 //dc.DrawRectangle(Brushes.LightYellow, new Pen(Brushes.Orange, 1.0), new Rect(startx, 0, total_width * font_size, m_font.Height * font_size));
@@ -65,87 +138,15 @@ namespace Emoji.Wpf
                     var g = m_glyphplanlist[i];
                     var origin = new Point(Math.Round(startx + g.ExactX * 0.75),
                                            Math.Round(starty + g.ExactY * 0.75));
-                    m_font.RenderGlyph(dc, g.glyphIndex, origin, FontSize);
+                    m_font.RenderGlyph(dc, g.glyphIndex, origin, m_fontsize);
                 }
             }
         }
 
-        private static void TextChangedCallback(DependencyObject o, DependencyPropertyChangedEventArgs e)
-        {
-            (o as TextBlock).OnTextChanged((string)e.NewValue);
-        }
-
-        private void OnTextChanged(string str)
-        {
-            m_glyphplanlist = m_font.StringToGlyphPlanList(str, FontSize);
-
-            // Check whether the Emoji font knows about this codepoint;
-            // otherwise, fall back to a simple TextBlock.
-            for (int i = 0; i < m_glyphplanlist.Count; ++i)
-            {
-                var g = m_glyphplanlist[i];
-                if (g.glyphIndex == 0)
-                {
-                    m_glyphplanlist.Clear();
-                    m_textblock.Text = str;
-                    if (Width >= 0)
-                        m_textblock.Width = Width;
-                    if (Height >= 0)
-                        m_textblock.FontSize = Height * 0.75;
-                    if (Children.Count == 0)
-                        Children.Add(m_textblock);
-                    break;
-                }
-            }
-
-            // If the glyph list is valid, hide our TextBlock child
-            // and try to compute our own widget size
-            if (m_glyphplanlist.Count > 0)
-            {
-                Children.Clear();
-                // FIXME: I am not sure why the math below works
-                Height = FontSize / 0.75; // 1 pixel = 0.75pt
-                Width = m_glyphplanlist.AccumAdvanceX * 0.75;
-                InvalidateVisual();
-            }
-        }
-
-        public Brush Foreground
-        {
-            get => m_textblock.Foreground;
-            set => m_textblock.Foreground = value;
-        }
-
-        public double FontSize
-        {
-            get => m_textblock.FontSize;
-            set { m_textblock.FontSize = value; OnTextChanged(Text); }
-        }
-
-        public FontFamily FontFamily
-        {
-            get => m_textblock.FontFamily;
-            set => m_textblock.FontFamily = value;
-        }
-
-        public TextAlignment TextAlignment
-        {
-            get => m_textblock.TextAlignment;
-            set => m_textblock.TextAlignment = value;
-        }
-
-        public string Text
-        {
-            get => (string)GetValue(TextProperty);
-            set => SetValue(TextProperty, value);
-        }
-
-        public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
-            nameof(Text), typeof(string), typeof(TextBlock), new FrameworkPropertyMetadata("", TextChangedCallback));
+        private string m_text;
+        private double m_fontsize;
 
         private GlyphPlanList m_glyphplanlist = new GlyphPlanList();
-        private Controls.TextBlock m_textblock = new Controls.TextBlock();
-
         private static EmojiTypeface m_font = new EmojiTypeface();
     }
 }
