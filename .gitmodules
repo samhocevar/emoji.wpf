@@ -5,3 +5,6 @@
 [submodule "unicode-emoji"]
 	path = Emoji.Wpf/UnicodeEmoji
 	url = ../unicode-emoji.git
+[submodule "unicode-cldr"]
+	path = Emoji.Wpf/UnicodeCLDR
+	url = ../fork-cldr-emoji-annotation.git
