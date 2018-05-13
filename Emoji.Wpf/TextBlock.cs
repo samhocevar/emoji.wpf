@@ -36,6 +36,9 @@ namespace Emoji.Wpf
         {
             SnapsToDevicePixels = true;
 
+            m_canvas = new EmojiCanvas();
+            m_inline = new InlineUIContainer(m_canvas);
+
             //m_base_dp.AddValueChanged(this, OnBaseTextChanged);
             //Unloaded += (o, e) =>
             //    m_base_dp.RemoveValueChanged(this, OnBaseTextChanged);
@@ -62,22 +65,20 @@ namespace Emoji.Wpf
 
         private void OnTextChanged(object sender, EventArgs args)
         {
+            m_canvas.Reset(Text, FontSize);
+            // Propagate new value for Text (this will rewrite the
+            // Inlines due to WPF TextBlock internal behaviour)
             base.Text = Text;
-            if (Inlines.FirstInline != m_inline)
+            // If our canvas is valid, use it as the only inline.
+            if (!m_canvas.Invalid && Inlines.FirstInline != m_inline)
             {
                 Inlines.Clear();
                 Inlines.Add(m_inline);
             }
-            m_canvas.Reset(Text, FontSize);
         }
 
-        /// <summary>
-        /// Guard against recursive calls to OnTextChanged
-        /// </summary>
-        private bool m_updating = false;
-
-        private EmojiCanvas m_canvas = new EmojiCanvas();
-        private InlineUIContainer m_inline = new InlineUIContainer(m_canvas);
+        private EmojiCanvas m_canvas;
+        private InlineUIContainer m_inline;
 
         private static DependencyPropertyDescriptor m_text_dp =
             DependencyPropertyDescriptor.FromProperty(TextProperty, typeof(TextBlock));
@@ -95,7 +96,7 @@ namespace Emoji.Wpf
             m_text = text;
             m_fontsize = fontsize;
 
-            m_glyphplanlist = m_font.StringToGlyphPlanList(m_text, m_fontsize);
+            m_glyphplanlist = m_font.StringToGlyphPlanList(m_text ?? "", m_fontsize);
 
             // Check whether the Emoji font knows about all codepoints;
             // otherwise, set Invalid to true.
