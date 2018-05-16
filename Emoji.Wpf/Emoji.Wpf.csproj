@@ -46,6 +46,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="RichTextBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="TextBlock.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -59,7 +63,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RichTextBox.cs" />
+    <Compile Include="RichTextBox.xaml.cs">
+      <DependentUpon>RichTextBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="TextBlock.xaml.cs">
       <DependentUpon>TextBlock.xaml</DependentUpon>
     </Compile>

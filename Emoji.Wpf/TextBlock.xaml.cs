@@ -145,6 +145,18 @@ namespace Emoji.Wpf
             }
         }
 
+        // FIXME: reimplement this
+#if false
+        protected override void OnVisualParentChanged(DependencyObject oldParent)
+        {
+            base.OnVisualParentChanged(oldParent);
+            m_fontsize = ((Parent as InlineUIContainer).Parent as EmojiElement).FontSize;
+            // FIXME: compute the total length
+            Width = m_fontsize * m_font.AdvanceWidths[m_font.CharacterToGlyphIndex(m_codepoint)];
+            Height = m_fontsize * m_font.Height;
+        }
+#endif
+
         private string m_text;
         private double m_fontsize;
 

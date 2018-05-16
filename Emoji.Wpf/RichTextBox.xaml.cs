@@ -20,37 +20,6 @@ using System.Windows.Threading;
 
 namespace Emoji.Wpf
 {
-    public class ColorGlyph : Canvas
-    {
-        public ColorGlyph(EmojiTypeface font, int codepoint)
-        {
-            m_font = font;
-            m_codepoint = codepoint;
-            this.SnapsToDevicePixels = true;
-        }
-
-        protected override void OnVisualParentChanged(DependencyObject oldParent)
-        {
-            base.OnVisualParentChanged(oldParent);
-            m_fontsize = ((Parent as InlineUIContainer).Parent as EmojiElement).FontSize;
-            // FIXME: compute the total length
-            Width = m_fontsize * m_font.AdvanceWidths[m_font.CharacterToGlyphIndex(m_codepoint)];
-            Height = m_fontsize * m_font.Height;
-        }
-
-        protected override void OnRender(DrawingContext dc)
-        {
-            // Debug the bounding box
-            //dc.DrawRectangle(Brushes.Bisque, new Pen(Brushes.LightCoral, 1.0), new Rect(0, 0, Width, Height));
-            var origin = new Point(0, m_fontsize * m_font.Baseline);
-            m_font.RenderGlyph(dc, m_font.CharacterToGlyphIndex(m_codepoint), new Point(0, m_fontsize * m_font.Baseline), m_fontsize);
-        }
-
-        private EmojiTypeface m_font;
-        private double m_fontsize;
-        private int m_codepoint;
-    }
-
     // Inheriting from Span makes it easy to parse the tree for copy-paste
     public class EmojiElement : Span
     {
@@ -97,7 +66,7 @@ namespace Emoji.Wpf
             "Text", typeof(string), typeof(EmojiElement), new PropertyMetadata("☺"));
     }
 
-    public class RichTextBox : System.Windows.Controls.RichTextBox
+    public partial class RichTextBox : System.Windows.Controls.RichTextBox
     {
         public RichTextBox()
         {
