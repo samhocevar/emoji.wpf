@@ -12,6 +12,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
@@ -34,9 +35,6 @@ namespace Emoji.Wpf
         public TextBlock()
         {
             InitializeComponent();
-
-            m_canvas = new EmojiCanvas();
-            m_inline = new InlineUIContainer(m_canvas);
 
             //m_base_dp.AddValueChanged(this, OnBaseTextChanged);
             //Unloaded += (o, e) =>
@@ -64,20 +62,24 @@ namespace Emoji.Wpf
 
         private void OnTextChanged(object sender, EventArgs args)
         {
-            m_canvas.Reset(Text, FontSize);
             // Propagate new value for Text (this will rewrite the
             // Inlines due to WPF TextBlock internal behaviour)
             base.Text = Text;
-            // If our canvas is valid, use it as the only inline.
-            if (!m_canvas.Invalid && Inlines.FirstInline != m_inline)
-            {
-                Inlines.Clear();
-                Inlines.Add(m_inline);
-            }
-        }
 
-        private EmojiCanvas m_canvas;
-        private InlineUIContainer m_inline;
+            Inlines.Clear();
+            int pos = 0;
+            foreach (Match m in EmojiData.Match.Matches(Text))
+            {
+                Inlines.Add(Text.Substring(pos, m.Index - pos));
+
+                var canvas = new EmojiCanvas();
+                canvas.Reset(Text.Substring(m.Index, m.Length), FontSize);
+                Inlines.Add(new InlineUIContainer(canvas));
+
+                pos = m.Index + m.Length;
+            }
+            Inlines.Add(Text.Substring(pos));
+        }
 
         private static DependencyPropertyDescriptor m_text_dp =
             DependencyPropertyDescriptor.FromProperty(TextProperty, typeof(TextBlock));

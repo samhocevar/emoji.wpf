@@ -36,7 +36,7 @@ namespace Emoji.Wpf
 
         static EmojiData()
         {
-            ReadEmojiTest();
+            ParseEmojiList();
         }
 
         public class Emoji
@@ -76,75 +76,76 @@ namespace Emoji.Wpf
             }
         }
 
-        static void ReadEmojiTest()
+        private static void ParseEmojiList()
         {
             var font = new EmojiTypeface();
             var modifiers = new string[] { "🏻", "🏼", "🏽", "🏾", "🏿" };
 
             var match_group = new Regex(@"^# group: (.*)");
             var match_subgroup = new Regex(@"^# subgroup: (.*)");
-            var match_sequence = new Regex(@"^([0-9A-F ]+[0-9A-F]).*; fully-qualified.*# [^ ]* (.*)");
+            var match_sequence = new Regex(@"^([0-9a-fA-F ]+[0-9a-fA-F]).*; [-a-z]*fully-qualified.*# [^ ]* (.*)");
             var match_modifier = new Regex("(" + string.Join("|", modifiers) + ")");
             var list = new List<Group>();
             var alltext = new List<string>();
 
-            using (Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream("emoji-test.txt"))
-            using (StreamReader sr = new StreamReader(s))
+            Group last_group = null;
+            SubGroup last_subgroup = null;
+            Emoji last_emoji = null;
+
+            foreach (var line in EmojiDescriptionLines())
             {
-                Group last_group = null;
-                SubGroup last_subgroup = null;
-                Emoji last_emoji = null;
-
-                foreach (var line in sr.ReadToEnd().Split('\r', '\n'))
+                var m = match_group.Match(line);
+                if (m.Success)
                 {
-                    var m = match_group.Match(line);
-                    if (m.Success)
+                    last_group = new Group() { Name = m.Groups[1].ToString() };
+                    list.Add(last_group);
+                    continue;
+                }
+
+                m = match_subgroup.Match(line);
+                if (m.Success)
+                {
+                    last_subgroup = new SubGroup() { Name = m.Groups[1].ToString(), Group = last_group };
+                    last_group.SubGroups.Add(last_subgroup);
+                    continue;
+                }
+
+                m = match_sequence.Match(line);
+                if (m.Success)
+                {
+                    string sequence = m.Groups[1].ToString();
+                    string name = m.Groups[2].ToString();
+
+                    string text = "";
+                    foreach (var item in sequence.Split(' '))
                     {
-                        last_group = new Group() { Name = m.Groups[1].ToString() };
-                        list.Add(last_group);
-                        continue;
+                        int codepoint = Convert.ToInt32(item, 16);
+                        text += char.ConvertFromUtf32(codepoint);
                     }
 
-                    m = match_subgroup.Match(line);
-                    if (m.Success)
-                    {
-                        last_subgroup = new SubGroup() { Name = m.Groups[1].ToString(), Group = last_group };
-                        last_group.SubGroups.Add(last_subgroup);
+                    // Only include emojis that we know how to render
+                    if (!font.CanRender(text))
                         continue;
-                    }
 
-                    m = match_sequence.Match(line);
-                    if (m.Success)
+                    alltext.Add(text);
+
+                    // Only add fully-qualified characters to the groups, or we will
+                    // end with a lot of dupes.
+                    if (line.Contains("non-fully-qualified"))
+                        continue;
+
+                    var emoji = new Emoji() { Name = name, Text = text, SubGroup = last_subgroup };
+                    if (match_modifier.Match(text).Success)
                     {
-                        string sequence = m.Groups[1].ToString();
-                        string name = m.Groups[2].ToString();
-
-                        string text = "";
-                        foreach (var item in sequence.Split(' '))
-                        {
-                            int codepoint = Convert.ToInt32(item, 16);
-                            text += char.ConvertFromUtf32(codepoint);
-                        }
-
-                        // Only include emojis that we know how to render
-                        if (!font.CanRender(text))
-                            continue;
-
-                        alltext.Add(text);
-
-                        var emoji = new Emoji() { Name = name, Text = text, SubGroup = last_subgroup };
-                        if (match_modifier.Match(text).Success)
-                        {
-                            // We assume this is a variation of the previous emoji
-                            if (last_emoji.VariationList.Count == 0)
-                                last_emoji.VariationList.Add(last_emoji);
-                            last_emoji.VariationList.Add(emoji);
-                        }
-                        else
-                        {
-                            last_emoji = emoji;
-                            last_subgroup.EmojiList.Add(emoji);
-                        }
+                        // We assume this is a variation of the previous emoji
+                        if (last_emoji.VariationList.Count == 0)
+                            last_emoji.VariationList.Add(last_emoji);
+                        last_emoji.VariationList.Add(emoji);
+                    }
+                    else
+                    {
+                        last_emoji = emoji;
+                        last_subgroup.EmojiList.Add(emoji);
                     }
                 }
             }
@@ -156,6 +157,29 @@ namespace Emoji.Wpf
             Array.Sort(textarray, (a, b) => b.Length - a.Length);
             var regextext = "(" + string.Join("|", textarray).Replace("*", "[*]") + ")+";
             Match = new Regex(regextext);
+        }
+
+        private static IEnumerable<string> EmojiDescriptionLines()
+        {
+            using (Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream("emoji-test.txt"))
+            using (StreamReader sr = new StreamReader(s))
+            {
+                foreach (var line in sr.ReadToEnd().Split('\r', '\n'))
+                {
+                    yield return line;
+
+                    // Hack to support those extra Microsoft emojis
+                    if (line.EndsWith("🐱 cat face"))
+                    {
+                        yield return "1F431 200D 1F3CD ; fully-qualified # 🐱‍🏍 stunt cat";
+                        yield return "1F431 200D 1F453 ; fully-qualified # 🐱‍👓 hipster cat";
+                        yield return "1F431 200D 1F680 ; fully-qualified # 🐱‍🚀 astro cat";
+                        yield return "1F431 200D 1F464 ; fully-qualified # 🐱‍👤 ninja cat";
+                        yield return "1F431 200D 1F409 ; fully-qualified # 🐱‍🐉 dino cat";
+                        yield return "1F431 200D 1F4BB ; fully-qualified # 🐱‍💻 hacker cat";
+                    }
+                }
+            }
         }
     }
 }
