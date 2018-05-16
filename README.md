@@ -9,7 +9,7 @@
  - **Very experimental** for now.
  - **Colour emojis**! 😨 💩 🍰 ✈ ✏ 📞 ☘
  - **Full vector emojis**!
- - **Lightweight**; does not embed a font, or emoji images; the DLL is only 12 kilobytes.
+ - **Lightweight**; does not embed a font, or emoji images.
  - Works with **old .NET versions** such as 3.0.
  - Uses the Segoe UI Emoji system font, even on **Windows 7 or Windows 8** by
    implementing Microsoft’s COLR/CPAL font format extensions.
