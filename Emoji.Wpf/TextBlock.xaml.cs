@@ -68,7 +68,7 @@ namespace Emoji.Wpf
 
             Inlines.Clear();
             int pos = 0;
-            foreach (Match m in EmojiData.Match.Matches(Text))
+            foreach (Match m in EmojiData.MatchMultiple.Matches(Text))
             {
                 Inlines.Add(Text.Substring(pos, m.Index - pos));
 

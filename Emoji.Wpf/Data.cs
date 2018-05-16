@@ -32,7 +32,10 @@ namespace Emoji.Wpf
 
         public static IEnumerable<Group> AllGroups { get; private set; }
 
-        public static Regex Match { get; private set; }
+        public static IDictionary<string, Emoji> Lookup { get; private set; }
+
+        public static Regex MatchOne { get; private set; }
+        public static Regex MatchMultiple { get; private set; }
 
         static EmojiData()
         {
@@ -86,6 +89,7 @@ namespace Emoji.Wpf
             var match_sequence = new Regex(@"^([0-9a-fA-F ]+[0-9a-fA-F]).*; [-a-z]*fully-qualified.*# [^ ]* (.*)");
             var match_modifier = new Regex("(" + string.Join("|", modifiers) + ")");
             var list = new List<Group>();
+            var lookup = new Dictionary<string, Emoji>();
             var alltext = new List<string>();
 
             Group last_group = null;
@@ -135,6 +139,7 @@ namespace Emoji.Wpf
                         continue;
 
                     var emoji = new Emoji() { Name = name, Text = text, SubGroup = last_subgroup };
+                    lookup[text] = emoji;
                     if (match_modifier.Match(text).Success)
                     {
                         // We assume this is a variation of the previous emoji
@@ -151,12 +156,14 @@ namespace Emoji.Wpf
             }
 
             AllGroups = list;
+            Lookup = lookup;
 
             // Build a regex that matches any Emoji
             var textarray = alltext.ToArray();
             Array.Sort(textarray, (a, b) => b.Length - a.Length);
-            var regextext = "(" + string.Join("|", textarray).Replace("*", "[*]") + ")+";
-            Match = new Regex(regextext);
+            var regextext = "(" + string.Join("|", textarray).Replace("*", "[*]") + ")";
+            MatchOne = new Regex(regextext);
+            MatchMultiple = new Regex(regextext + "+");
         }
 
         private static IEnumerable<string> EmojiDescriptionLines()

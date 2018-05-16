@@ -67,15 +67,7 @@ namespace Emoji.Wpf
 
         public static EmojiElement MakeFromString(string s)
         {
-            int codepoint = StringToCodepoint(s);
-            return m_font.HasCodepoint(codepoint) ? new EmojiElement(s) : null;
-        }
-
-        private static int StringToCodepoint(string s)
-        {
-            if (s.Length >= 2 && s[0] >= 0xd800 && s[0] <= 0xdbff)
-                return Char.ConvertToUtf32(s[0], s[1]);
-            return s.Length == 0 ? 0 : s[0];
+            return EmojiData.MatchOne.Match(s).Success ? new EmojiElement(s) : null;
         }
 
         // Do not serialize our child element, as it is only for rendering
@@ -88,8 +80,10 @@ namespace Emoji.Wpf
             if (e.Property == TextProperty)
             {
                 Inlines.Clear();
-                int codepoint = StringToCodepoint(Text);
-                Inlines.Add(new InlineUIContainer(new ColorGlyph(m_font, codepoint)));
+
+                var canvas = new EmojiCanvas();
+                canvas.Reset(Text, FontSize);
+                Inlines.Add(new InlineUIContainer(canvas));
             }
         }
 
