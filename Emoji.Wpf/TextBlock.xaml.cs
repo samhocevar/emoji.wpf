@@ -12,7 +12,6 @@
 
 using System;
 using System.ComponentModel;
-using System.Threading;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
@@ -30,11 +29,11 @@ namespace Emoji.Wpf
     /// <summary>
     /// A simple WPF Control that renders an emoji. It can be resized.
     /// </summary>
-    public class TextBlock : Controls.TextBlock
+    public partial class TextBlock : Controls.TextBlock
     {
         public TextBlock()
         {
-            SnapsToDevicePixels = true;
+            InitializeComponent();
 
             m_canvas = new EmojiCanvas();
             m_inline = new InlineUIContainer(m_canvas);
@@ -151,4 +150,3 @@ namespace Emoji.Wpf
         private static EmojiTypeface m_font = new EmojiTypeface();
     }
 }
-

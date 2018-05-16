@@ -5,6 +5,7 @@
 *.cs text
 *.po text
 *.resx text
+*.xaml text
 
 # This is Windows-specific
 *.sln text eol=crlf
