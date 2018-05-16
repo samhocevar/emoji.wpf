@@ -32,7 +32,7 @@ namespace Emoji.Wpf
             InitializeComponent();
         }
 
-        public IEnumerable<Data.Group> EmojiGroups => Data.Group.AllGroups;
+        public IEnumerable<EmojiData.Group> EmojiGroups => EmojiData.AllGroups;
 
         public double FontSize
         {
@@ -70,7 +70,7 @@ namespace Emoji.Wpf
                 m_current_toggle = null;
             }
 
-            var emoji = (sender as Control).DataContext as Data.Emoji;
+            var emoji = (sender as Control).DataContext as EmojiData.Emoji;
             if (emoji.VariationList.Count == 0 || sender is Button)
             {
                 Selection = emoji.Text;
