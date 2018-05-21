@@ -32,81 +32,52 @@ namespace Emoji.Wpf
     /// </summary>
     public partial class TextBlock : Controls.TextBlock
     {
+        static TextBlock()
+        {
+            TextProperty.OverrideMetadata(typeof(TextBlock), new FrameworkPropertyMetadata("", TextChangedCallback));
+            ForegroundProperty.OverrideMetadata(typeof(TextBlock), new FrameworkPropertyMetadata(Brushes.Black, ForegroundChangedCallback));
+        }
+
+
         public TextBlock()
         {
             InitializeComponent();
+            
             //m_base_dp.AddValueChanged(this, OnBaseTextChanged);
             //Unloaded += (o, e) =>
             //    m_base_dp.RemoveValueChanged(this, OnBaseTextChanged);
         }
 
-        /// <summary>
-        /// Override System.Windows.Controls.TextBox.Text
-        /// </summary>
-        public new string Text
-        {
-            get => m_text_dp.GetValue(this) as string;
-            set => m_text_dp.SetValue(this, value);
-        }
-
-        /// <summary>
-        /// Override System.Windows.Controls.TextBox.TextProperty
-        /// </summary>
-        public static new readonly DependencyProperty TextProperty = DependencyProperty.Register(
-                        nameof(Text), typeof(string), typeof(TextBlock),
-                        new FrameworkPropertyMetadata("", TextChangedCallback));
-
         private static void TextChangedCallback(DependencyObject o, DependencyPropertyChangedEventArgs e)
-            => (o as TextBlock).OnTextChanged(o, new EventArgs());
-
-
-        /// <summary>
-        /// Override System.Windows.Controls.TextBox.Foreground
-        /// </summary>
-        public new Brush Foreground
-        {
-            get => m_foreground_dp.GetValue(this) as Brush;
-            set => m_foreground_dp.SetValue(this, value);
-        }
-
-        /// <summary>
-        /// Override System.Windows.Controls.TextBox.ForegroundProperty
-        /// </summary>
-        public static new readonly DependencyProperty ForegroundProperty = DependencyProperty.Register(
-                        nameof(Foreground), typeof(Brush), typeof(TextBlock),
-                        new FrameworkPropertyMetadata(Brushes.Black, ForegroundChangedCallback));
+            => (o as TextBlock).OnTextChanged(e.NewValue as String, (o as TextBlock).Foreground);
 
         private static void ForegroundChangedCallback(DependencyObject o, DependencyPropertyChangedEventArgs e)
-            => (o as TextBlock).OnTextChanged(o, new EventArgs());
+            => (o as TextBlock).OnTextChanged((o as TextBlock).Text, e.NewValue as Brush);
 
-        private void OnTextChanged(object sender, EventArgs args)
+        bool recursionGuard = false;
+        private void OnTextChanged(String newText, Brush newForeground)
         {
-            // Propagate new value for Text (this will rewrite the
-            // Inlines due to WPF TextBlock internal behaviour)
-            base.Text = Text;
-            base.Foreground = Foreground;
-
+            if (recursionGuard) return;
+            recursionGuard = true;
+            String text = newText ?? Text;
             Inlines.Clear();
-            int pos = 0;
-            foreach (Match m in EmojiData.MatchMultiple.Matches(Text))
+            try
             {
-                Inlines.Add(Text.Substring(pos, m.Index - pos));
+                int pos = 0;
+                foreach (Match m in EmojiData.MatchMultiple.Matches(text))
+                {
+                    Inlines.Add(text.Substring(pos, m.Index - pos));
 
-                var canvas = new EmojiCanvas { NonEmojiGlyphBrush = Foreground };
-                canvas.Reset(Text.Substring(m.Index, m.Length), FontSize);
-                Inlines.Add(new InlineUIContainer(canvas));
+                    var canvas = new EmojiCanvas { NonEmojiGlyphBrush = newForeground };
+                    canvas.Reset(text.Substring(m.Index, m.Length), FontSize);
+                    Inlines.Add(new InlineUIContainer(canvas));
 
-                pos = m.Index + m.Length;
+                    pos = m.Index + m.Length;
+                }
+                Inlines.Add(text.Substring(pos));
             }
-            Inlines.Add(Text.Substring(pos));
+            finally { recursionGuard = false; }
         }
-
-        private static DependencyPropertyDescriptor m_foreground_dp =
-            DependencyPropertyDescriptor.FromProperty(ForegroundProperty, typeof(TextBlock));
-        private static DependencyPropertyDescriptor m_text_dp =
-            DependencyPropertyDescriptor.FromProperty(TextProperty, typeof(TextBlock));
-        //private static DependencyPropertyDescriptor m_base_dp =
-        //    DependencyPropertyDescriptor.FromProperty(Controls.TextBlock.TextProperty, typeof(TextBlock));
     }
 
     public class EmojiCanvas : Controls.Canvas
