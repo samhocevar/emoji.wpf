@@ -21,11 +21,11 @@
         <GroupBox DockPanel.Dock="Top" Header="wpf:TextBlock vs. emoji:TextBlock" Margin="4">
             <StackPanel Orientation="Vertical">
                 <Border BorderBrush="LightGray" BorderThickness="1" CornerRadius="4" Margin="4" Padding="4" SnapsToDevicePixels="True">
-                    <TextBlock FontSize="24" Text="{StaticResource SampleText}"
+                    <TextBlock FontSize="24" Text="{StaticResource SampleText}" Foreground="Red"
                                FontFamily="Segoe UI Emoji, Segoe UI, Arial"/>
                 </Border>
                 <Border BorderBrush="LightGray" BorderThickness="1" CornerRadius="4" Margin="4" Padding="4" SnapsToDevicePixels="True">
-                    <emoji:TextBlock FontSize="24" Text="{StaticResource SampleText}"
+                    <emoji:TextBlock FontSize="24" Text="{StaticResource SampleText}" Foreground="Red"
                                      SnapsToDevicePixels="True" HorizontalAlignment="Left"/>
                 </Border>
             </StackPanel>

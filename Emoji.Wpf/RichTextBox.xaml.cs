@@ -46,11 +46,11 @@ namespace Emoji.Wpf
         {
             base.OnPropertyChanged(e);
 
-            if (e.Property == TextProperty)
+            if (e.Property == TextProperty || e.Property == ForegroundProperty)
             {
                 Inlines.Clear();
 
-                var canvas = new EmojiCanvas(Foreground);
+                var canvas = new EmojiCanvas { NonEmojiGlyphBrush = Foreground };
                 canvas.Reset(Text, FontSize);
                 Inlines.Add(new InlineUIContainer(canvas));
             }

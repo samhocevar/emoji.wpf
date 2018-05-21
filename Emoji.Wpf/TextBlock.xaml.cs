@@ -35,7 +35,6 @@ namespace Emoji.Wpf
         public TextBlock()
         {
             InitializeComponent();
-
             //m_base_dp.AddValueChanged(this, OnBaseTextChanged);
             //Unloaded += (o, e) =>
             //    m_base_dp.RemoveValueChanged(this, OnBaseTextChanged);
@@ -60,11 +59,32 @@ namespace Emoji.Wpf
         private static void TextChangedCallback(DependencyObject o, DependencyPropertyChangedEventArgs e)
             => (o as TextBlock).OnTextChanged(o, new EventArgs());
 
+
+        /// <summary>
+        /// Override System.Windows.Controls.TextBox.Foreground
+        /// </summary>
+        public new Brush Foreground
+        {
+            get => m_foreground_dp.GetValue(this) as Brush;
+            set => m_foreground_dp.SetValue(this, value);
+        }
+
+        /// <summary>
+        /// Override System.Windows.Controls.TextBox.ForegroundProperty
+        /// </summary>
+        public static new readonly DependencyProperty ForegroundProperty = DependencyProperty.Register(
+                        nameof(Foreground), typeof(Brush), typeof(TextBlock),
+                        new FrameworkPropertyMetadata(Brushes.Black, ForegroundChangedCallback));
+
+        private static void ForegroundChangedCallback(DependencyObject o, DependencyPropertyChangedEventArgs e)
+            => (o as TextBlock).OnTextChanged(o, new EventArgs());
+
         private void OnTextChanged(object sender, EventArgs args)
         {
             // Propagate new value for Text (this will rewrite the
             // Inlines due to WPF TextBlock internal behaviour)
             base.Text = Text;
+            base.Foreground = Foreground;
 
             Inlines.Clear();
             int pos = 0;
@@ -72,7 +92,7 @@ namespace Emoji.Wpf
             {
                 Inlines.Add(Text.Substring(pos, m.Index - pos));
 
-                var canvas = new EmojiCanvas(Foreground);
+                var canvas = new EmojiCanvas { NonEmojiGlyphBrush = Foreground };
                 canvas.Reset(Text.Substring(m.Index, m.Length), FontSize);
                 Inlines.Add(new InlineUIContainer(canvas));
 
@@ -81,6 +101,8 @@ namespace Emoji.Wpf
             Inlines.Add(Text.Substring(pos));
         }
 
+        private static DependencyPropertyDescriptor m_foreground_dp =
+            DependencyPropertyDescriptor.FromProperty(ForegroundProperty, typeof(TextBlock));
         private static DependencyPropertyDescriptor m_text_dp =
             DependencyPropertyDescriptor.FromProperty(TextProperty, typeof(TextBlock));
         //private static DependencyPropertyDescriptor m_base_dp =
@@ -89,11 +111,14 @@ namespace Emoji.Wpf
 
     public class EmojiCanvas : Controls.Canvas
     {
-        readonly Brush nonEmojiGlyphBrush;
-        public EmojiCanvas(Brush nonEmojiGlyphBrush)
+        public Brush NonEmojiGlyphBrush
         {
-            this.nonEmojiGlyphBrush = nonEmojiGlyphBrush;
+            get => (Brush)GetValue(NonEmojiGlyphBrushProperty);
+            set => SetValue(NonEmojiGlyphBrushProperty, value);
         }
+        public static readonly DependencyProperty NonEmojiGlyphBrushProperty = DependencyProperty.Register(
+            "NonEmojiGlyphBrush", typeof(Brush), typeof(EmojiCanvas), 
+            new PropertyMetadata(Brushes.Black));
 
         public void Reset(string text, double fontsize)
         {
@@ -117,6 +142,14 @@ namespace Emoji.Wpf
             Height = m_fontsize / 0.75; // 1 pixel = 0.75pt
             Width = m_glyphplanlist.AccumAdvanceX * 0.75;
             InvalidateVisual();
+        }
+
+        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+        {
+            base.OnPropertyChanged(e);
+
+            if (e.Property == NonEmojiGlyphBrushProperty)
+                InvalidateVisual();
         }
 
         public bool Invalid { get; private set; }
@@ -146,7 +179,7 @@ namespace Emoji.Wpf
                     var g = m_glyphplanlist[i];
                     var origin = new Point(Math.Round(startx + g.ExactX * 0.75),
                                            Math.Round(starty + g.ExactY * 0.75));
-                    m_font.RenderGlyph(dc, g.glyphIndex, origin, m_fontsize, nonEmojiGlyphBrush);
+                    m_font.RenderGlyph(dc, g.glyphIndex, origin, m_fontsize, NonEmojiGlyphBrush);
                 }
             }
         }
