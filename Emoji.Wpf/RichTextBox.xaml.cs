@@ -50,7 +50,7 @@ namespace Emoji.Wpf
             {
                 Inlines.Clear();
 
-                var canvas = new EmojiCanvas();
+                var canvas = new EmojiCanvas(Foreground);
                 canvas.Reset(Text, FontSize);
                 Inlines.Add(new InlineUIContainer(canvas));
             }

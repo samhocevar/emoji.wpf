@@ -72,7 +72,7 @@ namespace Emoji.Wpf
             {
                 Inlines.Add(Text.Substring(pos, m.Index - pos));
 
-                var canvas = new EmojiCanvas();
+                var canvas = new EmojiCanvas(Foreground);
                 canvas.Reset(Text.Substring(m.Index, m.Length), FontSize);
                 Inlines.Add(new InlineUIContainer(canvas));
 
@@ -89,6 +89,12 @@ namespace Emoji.Wpf
 
     public class EmojiCanvas : Controls.Canvas
     {
+        readonly Brush nonEmojiGlyphBrush;
+        public EmojiCanvas(Brush nonEmojiGlyphBrush)
+        {
+            this.nonEmojiGlyphBrush = nonEmojiGlyphBrush;
+        }
+
         public void Reset(string text, double fontsize)
         {
             if (text == m_text && fontsize == m_fontsize)
@@ -140,7 +146,7 @@ namespace Emoji.Wpf
                     var g = m_glyphplanlist[i];
                     var origin = new Point(Math.Round(startx + g.ExactX * 0.75),
                                            Math.Round(starty + g.ExactY * 0.75));
-                    m_font.RenderGlyph(dc, g.glyphIndex, origin, m_fontsize);
+                    m_font.RenderGlyph(dc, g.glyphIndex, origin, m_fontsize, nonEmojiGlyphBrush);
                 }
             }
         }
