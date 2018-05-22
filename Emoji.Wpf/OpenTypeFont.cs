@@ -131,7 +131,7 @@ namespace Emoji.Wpf
         public double Height { get => m_gtf.Height; }
         public double Baseline { get => m_gtf.Baseline; }
 
-        public void RenderGlyph(DrawingContext dc, ushort gid, Point origin, double size, Brush nonEmojiBrush)
+        public void RenderGlyph(DrawingContext dc, ushort gid, Point origin, double size, Brush fallback_brush)
         {
             ushort layer_index;
             if (m_openfont.COLRTable != null && m_openfont.CPALTable != null
@@ -165,7 +165,7 @@ namespace Emoji.Wpf
                                           origin, new double[] { 0 },
                                           null, null, null,
                                           null, null, null);
-                dc.DrawGlyphRun(nonEmojiBrush, r);
+                dc.DrawGlyphRun(fallback_brush, r);
             }
         }
 

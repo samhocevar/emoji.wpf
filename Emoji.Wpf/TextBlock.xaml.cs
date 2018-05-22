@@ -38,11 +38,10 @@ namespace Emoji.Wpf
             ForegroundProperty.OverrideMetadata(typeof(TextBlock), new FrameworkPropertyMetadata(Brushes.Black, ForegroundChangedCallback));
         }
 
-
         public TextBlock()
         {
             InitializeComponent();
-            
+
             //m_base_dp.AddValueChanged(this, OnBaseTextChanged);
             //Unloaded += (o, e) =>
             //    m_base_dp.RemoveValueChanged(this, OnBaseTextChanged);
@@ -54,11 +53,14 @@ namespace Emoji.Wpf
         private static void ForegroundChangedCallback(DependencyObject o, DependencyPropertyChangedEventArgs e)
             => (o as TextBlock).OnTextChanged((o as TextBlock).Text, e.NewValue as Brush);
 
-        bool recursionGuard = false;
+        private bool m_recursion_guard = false;
+
         private void OnTextChanged(String newText, Brush newForeground)
         {
-            if (recursionGuard) return;
-            recursionGuard = true;
+            if (m_recursion_guard)
+                return;
+
+            m_recursion_guard = true;
             String text = newText ?? Text;
             Inlines.Clear();
             try
@@ -68,7 +70,7 @@ namespace Emoji.Wpf
                 {
                     Inlines.Add(text.Substring(pos, m.Index - pos));
 
-                    var canvas = new EmojiCanvas { NonEmojiGlyphBrush = newForeground };
+                    var canvas = new EmojiCanvas { FallbackBrush = newForeground };
                     canvas.Reset(text.Substring(m.Index, m.Length), FontSize);
                     Inlines.Add(new InlineUIContainer(canvas));
 
@@ -76,19 +78,23 @@ namespace Emoji.Wpf
                 }
                 Inlines.Add(text.Substring(pos));
             }
-            finally { recursionGuard = false; }
+            finally
+            {
+                m_recursion_guard = false;
+            }
         }
     }
 
     public class EmojiCanvas : Controls.Canvas
     {
-        public Brush NonEmojiGlyphBrush
+        public Brush FallbackBrush
         {
-            get => (Brush)GetValue(NonEmojiGlyphBrushProperty);
-            set => SetValue(NonEmojiGlyphBrushProperty, value);
+            get => (Brush)GetValue(FallbackBrushProperty);
+            set => SetValue(FallbackBrushProperty, value);
         }
-        public static readonly DependencyProperty NonEmojiGlyphBrushProperty = DependencyProperty.Register(
-            "NonEmojiGlyphBrush", typeof(Brush), typeof(EmojiCanvas), 
+
+        public static readonly DependencyProperty FallbackBrushProperty = DependencyProperty.Register(
+            nameof(FallbackBrush), typeof(Brush), typeof(EmojiCanvas),
             new PropertyMetadata(Brushes.Black));
 
         public void Reset(string text, double fontsize)
@@ -119,7 +125,7 @@ namespace Emoji.Wpf
         {
             base.OnPropertyChanged(e);
 
-            if (e.Property == NonEmojiGlyphBrushProperty)
+            if (e.Property == FallbackBrushProperty)
                 InvalidateVisual();
         }
 
@@ -150,7 +156,7 @@ namespace Emoji.Wpf
                     var g = m_glyphplanlist[i];
                     var origin = new Point(Math.Round(startx + g.ExactX * 0.75),
                                            Math.Round(starty + g.ExactY * 0.75));
-                    m_font.RenderGlyph(dc, g.glyphIndex, origin, m_fontsize, NonEmojiGlyphBrush);
+                    m_font.RenderGlyph(dc, g.glyphIndex, origin, m_fontsize, FallbackBrush);
                 }
             }
         }
