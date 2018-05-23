@@ -82,12 +82,13 @@ namespace Emoji.Wpf
         private static void ParseEmojiList()
         {
             var font = new EmojiTypeface();
-            var modifiers = new string[] { "🏻", "🏼", "🏽", "🏾", "🏿" };
+            var modifiers_list = new string[] { "🏻", "🏼", "🏽", "🏾", "🏿" };
+            var modifiers_string = "(" + string.Join("|", modifiers_list) + ")";
 
             var match_group = new Regex(@"^# group: (.*)");
             var match_subgroup = new Regex(@"^# subgroup: (.*)");
             var match_sequence = new Regex(@"^([0-9a-fA-F ]+[0-9a-fA-F]).*; [-a-z]*fully-qualified.*# [^ ]* (.*)");
-            var match_modifier = new Regex("(" + string.Join("|", modifiers) + ")");
+            var match_modifier = new Regex(modifiers_string);
             var list = new List<Group>();
             var lookup = new Dictionary<string, Emoji>();
             var alltext = new List<string>();
@@ -131,7 +132,17 @@ namespace Emoji.Wpf
                     if (!font.CanRender(text))
                         continue;
 
-                    alltext.Add(text);
+                    bool has_modifier = false;
+                    bool has_high_modifier = false;
+                    var regex_text = match_modifier.Replace(text, (x) =>
+                    {
+                        has_modifier = true;
+                        has_high_modifier |= x.Value != modifiers_list[0];
+                        return modifiers_string;
+                    });
+
+                    if (!has_high_modifier)
+                        alltext.Add(has_modifier ? regex_text : text);
 
                     // Only add fully-qualified characters to the groups, or we will
                     // end with a lot of dupes.
@@ -140,7 +151,7 @@ namespace Emoji.Wpf
 
                     var emoji = new Emoji() { Name = name, Text = text, SubGroup = last_subgroup };
                     lookup[text] = emoji;
-                    if (match_modifier.Match(text).Success)
+                    if (has_modifier)
                     {
                         // We assume this is a variation of the previous emoji
                         if (last_emoji.VariationList.Count == 0)
