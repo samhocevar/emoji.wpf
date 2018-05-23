@@ -62,18 +62,22 @@ namespace Emoji.Wpf
 
         private bool m_recursion_guard = false;
 
+        /// <summary>
+        /// Do not coerce the Text property.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
         private string CoerceTextCallback(string text) => text;
 
-        private void TextChangedCallback(String newText)
+        private void TextChangedCallback(String text)
         {
             if (m_recursion_guard)
                 return;
 
             m_recursion_guard = true;
-            String text = newText ?? Text;
-            Inlines.Clear();
             try
             {
+                Inlines.Clear();
                 int pos = 0;
                 foreach (Match m in EmojiData.MatchMultiple.Matches(text))
                 {
