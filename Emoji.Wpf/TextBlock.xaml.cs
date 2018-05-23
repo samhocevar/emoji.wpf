@@ -31,8 +31,14 @@ namespace Emoji.Wpf
     {
         static TextBlock()
         {
-            TextProperty.OverrideMetadata(typeof(TextBlock), new FrameworkPropertyMetadata("", TextChangedCallback));
-            ForegroundProperty.OverrideMetadata(typeof(TextBlock), new FrameworkPropertyMetadata(Brushes.Black, ForegroundChangedCallback));
+            TextProperty.OverrideMetadata(typeof(TextBlock), new FrameworkPropertyMetadata(
+                "",
+                (o, e) => (o as TextBlock).TextChangedCallback(e.NewValue as string),
+                (o, v) => (o as TextBlock).CoerceTextCallback(v as string)));
+
+            ForegroundProperty.OverrideMetadata(typeof(TextBlock), new FrameworkPropertyMetadata(
+                Brushes.Black,
+                (o, e) => (o as TextBlock).ForegroundChangedCallback(e.NewValue as Brush)));
         }
 
         public TextBlock()
@@ -44,15 +50,21 @@ namespace Emoji.Wpf
             //    m_base_dp.RemoveValueChanged(this, OnBaseTextChanged);
         }
 
-        private static void TextChangedCallback(DependencyObject o, DependencyPropertyChangedEventArgs e)
-            => (o as TextBlock).OnTextChanged(e.NewValue as String, (o as TextBlock).Foreground);
-
-        private static void ForegroundChangedCallback(DependencyObject o, DependencyPropertyChangedEventArgs e)
-            => (o as TextBlock).OnTextChanged((o as TextBlock).Text, e.NewValue as Brush);
+        private void ForegroundChangedCallback(Brush foreground)
+        {
+            foreach (var i in Inlines)
+            {
+                var emoji_inline = i as EmojiInline;
+                if (emoji_inline != null)
+                    emoji_inline.Foreground = foreground;
+            }
+        }
 
         private bool m_recursion_guard = false;
 
-        private void OnTextChanged(String newText, Brush newForeground)
+        private string CoerceTextCallback(string text) => text;
+
+        private void TextChangedCallback(String newText)
         {
             if (m_recursion_guard)
                 return;
