@@ -98,10 +98,6 @@ namespace Emoji.Wpf
             return null;
         }
 
-        // FIXME: this should be phased out when RichTextBox is upgraded
-        public bool HasCodepoint(int codepoint) => CharacterToGlyphIndex(codepoint) != 0;
-        public ushort CharacterToGlyphIndex(int codepoint) => m_openfont.LookupIndex(codepoint);
-
         /// <summary>
         /// Return whether the font can render the given string entirely
         /// </summary>
