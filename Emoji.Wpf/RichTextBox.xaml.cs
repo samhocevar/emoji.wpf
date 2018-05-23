@@ -15,7 +15,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Markup;
-using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace Emoji.Wpf
@@ -23,8 +22,6 @@ namespace Emoji.Wpf
     // Inheriting from Span makes it easy to parse the tree for copy-paste
     public class EmojiElement : Span
     {
-        static EmojiTypeface m_font = new EmojiTypeface();
-
         // Need an empty constructor for serialisation (undo/redo)
         public EmojiElement() {}
 
@@ -49,10 +46,12 @@ namespace Emoji.Wpf
             if (e.Property == TextProperty || e.Property == ForegroundProperty)
             {
                 Inlines.Clear();
-
-                var canvas = new EmojiCanvas { FallbackBrush = Foreground };
-                canvas.Reset(Text, FontSize);
-                Inlines.Add(new InlineUIContainer(canvas));
+                Inlines.Add(new EmojiInline()
+                {
+                    FallbackBrush = Foreground,
+                    Text = Text,
+                    FontSize = FontSize,
+                });
             }
         }
 

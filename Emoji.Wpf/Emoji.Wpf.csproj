@@ -57,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data.cs" />
+    <Compile Include="EmojiInline.cs" />
     <Compile Include="OpenTypeFont.cs" />
     <Compile Include="Picker.xaml.cs">
       <DependentUpon>Picker.xaml</DependentUpon>
