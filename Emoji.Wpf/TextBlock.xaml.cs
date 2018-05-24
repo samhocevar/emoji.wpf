@@ -44,20 +44,13 @@ namespace Emoji.Wpf
         public TextBlock()
         {
             InitializeComponent();
-
-            //m_base_dp.AddValueChanged(this, OnBaseTextChanged);
-            //Unloaded += (o, e) =>
-            //    m_base_dp.RemoveValueChanged(this, OnBaseTextChanged);
         }
 
         private void ForegroundChangedCallback(Brush foreground)
         {
-            foreach (var i in Inlines)
-            {
-                var emoji_inline = i as EmojiInline;
-                if (emoji_inline != null)
-                    emoji_inline.Foreground = foreground;
-            }
+            foreach (var inline in Inlines)
+                if (inline is EmojiInline)
+                    (inline as EmojiInline).Foreground = foreground;
         }
 
         private bool m_recursion_guard = false;
