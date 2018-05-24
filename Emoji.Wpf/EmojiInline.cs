@@ -22,6 +22,7 @@ namespace Emoji.Wpf
 {
     public class EmojiInline : InlineUIContainer
     {
+        // Need an empty constructor for serialisation (undo/redo)
         public EmojiInline()
         {
             // FIXME: not sure this is the correct value; but Baseline does not work.

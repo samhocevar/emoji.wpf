@@ -14,57 +14,10 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
-using System.Windows.Markup;
 using System.Windows.Threading;
 
 namespace Emoji.Wpf
 {
-    // Inheriting from Span makes it easy to parse the tree for copy-paste
-    public class EmojiElement : Span
-    {
-        // Need an empty constructor for serialisation (undo/redo)
-        public EmojiElement() {}
-
-        public EmojiElement(string alt)
-        {
-            BaselineAlignment = BaselineAlignment.Center;
-            Text = alt;
-        }
-
-        public static EmojiElement MakeFromString(string s)
-        {
-            return EmojiData.MatchOne.Match(s).Success ? new EmojiElement(s) : null;
-        }
-
-        // Do not serialize our child element, as it is only for rendering
-        protected new bool ShouldSerializeInlines(XamlDesignerSerializationManager m) => false;
-
-        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
-        {
-            base.OnPropertyChanged(e);
-
-            if (e.Property == TextProperty || e.Property == ForegroundProperty)
-            {
-                Inlines.Clear();
-                Inlines.Add(new EmojiInline()
-                {
-                    FallbackBrush = Foreground,
-                    Text = Text,
-                    FontSize = FontSize,
-                });
-            }
-        }
-
-        public string Text
-        {
-            get { return (string)GetValue(TextProperty); }
-            set { SetValue(TextProperty, value); }
-        }
-
-        public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
-            "Text", typeof(string), typeof(EmojiElement), new PropertyMetadata("☺"));
-    }
-
     public partial class RichTextBox : System.Windows.Controls.RichTextBox
     {
         public RichTextBox()
@@ -90,8 +43,8 @@ namespace Emoji.Wpf
                 //Console.WriteLine(" ... p {0}", p.Parent is EmojiElement ? "Emoji" : p.Parent.GetType().ToString());
 
                 var t = new TextRange(p, next);
-                clipboard += t.Start.Parent is EmojiElement ? (t.Start.Parent as EmojiElement).Text
-                                                            : t.Text;
+                clipboard += t.Start.Parent is EmojiInline ? (t.Start.Parent as EmojiInline).Text
+                                                           : t.Text;
             }
 
             Clipboard.SetText(clipboard);
@@ -133,13 +86,19 @@ namespace Emoji.Wpf
                     break;
 
                 TextRange word = new TextRange(cur, next);
-                var emoji = EmojiElement.MakeFromString(word.Text);
-                if (emoji != null)
+                if (word.Text.Length > 0)
                 {
                     // Test this so as to preserve caret position
                     bool caret_was_next = (0 == next.CompareTo(CaretPosition));
 
-                    next = Replace(word, emoji);
+                    Inline inline;
+                    // FIXME: this is a hack, normally we should split into Runs and EmojiInlines
+                    if (word.Text == "\n")
+                        inline = new LineBreak();
+                    else
+                        inline = new EmojiInline() { Text = word.Text, FontSize = FontSize, FallbackBrush = Foreground };
+
+                    next = Replace(word, inline);
                     if (caret_was_next)
                         CaretPosition = next;
                 }
@@ -152,7 +111,7 @@ namespace Emoji.Wpf
             m_pending_change = false;
         }
 
-        public TextPointer Replace(TextRange range, EmojiElement emoji)
+        public TextPointer Replace(TextRange range, Inline inline)
         {
             var run = range.Start.Parent as Run;
             if (run == null)
@@ -166,12 +125,12 @@ namespace Emoji.Wpf
             if (!string.IsNullOrEmpty(after))
                 inlines.InsertAfter(run, new Run(after));
 
-            inlines.InsertAfter(run, emoji);
+            inlines.InsertAfter(run, inline);
 
             if (!string.IsNullOrEmpty(before))
                 inlines.InsertAfter(run, new Run(before));
 
-            TextPointer ret = emoji.ContentEnd; // FIXME
+            TextPointer ret = inline.ContentEnd; // FIXME
             inlines.Remove(run);
             return ret;
         }
