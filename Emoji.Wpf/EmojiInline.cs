@@ -24,6 +24,8 @@ namespace Emoji.Wpf
     {
         public EmojiInline()
         {
+            // FIXME: not sure this is the correct value; but Baseline does not work.
+            BaselineAlignment = BaselineAlignment.TextBottom;
             Child = m_canvas = new EmojiCanvas(this);
         }
 
