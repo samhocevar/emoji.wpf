@@ -20,6 +20,8 @@ namespace Emoji.Wpf
 {
     public static class EmojiData
     {
+        public static EmojiTypeface Typeface { get; private set; }
+
         public static IEnumerable<Emoji> AllEmoji
         {
             get
@@ -39,6 +41,7 @@ namespace Emoji.Wpf
 
         static EmojiData()
         {
+            Typeface = new EmojiTypeface();
             ParseEmojiList();
         }
 
@@ -81,7 +84,6 @@ namespace Emoji.Wpf
 
         private static void ParseEmojiList()
         {
-            var font = new EmojiTypeface();
             var modifiers_list = new string[] { "🏻", "🏼", "🏽", "🏾", "🏿" };
             var modifiers_string = "(" + string.Join("|", modifiers_list) + ")";
 
@@ -129,7 +131,7 @@ namespace Emoji.Wpf
                     }
 
                     // Only include emojis that we know how to render
-                    if (!font.CanRender(text))
+                    if (!Typeface.CanRender(text))
                         continue;
 
                     bool has_modifier = false;

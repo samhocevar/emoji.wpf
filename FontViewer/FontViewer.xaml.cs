@@ -61,7 +61,6 @@ namespace FontViewer
             base.EndInit();
 
             var emoji_list = new ObservableCollection<MyEmoji>();
-            var font = new EmojiTypeface();
 
             foreach (var emoji in EmojiData.AllEmoji)
                 emoji_list.Add(new MyEmoji(emoji.Text, emoji.Name));

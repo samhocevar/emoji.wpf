@@ -67,7 +67,7 @@ namespace Emoji.Wpf
         private bool m_dirty;
         private GlyphPlanList m_glyphplanlist = new GlyphPlanList();
 
-        private static EmojiTypeface m_font = new EmojiTypeface();
+        private static EmojiTypeface m_font = EmojiData.Typeface;
 
         public void Reset()
         {
