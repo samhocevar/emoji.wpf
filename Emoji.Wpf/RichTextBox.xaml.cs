@@ -11,6 +11,7 @@
 //
 
 using System;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -28,7 +29,7 @@ namespace Emoji.Wpf
 
         protected void OnCopy(object o, DataObjectCopyingEventArgs e)
         {
-            string clipboard = "";
+            /*string clipboard = "";
 
             for (TextPointer p = Selection.Start, next = null;
                  p != null && p.CompareTo(Selection.End) < 0;
@@ -47,10 +48,62 @@ namespace Emoji.Wpf
                                                            : t.Text;
             }
 
-            Clipboard.SetText(clipboard);
+            Clipboard.SetText(clipboard);*/
+
+
+            StringBuilder stringBuilder = new StringBuilder();
+
+            // Enumerating the whole document to match for the Selection!
+            // Couldn't found an efficient solution to fix copying issue! :( -- arnobpl
+
+            bool isStartFound = false;
+
+            foreach (Block block in this.Document.Blocks)
+            {
+                if (block is Paragraph)
+                {
+                    foreach (Inline inline in ((Paragraph) block).Inlines)
+                    {
+                        if (!isStartFound)
+                        {
+                            if (this.Selection.Contains(inline.ContentStart))
+                            {
+                                isStartFound = true;
+                                stringBuilder.Append(GetText(inline));
+                            }
+                        }
+                        else
+                        {
+                            if (this.Selection.Contains(inline.ContentEnd))
+                            {
+                                stringBuilder.Append(GetText(inline));
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            Clipboard.SetText(stringBuilder.ToString());
+
             e.Handled = true;
             e.CancelCommand();
         }
+
+        private static string GetText(Inline inline)
+        {
+            if (inline is EmojiInline)
+                return ((EmojiInline) inline).Text;
+
+            if (inline is LineBreak)
+                return Environment.NewLine;
+
+            return string.Empty;
+        }
+
 
         protected override void OnTextChanged(TextChangedEventArgs e)
         {
