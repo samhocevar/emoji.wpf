@@ -149,7 +149,13 @@ namespace Emoji.Wpf
                     // Only add fully-qualified characters to the groups, or we will
                     // end with a lot of dupes.
                     if (line.Contains("non-fully-qualified"))
-                        continue;
+                    {
+                        // Skip this if there is already a fully qualified version
+                        if (lookup.ContainsKey(text + "\ufe0f"))
+                            continue;
+                        if (lookup.ContainsKey(text.Replace("\u20e3", "\ufe0f\u20e3")))
+                            continue;
+                    }
 
                     var emoji = new Emoji() { Name = name, Text = text, SubGroup = last_subgroup };
                     lookup[text] = emoji;
