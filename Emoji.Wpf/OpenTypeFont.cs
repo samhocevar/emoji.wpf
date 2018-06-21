@@ -22,10 +22,30 @@ namespace Emoji.Wpf
 {
     public class EmojiTypeface
     {
-        public EmojiTypeface() => Init(null);
-        public EmojiTypeface(string name) => Init(name);
+        public EmojiTypeface()
+            => m_fonts.Add(new ColorTypeface(null));
 
-        private void Init(string name)
+        public EmojiTypeface(string name)
+            => m_fonts.Add(new ColorTypeface(name));
+
+        public double Baseline
+            => m_fonts[0].Baseline;
+
+        public bool CanRender(string s)
+            => m_fonts[0].CanRender(s);
+
+        public GlyphPlanList StringToGlyphPlanList(string s, double font_size)
+            => m_fonts[0].StringToGlyphPlanList(s, font_size);
+
+        public void RenderGlyph(DrawingContext dc, ushort gid, Point origin, double size, Brush fallback_brush)
+            => m_fonts[0].RenderGlyph(dc, gid, origin, size, fallback_brush);
+
+        IList<ColorTypeface> m_fonts = new List<ColorTypeface>();
+    }
+
+    internal class ColorTypeface
+    {
+        public ColorTypeface(string name)
         {
             m_gtf = GetGlyphTypeface(first_candidate: name);
             if (m_gtf == null)
