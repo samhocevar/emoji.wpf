@@ -40,6 +40,12 @@
     <EmbeddedResource Include="UnicodeEmoji\emoji-test.txt">
       <LogicalName>emoji-test.txt</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="WinFonts\webdings.txt">
+      <LogicalName>webdings.txt</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinFonts\wingdings.txt">
+      <LogicalName>wingdings.txt</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Page Include="Picker.xaml">
