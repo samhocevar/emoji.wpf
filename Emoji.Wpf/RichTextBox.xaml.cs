@@ -69,7 +69,6 @@ namespace Emoji.Wpf
     {
         public RichTextBox()
         {
-            SetValue(Block.LineHeightProperty, 1.0);
             DataObject.AddCopyingHandler(this, new DataObjectCopyingEventHandler(OnCopy));
         }
 
