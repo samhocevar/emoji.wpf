@@ -27,16 +27,16 @@ namespace Emoji.Wpf
         {
             // FIXME: not sure this is the correct value; but Baseline does not work.
             BaselineAlignment = BaselineAlignment.TextBottom;
-            Child = m_canvas = new EmojiCanvas(this);
+            Child = new EmojiCanvas();
         }
 
         /// <summary>
         /// Redeclare the Child property to prevent it from being serialized.
         /// </summary>
-        public new UIElement Child
+        public new EmojiCanvas Child
         {
-            get => base.Child;
-            set => base.Child = value;
+            get => base.Child as EmojiCanvas;
+            private set => base.Child = value;
         }
 
         public string Text
@@ -66,7 +66,6 @@ namespace Emoji.Wpf
 
         private bool m_dirty;
         private GlyphPlanList m_glyphplanlist = new GlyphPlanList();
-        private EmojiCanvas m_canvas;
 
         private static EmojiTypeface m_font = new EmojiTypeface();
 
@@ -83,9 +82,9 @@ namespace Emoji.Wpf
 
             // Try to compute our own widget size
             // FIXME: I am not sure why the math below works
-            m_canvas.Height = FontSize / 0.75; // 1 pixel = 0.75pt
-            m_canvas.Width = m_glyphplanlist.AccumAdvanceX * 0.75;
-            m_canvas.InvalidateVisual();
+            Child.Height = FontSize / 0.75; // 1 pixel = 0.75pt
+            Child.Width = m_glyphplanlist.AccumAdvanceX * 0.75;
+            Child.InvalidateVisual();
         }
 
         public void Render(DrawingContext dc)
@@ -96,9 +95,9 @@ namespace Emoji.Wpf
                 m_dirty = false;
             }
 
-            if (m_glyphplanlist.Count > 0 && m_canvas.ActualWidth > 0 && m_canvas.ActualHeight > 0)
+            if (m_glyphplanlist.Count > 0 && Child.ActualWidth > 0 && Child.ActualHeight > 0)
             {
-                var rect = new Rect(0, 0, m_canvas.ActualWidth, m_canvas.ActualHeight);
+                var rect = new Rect(0, 0, Child.ActualWidth, Child.ActualHeight);
                 dc.DrawRectangle(Background, null, rect);
 
                 // Debug the bounding box
@@ -107,8 +106,8 @@ namespace Emoji.Wpf
 
                 // Compute font size in pixels
                 double total_width = m_glyphplanlist.AccumAdvanceX;
-                double font_size = Math.Min(m_canvas.ActualWidth / total_width,
-                                            m_canvas.ActualHeight / FontSize);
+                double font_size = Math.Min(Child.ActualWidth / total_width,
+                                            Child.ActualHeight / FontSize);
                 double startx = 0;
                 double starty = FontSize * m_font.Baseline;
 
@@ -133,11 +132,11 @@ namespace Emoji.Wpf
             // FIXME: split this into two different code paths
             if (e.Property == FontSizeProperty || e.Property == TextProperty)
             {
-                m_canvas.InvalidateVisual();
+                Child.InvalidateVisual();
                 m_dirty = true;
             }
             else if (e.Property == FallbackBrushProperty)
-                m_canvas.InvalidateVisual();
+                Child.InvalidateVisual();
         }
 
         public bool Invalid { get; private set; }
@@ -145,16 +144,10 @@ namespace Emoji.Wpf
 
     public class EmojiCanvas : Controls.Canvas
     {
-        public EmojiCanvas(EmojiInline parent)
-        {
-            m_parent = parent;
-        }
+        protected override void OnRender(DrawingContext dc)
+            => (Parent as EmojiInline)?.Render(dc);
 
-        protected override void OnRender(DrawingContext dc) => m_parent.Render(dc);
-
-        private EmojiInline m_parent;
-
-        // FIXME: reimplement this
+        // FIXME: reimplement this?
 #if false
         protected override void OnVisualParentChanged(DependencyObject oldParent)
         {
