@@ -30,6 +30,15 @@ namespace Emoji.Wpf
             Child = m_canvas = new EmojiCanvas(this);
         }
 
+        /// <summary>
+        /// Redeclare the Child property to prevent it from being serialized.
+        /// </summary>
+        public new UIElement Child
+        {
+            get => base.Child;
+            set => base.Child = value;
+        }
+
         public string Text
         {
             get => (string)GetValue(TextProperty);
@@ -49,6 +58,11 @@ namespace Emoji.Wpf
         public static readonly DependencyProperty FallbackBrushProperty = DependencyProperty.Register(
             nameof(FallbackBrush), typeof(Brush), typeof(EmojiInline),
             new PropertyMetadata(Brushes.Black));
+
+        protected override bool ShouldSerializeProperty(DependencyProperty dp)
+            => dp.Name == nameof(Text) && base.ShouldSerializeProperty(dp);
+
+        protected bool ShouldSerializeChild() => false;
 
         private bool m_dirty;
         private GlyphPlanList m_glyphplanlist = new GlyphPlanList();
