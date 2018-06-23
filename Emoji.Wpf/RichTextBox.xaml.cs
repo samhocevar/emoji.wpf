@@ -1,7 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017—2018 Sam Hocevar <sam@hocevar.net>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -14,7 +14,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
-using System.Windows.Threading;
+using System.Windows.Markup;
 
 namespace Emoji.Wpf
 {
@@ -39,8 +39,8 @@ namespace Emoji.Wpf
                     break;
 
                 //var word = new TextRange(p, next);
-                //Console.WriteLine("Word '{0}' Inline {1}", word.Text, word.Start.Parent is EmojiElement ? "Emoji" : "not Emoji");
-                //Console.WriteLine(" ... p {0}", p.Parent is EmojiElement ? "Emoji" : p.Parent.GetType().ToString());
+                //Console.WriteLine($"Word '{word.Text}' Inline {word.Start.Parent.GetType()}");
+                //Console.WriteLine($" ... p {p.Parent.GetType()}");
 
                 var t = new TextRange(p, next);
                 clipboard += t.Start.Parent is EmojiInline ? (t.Start.Parent as EmojiInline).Text
@@ -54,23 +54,12 @@ namespace Emoji.Wpf
 
         protected override void OnTextChanged(TextChangedEventArgs e)
         {
-            DispatcherTimer timer = new DispatcherTimer(DispatcherPriority.Send);
-            timer.Interval = TimeSpan.FromMilliseconds(1);
-            timer.Tick += new EventHandler(delegate { timer.Stop(); FixEmojis(); });
-            timer.Start();
-
-            base.OnTextChanged(e);
-
-            // FIXME: debug
-            //Console.WriteLine(XamlWriter.Save(Document));
-        }
-
-        private bool m_pending_change = false;
-
-        private void FixEmojis()
-        {
             if (m_pending_change)
                 return;
+
+            m_pending_change = true;
+
+            base.OnTextChanged(e);
 
             /* This will prevent our operation from polluting the undo buffer, but it
              * will create an infinite undo stack... need to fix this. */
@@ -108,7 +97,12 @@ namespace Emoji.Wpf
             EndChange();
 
             m_pending_change = false;
+
+            // FIXME: debug
+            //Console.WriteLine(XamlWriter.Save(Document));
         }
+
+        private bool m_pending_change = false;
 
         public TextPointer Replace(TextRange range, Inline inline)
         {
