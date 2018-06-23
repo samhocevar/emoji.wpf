@@ -86,18 +86,17 @@ namespace Emoji.Wpf
                     break;
 
                 TextRange word = new TextRange(cur, next);
-                if (word.Text.Length > 0)
+                if (EmojiData.MatchOne.IsMatch(word.Text))
                 {
-                    // Test this so as to preserve caret position
+                    Inline inline = new EmojiInline()
+                    {
+                        Text = word.Text,
+                        FontSize = FontSize,
+                        FallbackBrush = Foreground,
+                    };
+
+                    // Preserve caret position
                     bool caret_was_next = (0 == next.CompareTo(CaretPosition));
-
-                    Inline inline;
-                    // FIXME: this is a hack, normally we should split into Runs and EmojiInlines
-                    if (word.Text == "\n")
-                        inline = new LineBreak();
-                    else
-                        inline = new EmojiInline() { Text = word.Text, FontSize = FontSize, FallbackBrush = Foreground };
-
                     next = Replace(word, inline);
                     if (caret_was_next)
                         CaretPosition = next;
