@@ -106,8 +106,6 @@ namespace Emoji.Wpf
 
                 // Compute font size in pixels
                 double total_width = m_glyphplanlist.AccumAdvanceX;
-                double font_size = Math.Min(Child.ActualWidth / total_width,
-                                            Child.ActualHeight / FontSize);
                 double startx = 0;
                 double starty = FontSize * m_font.Baseline;
 
