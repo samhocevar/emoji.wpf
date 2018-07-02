@@ -14,8 +14,7 @@ using System;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
-using Typography.TextLayout;
-
+using System.Windows.Media.Imaging;
 using Controls = System.Windows.Controls;
 
 namespace Emoji.Wpf
@@ -65,61 +64,34 @@ namespace Emoji.Wpf
         protected bool ShouldSerializeChild() => false;
 
         private bool m_dirty;
-        private GlyphPlanList m_glyphplanlist = new GlyphPlanList();
+        private BitmapSource m_bitmap;
 
         private static EmojiTypeface m_font = EmojiData.Typeface;
-
-        public void Reset()
-        {
-            m_glyphplanlist = m_font.StringToGlyphPlanList(Text ?? "", FontSize);
-
-            // Check whether the Emoji font knows about all codepoints;
-            // otherwise, set Invalid to true.
-            Invalid = false;
-            for (int i = 0; i < m_glyphplanlist.Count; ++i)
-                if (m_glyphplanlist[i].glyphIndex == 0)
-                    Invalid = true;
-
-            // Try to compute our own widget size
-            // FIXME: I am not sure why the math below works
-            Child.Height = FontSize / 0.75; // 1 pixel = 0.75pt
-            Child.Width = m_glyphplanlist.AccumAdvanceX * 0.75;
-            Child.InvalidateVisual();
-        }
 
         public void Render(DrawingContext dc)
         {
             if (m_dirty)
             {
-                Reset();
+                // If FontSize < 32 (aka. 2**5) we render at a larger resolution
+                double scale = Math.Pow(2.0, Math.Max(0.0, Math.Ceiling(5.0 - Math.Log(FontSize, 2.0))));
+                m_bitmap = EmojiRenderer.RenderBitmap(Text ?? "", FontSize * scale, FallbackBrush);
+                // Try to compute our own widget size
+                Child.Width = Math.Floor(m_bitmap.Width / scale);
+                Child.Height = Math.Floor(m_bitmap.Height / scale);
+                Child.InvalidateVisual();
                 m_dirty = false;
             }
 
-            if (m_glyphplanlist.Count > 0 && Child.ActualWidth > 0 && Child.ActualHeight > 0)
+            if (Child.ActualWidth > 0 && Child.ActualHeight > 0)
             {
                 var rect = new Rect(0, 0, Child.ActualWidth, Child.ActualHeight);
+
                 dc.DrawRectangle(Background, null, rect);
-
+#if false
                 // Debug the bounding box
-                //rect = new Rect(0, 0, ActualWidth, ActualHeight);
-                //dc.DrawRectangle(Brushes.Bisque, new Pen(Brushes.LightCoral, 1.0), rect);
-
-                // Compute font size in pixels
-                double total_width = m_glyphplanlist.AccumAdvanceX;
-                double startx = 0;
-                double starty = FontSize * m_font.Baseline;
-
-                // Debug the glyph bounding box
-                //rect = new Rect(startx, 0, total_width * font_size, m_font.Height * font_size);
-                //dc.DrawRectangle(Brushes.LightYellow, new Pen(Brushes.Orange, 1.0), rect);
-
-                for (int i = 0; i < m_glyphplanlist.Count; ++i)
-                {
-                    var g = m_glyphplanlist[i];
-                    var origin = new Point(Math.Round(startx + g.ExactX * 0.75),
-                                           Math.Round(starty + g.ExactY * 0.75));
-                    m_font.RenderGlyph(dc, g.glyphIndex, origin, FontSize, FallbackBrush);
-                }
+                dc.DrawRectangle(Brushes.Bisque, new Pen(Brushes.LightCoral, 1.0), rect);
+#endif
+                dc.DrawImage(m_bitmap, rect);
             }
         }
 
