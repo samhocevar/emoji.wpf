@@ -45,7 +45,7 @@ namespace Emoji.Wpf
         public static BitmapSource RenderBitmapInternal(string text, double font_size, Brush fallback)
         {
             var font = EmojiData.Typeface;
-            var glyphplanlist = font.StringToGlyphPlanList(text ?? "");
+            var glyphplansequence = font.MakeGlyphPlanSequence(text ?? "");
 
 #if false
             // Check whether the Emoji font knows about all codepoints;
@@ -56,10 +56,9 @@ namespace Emoji.Wpf
                     invalid = true;
 #endif
 
-            var scale = font_size / EmojiTypeface.DefaultFontSize;
-
             // FIXME: I am not sure why the math below works
-            var width = glyphplanlist.AccumAdvanceX * scale * 0.75;
+            var scale = font.GetScale(font_size) * 0.75;
+            var width = glyphplansequence.CalculateWidth() * scale;
             var height = font_size / 0.75;
             var bitmap = new RenderTargetBitmap((int)Math.Ceiling(width), (int)Math.Ceiling(height),
                                                 96, 96, PixelFormats.Pbgra32);
@@ -69,19 +68,20 @@ namespace Emoji.Wpf
 #endif
 
             // Render our image
-            if (glyphplanlist.Count > 0 && width > 0 && height > 0)
+            if (glyphplansequence.Count > 0 && width > 0 && height > 0)
             {
                 var visual = new DrawingVisual();
                 var dc = visual.RenderOpen();
                 double startx = 0;
                 double starty = font_size * font.Baseline;
 
-                for (int i = 0; i < glyphplanlist.Count; ++i)
+                for (int i = 0; i < glyphplansequence.Count; ++i)
                 {
-                    var g = glyphplanlist[i];
-                    var origin = new Point(Math.Round(startx + g.ExactX * scale * 0.75),
-                                           Math.Round(starty + g.ExactY * scale * 0.75));
+                    var g = glyphplansequence[i];
+                    var origin = new Point(Math.Round(startx + g.OffsetX * scale),
+                                           Math.Round(starty + g.OffsetY * scale));
                     font.RenderGlyph(dc, g.glyphIndex, origin, font_size, fallback);
+                    startx += g.AdvanceX * scale;
                 }
 
                 dc.Close();

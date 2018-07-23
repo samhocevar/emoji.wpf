@@ -22,8 +22,6 @@ namespace Emoji.Wpf
 {
     public class EmojiTypeface
     {
-        public const float DefaultFontSize = 100.0f;
-
         public EmojiTypeface()
             => m_fonts.Add(new ColorTypeface(null));
 
@@ -36,10 +34,13 @@ namespace Emoji.Wpf
         public bool CanRender(string s)
             => m_fonts[0].CanRender(s);
 
-        public GlyphPlanList StringToGlyphPlanList(string s)
+        public double GetScale(double point_size)
+            => m_fonts[0].GetScale(point_size);
+
+        public GlyphPlanSequence MakeGlyphPlanSequence(string s)
         {
             if (!m_cache.TryGetValue(s, out var ret))
-                m_cache[s] = ret = m_fonts[0].StringToGlyphPlanList(s, DefaultFontSize);
+                m_cache[s] = ret = new GlyphPlanSequence(m_fonts[0].StringToGlyphPlanList(s));
             return ret;
         }
 
@@ -47,10 +48,10 @@ namespace Emoji.Wpf
             => m_fonts[0].RenderGlyph(dc, gid, origin, size, fallback_brush);
 
         /// <summary>
-        /// A cache of GlyphPlanList objects, indexed by source strings. Should
+        /// A cache of GlyphPlanSequence objects, indexed by source strings. Should
         /// remain pretty lightweight because they are small objects.
         /// </summary>
-        private IDictionary<string, GlyphPlanList> m_cache = new Dictionary<string, GlyphPlanList>();
+        private IDictionary<string, GlyphPlanSequence> m_cache = new Dictionary<string, GlyphPlanSequence>();
 
         private IList<ColorTypeface> m_fonts = new List<ColorTypeface>();
     }
@@ -122,21 +123,23 @@ namespace Emoji.Wpf
         public bool CanRender(string s)
         {
             m_layout.Layout(s.ToCharArray(), 0, s.Length);
-            for (int i = 0; i < m_layout.ResultUnscaledGlyphPositions.Count; ++i)
-                if (m_layout.ResultUnscaledGlyphPositions.GetGlyph(i, out var dummy) == 0)
+            foreach (var g in m_layout.GetUnscaledGlyphPlanIter())
+                if (g.glyphIndex == 0)
                     return false;
             return true;
         }
 
-        public GlyphPlanList StringToGlyphPlanList(string s, double font_size)
+        public IUnscaledGlyphPlanList StringToGlyphPlanList(string s)
         {
-            GlyphPlanList l = new GlyphPlanList();
             m_layout.Layout(s.ToCharArray(), 0, s.Length);
-            var scale = m_openfont.CalculateScaleToPixelFromPointSize((float)font_size);
-            GlyphLayoutExtensions.GenerateGlyphPlan(m_layout.ResultUnscaledGlyphPositions, scale,
-                                                    snapToGrid: true, outputGlyphPlanList: l);
+            var l = new UnscaledGlyphPlanList();
+            foreach (var g in m_layout.GetUnscaledGlyphPlanIter())
+                l.Append(g);
             return l;
         }
+
+        public double GetScale(double point_size)
+            => m_openfont.CalculateScaleToPixelFromPointSize((float)point_size);
 
         public IDictionary<ushort, double> AdvanceWidths { get => m_gtf.AdvanceWidths; }
         public IDictionary<ushort, double> AdvanceHeights { get => m_gtf.AdvanceHeights; }
