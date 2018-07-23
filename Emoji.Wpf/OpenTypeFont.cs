@@ -63,22 +63,6 @@ namespace Emoji.Wpf
             m_layout.ScriptLang = ScriptLangs.Default;
             m_layout.Typeface = m_openfont;
             m_layout.PositionTechnique = PositionTechnique.OpenFont;
-
-#if FALSE // debug stuff
-            var font = m_openfont;
-
-            GlyphIndexList gl = new GlyphIndexList();
-
-            gl.Add(font.LookupIndex(0x1f431)); // U+1F431 CAT FACE
-            gl.Add(font.LookupIndex( 0x200d)); //  U+200D ZERO WIDTH JOINER
-            gl.Add(font.LookupIndex(0x1f453)); // U+1F453 EYEGLASSES
-
-            //gl.Add(font.LookupIndex(0x1f46a)); // U+1F46A FAMILY
-            //gl.Add(font.LookupIndex(0x1f3fe)); // U+1F3FE EMOJI MODIFIER FITZPATRICK TYPE-5
-
-            foreach (var lookup_table in font.GSUBTable.LookupList)
-                lookup_table.DoSubstitution(gl, 0, gl.Count);
-#endif
         }
 
         private GlyphTypeface GetGlyphTypeface(string first_candidate)
@@ -188,31 +172,6 @@ namespace Emoji.Wpf
         protected GlyphTypeface m_gtf;
         protected Typography.OpenFont.Typeface m_openfont;
         protected GlyphLayout m_layout;
-
-        internal class GlyphIndexList : List<ushort>, Typography.OpenFont.Tables.IGlyphIndexList
-        {
-            public void AddGlyph(int index, ushort glyphIndex)
-            {
-                Insert(index, glyphIndex);
-            }
-
-            public void Replace(int index, ushort newGlyphIndex)
-            {
-                this[index] = newGlyphIndex;
-            }
-
-            public void Replace(int index, int removeLen, ushort newGlyhIndex)
-            {
-                this[index] = newGlyhIndex;
-                RemoveRange(index + 1, removeLen - 1);
-            }
-
-            public void Replace(int index, ushort[] newGlyhIndices)
-            {
-                for (int i = 0; i < newGlyhIndices.Length; ++i)
-                    this[index + i] = newGlyhIndices[i];
-            }
-        }
     }
 }
 
