@@ -12,7 +12,8 @@
     <Window.Resources>
         <!-- FIXME: I used to have "👩🏽‍👩🏽‍👦🏽‍👦🏽" here but it has kerning issues. -->
         <clr:String x:Key="SampleText">Hello! ♥😁🐨🐱‍🐉👩🏿‍👩🏻‍👦🏽 lol</clr:String>
-        <clr:String x:Key="DefaultEmoji">🍣</clr:String>
+        <clr:String x:Key="PickerEmoji">🍣</clr:String>
+        <clr:String x:Key="FontSizeEmoji">🍷🐉</clr:String>
         <clr:String x:Key="EditableText" xml:space="preserve">Hi🙌, I♥emojis☺&#x0a;Edit me!&#x0a;🍰✈✏📞☘️💩</clr:String>
     </Window.Resources>
 
@@ -31,9 +32,22 @@
             </StackPanel>
         </GroupBox>
 
-        <GroupBox DockPanel.Dock="Top" Header="emoji:Picker" Margin="4">
-            <emoji:Picker FontSize="40" Margin="4" Selection="{StaticResource DefaultEmoji}"/>
-        </GroupBox>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+            <GroupBox Header="emoji:Picker" Margin="4">
+                <emoji:Picker FontSize="40" Margin="4" Selection="{StaticResource PickerEmoji}"/>
+            </GroupBox>
+            <GroupBox Header="Font Size" Margin="4">
+                <StackPanel Orientation="Horizontal">
+                    <emoji:TextBlock FontSize="6" Margin="0" Text="{StaticResource FontSizeEmoji}"/>
+                    <emoji:TextBlock FontSize="8" Margin="0" Text="{StaticResource FontSizeEmoji}"/>
+                    <emoji:TextBlock FontSize="12" Margin="0" Text="{StaticResource FontSizeEmoji}"/>
+                    <emoji:TextBlock FontSize="16" Margin="0" Text="{StaticResource FontSizeEmoji}"/>
+                    <emoji:TextBlock FontSize="24" Margin="0" Text="{StaticResource FontSizeEmoji}"/>
+                    <emoji:TextBlock FontSize="32" Margin="0" Text="{StaticResource FontSizeEmoji}"/>
+                    <emoji:TextBlock FontSize="48" Margin="0" Text="{StaticResource FontSizeEmoji}"/>
+                </StackPanel>
+            </GroupBox>
+        </StackPanel>
 
         <GroupBox Header="emoji:RichTextBox" Margin="4">
             <emoji:RichTextBox VerticalScrollBarVisibility="Auto"
