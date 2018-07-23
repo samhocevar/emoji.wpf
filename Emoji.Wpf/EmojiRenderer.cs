@@ -11,6 +11,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -21,8 +22,30 @@ namespace Emoji.Wpf
     {
         public static BitmapSource RenderBitmap(string text, double font_size, Brush fallback)
         {
+            var key = new RenderKey() { Text = text, FontSize = font_size, Fallback = fallback };
+            if (!m_cache.TryGetValue(key, out var ret))
+                m_cache[key] = ret = RenderBitmapInternal(text, font_size, fallback);
+            return ret;
+        }
+
+        private struct RenderKey
+        {
+            public string Text;
+            public double FontSize;
+            public Brush Fallback;
+        };
+
+        /// <summary>
+        /// A cache of bitmaps, indexed by source string, font size, and fallback
+        /// brush. This may grow large with some projects, so in the future we
+        /// should probably add an expiration mechanism.
+        /// </summary>
+        private static IDictionary<RenderKey, BitmapSource> m_cache = new Dictionary<RenderKey, BitmapSource>();
+
+        public static BitmapSource RenderBitmapInternal(string text, double font_size, Brush fallback)
+        {
             var font = EmojiData.Typeface;
-            var glyphplanlist = font.StringToGlyphPlanList(text ?? "", font_size);
+            var glyphplanlist = font.StringToGlyphPlanList(text ?? "");
 
 #if false
             // Check whether the Emoji font knows about all codepoints;
@@ -33,8 +56,10 @@ namespace Emoji.Wpf
                     invalid = true;
 #endif
 
+            var scale = font_size / EmojiTypeface.DefaultFontSize;
+
             // FIXME: I am not sure why the math below works
-            var width = glyphplanlist.AccumAdvanceX * 0.75;
+            var width = glyphplanlist.AccumAdvanceX * scale * 0.75;
             var height = font_size / 0.75;
             var bitmap = new RenderTargetBitmap((int)Math.Ceiling(width), (int)Math.Ceiling(height),
                                                 96, 96, PixelFormats.Pbgra32);
@@ -54,8 +79,8 @@ namespace Emoji.Wpf
                 for (int i = 0; i < glyphplanlist.Count; ++i)
                 {
                     var g = glyphplanlist[i];
-                    var origin = new Point(Math.Round(startx + g.ExactX * 0.75),
-                                           Math.Round(starty + g.ExactY * 0.75));
+                    var origin = new Point(Math.Round(startx + g.ExactX * scale * 0.75),
+                                           Math.Round(starty + g.ExactY * scale * 0.75));
                     font.RenderGlyph(dc, g.glyphIndex, origin, font_size, fallback);
                 }
 
@@ -65,5 +90,6 @@ namespace Emoji.Wpf
 
             return bitmap;
         }
+
     }
 }

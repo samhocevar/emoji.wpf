@@ -22,6 +22,8 @@ namespace Emoji.Wpf
 {
     public class EmojiTypeface
     {
+        public const float DefaultFontSize = 100.0f;
+
         public EmojiTypeface()
             => m_fonts.Add(new ColorTypeface(null));
 
@@ -34,13 +36,23 @@ namespace Emoji.Wpf
         public bool CanRender(string s)
             => m_fonts[0].CanRender(s);
 
-        public GlyphPlanList StringToGlyphPlanList(string s, double font_size)
-            => m_fonts[0].StringToGlyphPlanList(s, font_size);
+        public GlyphPlanList StringToGlyphPlanList(string s)
+        {
+            if (!m_cache.TryGetValue(s, out var ret))
+                m_cache[s] = ret = m_fonts[0].StringToGlyphPlanList(s, DefaultFontSize);
+            return ret;
+        }
 
         public void RenderGlyph(DrawingContext dc, ushort gid, Point origin, double size, Brush fallback_brush)
             => m_fonts[0].RenderGlyph(dc, gid, origin, size, fallback_brush);
 
-        IList<ColorTypeface> m_fonts = new List<ColorTypeface>();
+        /// <summary>
+        /// A cache of GlyphPlanList objects, indexed by source strings. Should
+        /// remain pretty lightweight because they are small objects.
+        /// </summary>
+        private IDictionary<string, GlyphPlanList> m_cache = new Dictionary<string, GlyphPlanList>();
+
+        private IList<ColorTypeface> m_fonts = new List<ColorTypeface>();
     }
 
     internal class ColorTypeface
