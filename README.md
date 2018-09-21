@@ -2,7 +2,7 @@
 
 `Emoji.Wpf` is a proof of concept implementation of Emoji for WPF.
 
-![Demo](/Resources/emoji.wpf.gif)
+![Demo 1](/Resources/emoji.wpf.gif) ![Demo 2](/Resources/emoji.wpf.png)
 
 ### Features
 
@@ -11,21 +11,33 @@
  - **Full vector emojis**!
  - **Lightweight**; does not embed a font, or emoji images.
  - Works with **old .NET versions** such as 3.0.
- - Uses the Segoe UI Emoji system font, even on **Windows 7 or Windows 8** by
-   implementing Microsoft’s COLR/CPAL font format extensions.
+ - Uses the Segoe UI Emoji system font, even on **Windows 7 or Windows 8** (if
+   installed in `c:/Windows/Fonts`) by implementing Microsoft’s COLR/CPAL font
+   format extensions.
  - [Free, opensource software](http://www.wftpl.net/), with no strings attached.
  - Available as a [Nuget package](https://www.nuget.org/packages/Emoji.Wpf).
 
-### Example
+### Available classes
 
-Just add an `Emoji.Wpf.RichTextBox` to your XAML:
+ - `Emoji.Wpf.TextBlock`: an emoji-aware version of `System.Windows.Controls.TextBlock`.
+ - `Emoji.Wpf.RichTextBox`: an emoji-aware version of `System.Windows.Controls.RichTextBox`.
+
+ - `Emoji.Wpf.Picker`: an emoji picker
+
+### Examples
+
+Here is how to use Emoji.Wpf in your XAML:
 
 ```xaml
     <Window ...
             xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
             ...>
         ...
-        <emoji:RichTextBox Name="SampleTextBox" FontSize="24" Margin="5"/>
+        <emoji:RichTextBox FontSize="24" Margin="5"/>
+        ...
+        <emoji:TextBlock FontSize="24" Text="Hello! ♥😁🐨🐱‍🐉👩🏿‍👩🏻‍👦🏽 lol"/>
+        ...
+        <emoji:Picker FontSize="40"/>
         ...
     </Window>
 ```
