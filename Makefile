@@ -5,9 +5,8 @@
 #VERSION = $(shell sed -ne 's/.*<ApplicationVersion>\([^<]*\).*/\1/p' build.config)
 CONFIG = Release
 
-# XXX: this is necessary until vswhere.exe actually works
-VS150COMNTOOLS = C:\\Program\ Files\ \(x86\)\\Microsoft\ Visual\ Studio\\2017\\Community\\Common7\\Tools
-DEVENV = $(VS150COMNTOOLS)\\..\\..\\Common7\\IDE\\devenv.com
+VSWHERE = "${ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
+DEVENV = "$(shell $(VSWHERE) | sed -ne 's/^productPath: //p' | sed 's/devenv.exe/devenv.com/' | head -n 1)"
 
 all:
 	$(DEVENV) Emoji.Wpf.sln //rebuild $(CONFIG)
