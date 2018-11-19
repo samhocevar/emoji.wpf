@@ -38,13 +38,13 @@ namespace Emoji.Wpf
                 if (next == null)
                     break;
 
-                //var word = new TextRange(p, next);
-                //Console.WriteLine($"Word '{word.Text}' Inline {word.Start.Parent.GetType()}");
-                //Console.WriteLine($" ... p {p.Parent.GetType()}");
-
-                var t = new TextRange(p, next);
-                clipboard += t.Start.Parent is EmojiInline ? (t.Start.Parent as EmojiInline).Text
-                                                           : t.Text;
+                var emoji = (next.Parent as Run)?.PreviousInline as EmojiInline;
+                if (emoji == null && next.Parent != p.Parent)
+                    emoji = (p.Parent as Run)?.NextInline as EmojiInline;
+                if (emoji != null && (p.Parent as Run).PreviousInline != emoji)
+                    clipboard += emoji?.Text;
+                else
+                    clipboard += new TextRange(p, next).Text;
             }
 
             Clipboard.SetText(clipboard);
