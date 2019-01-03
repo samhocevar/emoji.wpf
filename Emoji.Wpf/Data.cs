@@ -89,7 +89,7 @@ namespace Emoji.Wpf
 
             var match_group = new Regex(@"^# group: (.*)");
             var match_subgroup = new Regex(@"^# subgroup: (.*)");
-            var match_sequence = new Regex(@"^([0-9a-fA-F ]+[0-9a-fA-F]).*; [-a-z]*fully-qualified.*# [^ ]* (.*)");
+            var match_sequence = new Regex(@"^([0-9a-fA-F ]+[0-9a-fA-F]).*; (fully-|minimally-|un)qualified.*# [^ ]* (.*)");
             var match_modifier = new Regex(modifiers_string);
             var list = new List<Group>();
             var lookup = new Dictionary<string, Emoji>();
@@ -121,7 +121,7 @@ namespace Emoji.Wpf
                 if (m.Success)
                 {
                     string sequence = m.Groups[1].ToString();
-                    string name = m.Groups[2].ToString();
+                    string name = m.Groups[3].ToString();
 
                     string text = "";
                     foreach (var item in sequence.Split(' '))
@@ -148,7 +148,7 @@ namespace Emoji.Wpf
 
                     // Only add fully-qualified characters to the groups, or we will
                     // end with a lot of dupes.
-                    if (line.Contains("non-fully-qualified"))
+                    if (line.Contains("unqualified") || line.Contains("minimally-qualified"))
                     {
                         // Skip this if there is already a fully qualified version
                         if (lookup.ContainsKey(text + "\ufe0f"))
