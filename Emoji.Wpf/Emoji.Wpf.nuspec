@@ -6,7 +6,7 @@
     <title>$title$</title>
     <authors>Sam Hocevar &lt;sam@hocevar.net&gt;</authors>
     <owners>Sam Hocevar</owners>
-    <licenseUrl>http://www.wtfpl.net/txt/copying/</licenseUrl>
+    <license type="expression">WTFPL</license>
     <projectUrl>https://github.com/samhocevar/emoji.wpf</projectUrl>
     <iconUrl>https://github.com/samhocevar/emoji.wpf/raw/master/Resources/icon.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
