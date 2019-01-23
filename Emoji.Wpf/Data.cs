@@ -71,6 +71,17 @@ namespace Emoji.Wpf
 
             public IList<SubGroup> SubGroups { get; } = new List<SubGroup>();
 
+            public int EmojiCount
+            {
+                get
+                {
+                    int i = 0;
+                    foreach (var subgroup in SubGroups)
+                        i += subgroup.EmojiList.Count;
+                    return i;
+                }
+            }
+
             public IEnumerable<Emoji> EmojiList
             {
                 get
@@ -173,6 +184,11 @@ namespace Emoji.Wpf
                     }
                 }
             }
+
+            // Remove empty groups, for instance the Components
+            for (int i = list.Count; --i > 0;)
+                if (list[i].EmojiCount == 0)
+                    list.RemoveAt(i);
 
             AllGroups = list;
             Lookup = lookup;
