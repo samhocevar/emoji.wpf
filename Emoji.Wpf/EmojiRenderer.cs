@@ -60,7 +60,8 @@ namespace Emoji.Wpf
             var scale = font.GetScale(font_size) * 0.75;
             var width = glyphplansequence.CalculateWidth() * scale;
             var height = font_size / 0.75;
-            var bitmap = new RenderTargetBitmap((int)Math.Ceiling(width), (int)Math.Ceiling(height),
+            var bitmap = new RenderTargetBitmap((int)Math.Max(1.0, Math.Ceiling(width)),
+                                                (int)Math.Max(1.0, Math.Ceiling(height)),
                                                 96, 96, PixelFormats.Pbgra32);
 
 #if false
@@ -90,6 +91,5 @@ namespace Emoji.Wpf
 
             return bitmap;
         }
-
     }
 }
