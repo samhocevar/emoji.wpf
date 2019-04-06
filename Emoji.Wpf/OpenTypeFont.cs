@@ -68,7 +68,7 @@ namespace Emoji.Wpf
             using (var s = m_gtf.GetFontStream())
             {
                 var r = new Typography.OpenFont.OpenFontReader();
-                m_openfont = r.Read(s, Typography.OpenFont.ReadFlags.Full);
+                m_openfont = r.Read(s, 0, Typography.OpenFont.ReadFlags.Full);
             }
 
             // Create a layout for glyphs
