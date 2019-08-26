@@ -64,9 +64,12 @@ namespace Emoji.Wpf
         public static new readonly DependencyProperty TextProperty =
             DependencyProperty.Register(nameof(Text), typeof(string), typeof(TextBlock));
 
-        private void OnTextChanged(String text)
+        private void OnTextChanged(string text)
         {
             Inlines.Clear();
+            if (string.IsNullOrEmpty(text))
+                return;
+
             int pos = 0;
             foreach (Match m in EmojiData.MatchMultiple.Matches(text))
             {
