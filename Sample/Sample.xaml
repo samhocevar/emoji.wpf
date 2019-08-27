@@ -34,7 +34,16 @@
 
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
             <GroupBox Header="emoji:Picker" Margin="4">
-                <emoji:Picker FontSize="40" Margin="4" Selection="{StaticResource PickerEmoji}"/>
+                <StackPanel Orientation="Horizontal">
+                    <emoji:Picker FontSize="40" Margin="4" x:Name="EmojiPicker"
+                                  Selection="{StaticResource PickerEmoji}"/>
+                    <StackPanel Orientation="Vertical" Margin="4">
+                        <emoji:Picker FontSize="20" Margin="0,0,0,4"
+                                      Selection="{Binding Selection, ElementName=EmojiPicker, Mode=TwoWay}"/>
+                        <emoji:TextBlock FontSize="20" HorizontalAlignment="Center"
+                                         Text="{Binding Selection, ElementName=EmojiPicker, Mode=TwoWay}"/>
+                    </StackPanel>
+                </StackPanel>
             </GroupBox>
             <GroupBox Header="Font Size" Margin="4">
                 <StackPanel Orientation="Horizontal">
