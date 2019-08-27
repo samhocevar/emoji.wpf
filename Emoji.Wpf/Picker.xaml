@@ -13,8 +13,9 @@
         <emoji:TextBlock x:Name="TextBlock" Text="{Binding ElementName=StackPanel_INTERNAL, Mode=OneWay, Path=Selection, UpdateSourceTrigger=PropertyChanged}"/>
     </ToggleButton>
 
-    <Popup IsOpen="{Binding IsChecked, ElementName=Button_INTERNAL}"
+    <Popup IsOpen="{Binding IsChecked, ElementName=Button_INTERNAL, Mode=TwoWay}"
            x:Name="Popup_INTERNAL" StaysOpen="False"
+           KeyDown="OnPopupKeyDown" Loaded="OnPopupLoaded"
            AllowsTransparency="True" Margin="0">
 
         <TabControl ItemsSource="{Binding EmojiGroups, ElementName=StackPanel_INTERNAL}" Padding="0">
@@ -63,7 +64,7 @@
                                                       ToolTip="{Binding Path=Name}">
                                             <emoji:TextBlock MinWidth="16" MinHeight="16" FontSize="18" Text="{Binding Path=Text}"/>
                                         </ToggleButton>
-                                        <Popup IsOpen="{Binding IsChecked, ElementName=VariationButton}"
+                                        <Popup IsOpen="{Binding IsChecked, ElementName=VariationButton, Mode=TwoWay}"
                                                x:Name="VariationPopup" StaysOpen="False"
                                                AllowsTransparency="True" Margin="0">
                                             <ListView Name="VariationListView" ItemsSource="{Binding VariationList}"

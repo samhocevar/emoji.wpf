@@ -18,6 +18,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Markup;
 
 namespace Emoji.Wpf
@@ -88,6 +89,32 @@ namespace Emoji.Wpf
 
         public static readonly DependencyProperty SelectionProperty = DependencyProperty.Register(
             nameof(Selection), typeof(string), typeof(Picker), new FrameworkPropertyMetadata("☺", OnSelectionPropertyChanged));
+
+        private void OnPopupKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape && sender is Popup)
+            {
+                (sender as Popup).IsOpen = false;
+                e.Handled = true;
+            }
+        }
+
+        private void OnPopupLoaded(object sender, RoutedEventArgs e)
+        {
+            var child = (sender as Popup).Child;
+            IInputElement old_focus = null;
+            child.Focusable = true;
+            child.IsVisibleChanged += (o, ea) =>
+            {
+                if (child.IsVisible)
+                {
+                    old_focus = Keyboard.FocusedElement;
+                    Keyboard.Focus(child);
+                }
+            };
+
+            (sender as Popup).Closed += (o, ea) => Keyboard.Focus(old_focus);
+        }
     }
 
     public class BoolInverter : MarkupExtension, IValueConverter
