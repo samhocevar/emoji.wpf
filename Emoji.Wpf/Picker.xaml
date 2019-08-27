@@ -1,5 +1,5 @@
 ﻿<StackPanel x:Class="Emoji.Wpf.Picker"
-            x:Name="ThisPicker" DataContext="{Binding ElementName=ThisPicker}"
+            x:Name="StackPanel_INTERNAL"
             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -8,15 +8,16 @@
             Orientation="Horizontal"
             mc:Ignorable="d">
 
-    <ToggleButton x:Name="Button" IsHitTestVisible="{Binding ElementName=Popup, Path=IsOpen, Mode=OneWay, Converter={emoji:BoolInverter}}">
-        <emoji:TextBlock x:Name="TextBlock" Text="{Binding Selection}"/>
+    <ToggleButton x:Name="Button_INTERNAL"
+                  IsHitTestVisible="{Binding IsOpen, ElementName=Popup_INTERNAL, Mode=OneWay, Converter={emoji:BoolInverter}}">
+        <emoji:TextBlock x:Name="TextBlock" Text="{Binding ElementName=StackPanel_INTERNAL, Mode=OneWay, Path=Selection, UpdateSourceTrigger=PropertyChanged}"/>
     </ToggleButton>
 
-    <Popup IsOpen="{Binding IsChecked, ElementName=Button}"
-           x:Name="Popup" StaysOpen="False"
+    <Popup IsOpen="{Binding IsChecked, ElementName=Button_INTERNAL}"
+           x:Name="Popup_INTERNAL" StaysOpen="False"
            AllowsTransparency="True" Margin="0">
 
-        <TabControl ItemsSource="{Binding EmojiGroups}" Padding="0">
+        <TabControl ItemsSource="{Binding EmojiGroups, ElementName=StackPanel_INTERNAL}" Padding="0">
             <TabControl.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">

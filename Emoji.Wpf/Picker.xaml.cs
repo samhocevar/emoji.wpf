@@ -42,24 +42,24 @@ namespace Emoji.Wpf
 
         public event PropertyChangedEventHandler SelectionChanged;
 
-        public string Selection
+        private static void OnSelectionPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
         {
-            get => m_text;
-            set
-            {
-                var old_value = m_text;
-                if (value != m_text)
-                {
-                    m_text = value;
-                    var is_disabled = string.IsNullOrEmpty(value);
-                    TextBlock.Text = is_disabled ? "???" : value;
-                    TextBlock.Opacity = is_disabled ? 0.3 : 1.0;
-                    SelectionChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Selection)));
-                }
-            }
+            (source as Picker)?.OnSelectionChanged(e.NewValue as string);
         }
 
-        private string m_text;
+        public string Selection
+        {
+            get => (string)GetValue(SelectionProperty);
+            set => SetValue(SelectionProperty, value);
+        }
+
+        private void OnSelectionChanged(string s)
+        {
+            var is_disabled = string.IsNullOrEmpty(s);
+            TextBlock.Text = is_disabled ? "???" : s;
+            TextBlock.Opacity = is_disabled ? 0.3 : 1.0;
+            SelectionChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Selection)));
+        }
 
         private void OnEmojiSelected(object sender, RoutedEventArgs e)
         {
@@ -74,7 +74,7 @@ namespace Emoji.Wpf
             if (emoji.VariationList.Count == 0 || sender is Button)
             {
                 Selection = emoji.Text;
-                Button.IsChecked = false;
+                Button_INTERNAL.IsChecked = false;
                 e.Handled = true;
             }
 
@@ -86,8 +86,8 @@ namespace Emoji.Wpf
 
         private ToggleButton m_current_toggle;
 
-        public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
-            nameof(Selection), typeof(string), typeof(Picker), new PropertyMetadata("☺"));
+        public static readonly DependencyProperty SelectionProperty = DependencyProperty.Register(
+            nameof(Selection), typeof(string), typeof(Picker), new FrameworkPropertyMetadata("☺", OnSelectionPropertyChanged));
     }
 
     public class BoolInverter : MarkupExtension, IValueConverter
