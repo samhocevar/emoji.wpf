@@ -12,6 +12,7 @@
       <Using Namespace="System.IO.Compression" />
       <Code Type="Fragment" Language="cs">
       <![CDATA[
+          Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
           var data = File.ReadAllBytes(InputFile);
           using (var s = new FileStream(OutputFile, FileMode.Create))
               using (var gs = new GZipStream(s, CompressionMode.Compress, false))
@@ -49,7 +50,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <Target Name="CompressResources" BeforeTargets="Compile"
+  <Target Name="CompressResources" BeforeTargets="BeforeBuild"
           Inputs="UnicodeEmoji\emoji-test.txt"
           Outputs="$(OutputPath)\emoji-test.txt.gz">
     <GZipTask InputFile="UnicodeEmoji\emoji-test.txt"
