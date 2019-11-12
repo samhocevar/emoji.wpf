@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="ZipTest" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="CompressResources" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <UsingTask TaskName="GZipTask" TaskFactory="CodeTaskFactory"
              AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
@@ -10,15 +10,13 @@
     <Task>
       <Reference Include="System.IO.Compression" />
       <Using Namespace="System.IO.Compression" />
-      <Code Type="Fragment" Language="cs">
-      <![CDATA[
+      <Code Type="Fragment" Language="cs"><![CDATA[
           Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
           var data = File.ReadAllBytes(InputFile);
           using (var s = new FileStream(OutputFile, FileMode.Create))
               using (var gs = new GZipStream(s, CompressionMode.Compress, false))
                   gs.Write(data, 0, data.Length);
-      ]]>
-      </Code>
+      ]]></Code>
     </Task>
   </UsingTask>
   <PropertyGroup>
@@ -63,7 +61,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UnicodeEmoji\emoji-test.txt" />
     <EmbeddedResource Include="$(OutputPath)\emoji-test.txt.gz">
+      <Visible>false</Visible>
       <LogicalName>emoji-test.txt.gz</LogicalName>
     </EmbeddedResource>
     <EmbeddedResource Include="WinFonts\webdings.txt">
