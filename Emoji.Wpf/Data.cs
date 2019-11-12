@@ -13,6 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -203,8 +204,9 @@ namespace Emoji.Wpf
 
         private static IEnumerable<string> EmojiDescriptionLines()
         {
-            using (Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream("emoji-test.txt"))
-            using (StreamReader sr = new StreamReader(s))
+            using (Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream("emoji-test.txt.gz"))
+            using (GZipStream gs = new GZipStream(s, CompressionMode.Decompress))
+            using (StreamReader sr = new StreamReader(gs))
             {
                 foreach (var line in sr.ReadToEnd().Split('\r', '\n'))
                 {
