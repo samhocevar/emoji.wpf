@@ -14,6 +14,7 @@
         <clr:String x:Key="SampleText">Hello! ♥😁🐨🐱‍🐉👩🏿‍👩🏻‍👦🏽 lol</clr:String>
         <clr:String x:Key="PickerEmoji">🍣</clr:String>
         <clr:String x:Key="FontSizeEmoji">🍷🐉</clr:String>
+        <clr:String x:Key="QualifiedEmoji">▶︎ ▶ ▶️</clr:String>
         <clr:String x:Key="EditableText" xml:space="preserve">Hi🙌, I♥emojis☺&#x0a;Edit me!&#x0a;🍰✈✏📞☘️💩</clr:String>
     </Window.Resources>
 
@@ -58,16 +59,24 @@
             </GroupBox>
         </StackPanel>
 
-        <GroupBox Header="emoji:RichTextBox" Margin="4">
-            <emoji:RichTextBox VerticalScrollBarVisibility="Auto"
+        <DockPanel>
+            <GroupBox DockPanel.Dock="Right" Header="Variation Selectors" Margin="4">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="{StaticResource QualifiedEmoji}"/>
+                    <emoji:TextBlock Text="{StaticResource QualifiedEmoji}"/>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="emoji:RichTextBox" Margin="4">
+                <emoji:RichTextBox VerticalScrollBarVisibility="Auto"
                                FontSize="20" Margin="5">
-                <FlowDocument>
-                    <Paragraph>
-                        <Run Text="{StaticResource EditableText}"/>
-                    </Paragraph>
-                </FlowDocument>
-            </emoji:RichTextBox>
-        </GroupBox>
+                    <FlowDocument>
+                        <Paragraph>
+                            <Run Text="{StaticResource EditableText}"/>
+                        </Paragraph>
+                    </FlowDocument>
+                </emoji:RichTextBox>
+            </GroupBox>
+        </DockPanel>
 
     </DockPanel>
 </Window>
