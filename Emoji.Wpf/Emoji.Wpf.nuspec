@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package >
+<package>
   <metadata>
     <id>$id$</id>
     <version>0.0.19-experimental</version>
@@ -8,7 +8,7 @@
     <owners>Sam Hocevar</owners>
     <license type="expression">WTFPL</license>
     <projectUrl>https://github.com/samhocevar/emoji.wpf</projectUrl>
-    <iconUrl>https://github.com/samhocevar/emoji.wpf/raw/master/Resources/icon.png</iconUrl>
+    <icon>icon.png</icon>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
     <summary>$description$</summary>
@@ -19,5 +19,6 @@
   <files>
     <file src="bin/Release/Typography.OpenFont.dll" target="lib\net30"/>
     <file src="bin/Release/Typography.GlyphLayout.dll" target="lib\net30"/>
+    <file src="../Resources/icon.png" target="."/>
   </files>
 </package>
