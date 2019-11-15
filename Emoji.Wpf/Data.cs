@@ -204,9 +204,7 @@ namespace Emoji.Wpf
 
         private static IEnumerable<string> EmojiDescriptionLines()
         {
-            using (Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream("emoji-test.txt.gz"))
-            using (GZipStream gs = new GZipStream(s, CompressionMode.Decompress))
-            using (StreamReader sr = new StreamReader(gs))
+            using (var sr = new CompressedResourceStream("emoji-test.txt.gz"))
             {
                 foreach (var line in sr.ReadToEnd().Split('\r', '\n'))
                 {
