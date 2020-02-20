@@ -1,10 +1,11 @@
-[submodule "typography"]
+[submodule "Typography"]
 	path = Typography
-	url = git@github.com:samhocevar/fork-typography.git
+	url = ../../samhocevar/fork-typography.git
 	branch = emoji.wpf
-[submodule "unicode-emoji"]
-	path = Emoji.Wpf/UnicodeEmoji
-	url = ../unicode-emoji.git
-[submodule "unicode-cldr"]
+
+[submodule "UnicodeCLDR"]
 	path = Emoji.Wpf/UnicodeCLDR
-	url = ../fork-cldr-emoji-annotation.git
+	url = ../../unicode-org/cldr
+[submodule "UnicodeEmoji"]
+	path = Emoji.Wpf/UnicodeEmoji
+	url = ../../samhocevar/unicode-emoji.git
