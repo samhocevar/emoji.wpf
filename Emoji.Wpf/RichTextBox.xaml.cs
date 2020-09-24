@@ -11,6 +11,7 @@
 //
 
 using System;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -65,8 +66,6 @@ namespace Emoji.Wpf
              * will create an infinite undo stack... need to fix this. */
             BeginChange();
 
-            m_pending_change = true;
-
             TextPointer cur = Document.ContentStart;
             while (cur.CompareTo(Document.ContentEnd) < 0)
             {
@@ -98,8 +97,9 @@ namespace Emoji.Wpf
 
             m_pending_change = false;
 
-            // FIXME: debug
-            //Console.WriteLine(XamlWriter.Save(Document));
+            // FIXME: this could be done on-demand by detecting GetValue() calls
+            var xaml = XamlWriter.Save(Document);
+            SetValue(XamlTextProperty, xaml);
         }
 
         private bool m_pending_change = false;
@@ -127,6 +127,12 @@ namespace Emoji.Wpf
             inlines.Remove(run);
             return ret;
         }
+
+        public string XamlText => (string)GetValue(XamlTextProperty);
+
+        public static readonly DependencyProperty XamlTextProperty = DependencyProperty.Register(
+            nameof(XamlText), typeof(string), typeof(RichTextBox),
+            new PropertyMetadata(""));
     }
 }
 
