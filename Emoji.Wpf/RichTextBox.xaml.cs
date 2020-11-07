@@ -1,7 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017—2018 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017—2020 Sam Hocevar <sam@hocevar.net>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -42,7 +42,7 @@ namespace Emoji.Wpf
                 var emoji = (next.Parent as Run)?.PreviousInline as EmojiInline;
                 if (emoji == null && next.Parent != p.Parent)
                     emoji = (p.Parent as Run)?.NextInline as EmojiInline;
-                if (emoji != null && (p.Parent as Run).PreviousInline != emoji)
+                if (emoji != null && (p.Parent as Run)?.PreviousInline != emoji)
                     clipboard += emoji?.Text;
                 else
                     clipboard += new TextRange(p, next).Text;
