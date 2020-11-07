@@ -16,14 +16,24 @@
         </ListView.ItemsPanel>
         <ListView.ItemTemplate>
             <DataTemplate>
-                <StackPanel Orientation="Vertical" Margin="4">
+                <StackPanel Orientation="Vertical" Margin="4"
+                            ToolTipService.ShowDuration="60000" ToolTipService.InitialShowDelay="0">
                     <emoji:TextBlock FontSize="24" Text="{Binding UnicodeText}"/>
+                    <StackPanel.Style>
+                        <Style TargetType="{x:Type StackPanel}">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="LightGreen"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
                     <StackPanel.ToolTip>
                         <StackPanel Orientation="Vertical">
                             <TextBlock Text="{Binding EmojiName}" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
                             <Separator/>
                             <TextBlock Text="{Binding UnicodeSeq}" FontSize="12" HorizontalAlignment="Center"/>
-                            <emoji:TextBlock FontSize="160" Text="{Binding UnicodeText}"/>
+                            <emoji:TextBlock FontSize="160" Text="{Binding UnicodeText}" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </StackPanel.ToolTip>
                 </StackPanel>
