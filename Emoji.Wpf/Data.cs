@@ -1,7 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017—2019 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017—2020 Sam Hocevar <sam@hocevar.net>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -12,9 +12,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
-using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Emoji.Wpf
@@ -211,7 +208,7 @@ namespace Emoji.Wpf
                     yield return line;
 
                     // Hack to support those extra Microsoft emojis
-                    if (line.EndsWith("🐱 cat face"))
+                    if (line.StartsWith("1F431  ")) // 🐱 cat face
                     {
                         yield return "1F431 200D 1F3CD ; fully-qualified # 🐱‍🏍 stunt cat";
                         yield return "1F431 200D 1F453 ; fully-qualified # 🐱‍👓 hipster cat";
