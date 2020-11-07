@@ -1,7 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017—2020 Sam Hocevar <sam@hocevar.net>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -67,15 +67,21 @@ namespace Emoji.Wpf
             // Read the actual font data using Typography.OpenFont
             using (var s = m_gtf.GetFontStream())
             {
-                var r = new Typography.OpenFont.OpenFontReader();
-                m_openfont = r.Read(s, 0, Typography.OpenFont.ReadFlags.Full);
+                var r = new OpenFontReader();
+                m_openfont = r.Read(s, 0, ReadFlags.Full);
             }
 
             // Create a layout for glyphs
-            m_layout = new GlyphLayout();
-            m_layout.ScriptLang = ScriptLangs.Default;
-            m_layout.Typeface = m_openfont;
-            m_layout.PositionTechnique = PositionTechnique.OpenFont;
+            m_layout = new GlyphLayout()
+            {
+                Typeface = m_openfont,
+                EnableBuiltinMathItalicCorrection = false, // not needed
+                EnableComposition = true,
+                EnableGpos = true,
+                EnableGsub = true,
+                EnableLigature = true,
+                PositionTechnique = PositionTechnique.OpenFont,
+            };
         }
 
         private GlyphTypeface GetGlyphTypeface(string first_candidate)
@@ -141,10 +147,10 @@ namespace Emoji.Wpf
         public double GetScale(double point_size)
             => m_openfont.CalculateScaleToPixelFromPointSize((float)point_size);
 
-        public IDictionary<ushort, double> AdvanceWidths { get => m_gtf.AdvanceWidths; }
-        public IDictionary<ushort, double> AdvanceHeights { get => m_gtf.AdvanceHeights; }
-        public double Height { get => m_gtf.Height; }
-        public double Baseline { get => m_gtf.Baseline; }
+        public IDictionary<ushort, double> AdvanceWidths => m_gtf.AdvanceWidths;
+        public IDictionary<ushort, double> AdvanceHeights => m_gtf.AdvanceHeights;
+        public double Height => m_gtf.Height;
+        public double Baseline => m_gtf.Baseline;
 
         public void RenderGlyph(DrawingContext dc, ushort gid, Point origin, double size, Brush fallback_brush)
         {
@@ -158,8 +164,7 @@ namespace Emoji.Wpf
                 for (int i = start; i < stop; ++i)
                 {
                     ushort sub_gid = m_openfont.COLRTable.GlyphLayers[i];
-                    // We do not need to provide advances since we only render
-                    // one glyph.
+                    // We do not need to provide advances since we only render one glyph.
                     GlyphRun r = new GlyphRun(m_gtf, 0, false, size,
                                               new ushort[] { sub_gid },
                                               origin, new double[] { 0 },
