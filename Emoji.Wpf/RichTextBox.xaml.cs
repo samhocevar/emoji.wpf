@@ -35,17 +35,24 @@ namespace Emoji.Wpf
                  p != null && p.CompareTo(Selection.End) < 0;
                  p = next)
             {
-                next = p.GetNextInsertionPosition(LogicalDirection.Forward);
+                next = p.GetNextContextPosition(LogicalDirection.Forward);
                 if (next == null)
                     break;
 
-                var emoji = (next.Parent as Run)?.PreviousInline as EmojiInline;
-                if (emoji == null && next.Parent != p.Parent)
-                    emoji = (p.Parent as Run)?.NextInline as EmojiInline;
-                if (emoji != null && (p.Parent as Run)?.PreviousInline != emoji)
-                    clipboard += emoji?.Text;
-                else
-                    clipboard += new TextRange(p, next).Text;
+                switch (p.GetPointerContext(LogicalDirection.Forward))
+                {
+                    case TextPointerContext.ElementStart:
+                        if (p.GetAdjacentElement(LogicalDirection.Forward) is EmojiInline emoji)
+                            clipboard += emoji.Text;
+                        break;
+                    case TextPointerContext.ElementEnd:
+                    case TextPointerContext.EmbeddedElement:
+                        break;
+                    case TextPointerContext.Text:
+                        // Get text from the text run but don’t go past end
+                        clipboard += new TextRange(p, next.CompareTo(Selection.End) < 0 ? next : Selection.End).Text;
+                        break;
+                }
             }
 
             Clipboard.SetText(clipboard);
