@@ -102,11 +102,11 @@ namespace Emoji.Wpf
             // FIXME: split this into two different code paths
             if (e.Property == FontSizeProperty || e.Property == TextProperty)
             {
-                Child.InvalidateVisual();
+                Child?.InvalidateVisual();
                 m_dirty = true;
             }
             else if (e.Property == FallbackBrushProperty)
-                Child.InvalidateVisual();
+                Child?.InvalidateVisual();
         }
 
         public bool Invalid { get; private set; }
