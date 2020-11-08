@@ -78,38 +78,37 @@ namespace Emoji.Wpf
             Selection = new TextSelection(base.Selection.Start, base.Selection.End);
         }
 
-        /// <summary>
-        /// Disable Ctrl-Z to prevent the widget internals from adding data to the
-        /// FlowDocument. This is unfortunate but there are too many crashes caused
-        /// by this. We probably need a custom undo/redo stack.
-        /// </summary>
-        /// <param name="e"></param>
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
-            if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && e.Key == Key.Z)
-                e.Handled = true;
-            else
-                base.OnPreviewKeyDown(e);
+            base.OnPreviewKeyDown(e);
         }
 
+        private static void PreviewExecuted(object sender, ExecutedRoutedEventArgs e)
+            => (sender as RichTextBox)?.OnPreviewExecuted(e);
+
         /// <summary>
-        /// Intercept Copy and Cut commands to make sure the clipboard contains the
-        /// proper emoji characters.
+        /// Intercept some high level commands to ensure consistency.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private static void PreviewExecuted(object sender, ExecutedRoutedEventArgs e)
+        protected void OnPreviewExecuted(ExecutedRoutedEventArgs e)
         {
-            if (sender is RichTextBox rtb)
+            if (e.Command == ApplicationCommands.Copy || e.Command == ApplicationCommands.Cut)
             {
-                if (e.Command == ApplicationCommands.Copy || e.Command == ApplicationCommands.Cut)
-                {
-                    var selection = rtb.Selection.Text;
-                    if (e.Command == ApplicationCommands.Cut)
-                        rtb.Cut();
-                    Clipboard.SetText(selection);
-                    e.Handled = true;
-                }
+                /// Make sure the clipboard contains the proper emoji characters.
+                var selection = Selection.Text;
+                if (e.Command == ApplicationCommands.Cut)
+                    Cut();
+                Clipboard.SetText(selection);
+                e.Handled = true;
+            }
+            else if (e.Command == ApplicationCommands.Undo)
+            {
+                /// Disable Undo to prevent the widget internals from adding data to the
+                /// FlowDocument. This is unfortunate but there are too many crashes caused
+                /// by this. We probably need a custom undo/redo stack.
+                /// Easy crash repro: backspace twice on emojis, Ctrl-Z twice.
+                e.Handled = true;
             }
         }
 
