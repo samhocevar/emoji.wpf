@@ -69,7 +69,7 @@
             <GroupBox Header="emoji:RichTextBox" Margin="4">
                 <emoji:RichTextBox FontSize="20" Margin="5" x:Name="EmojiRichTextBox"
                                    VerticalScrollBarVisibility="Auto"
-                                   ToolTip="{Binding XamlText, ElementName=EmojiRichTextBox, Mode=TwoWay}"
+                                   ToolTip="{Binding Text, ElementName=EmojiRichTextBox, Mode=TwoWay}"
                                    ToolTipService.HasDropShadow="True"
                                    ToolTipService.ShowDuration="60000">
                     <FlowDocument>
