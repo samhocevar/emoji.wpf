@@ -164,8 +164,12 @@ namespace Emoji.Wpf
             // FIXME: this could be done on-demand by detecting GetValue() calls maybe
             SetValue(TextProperty, new TextSelection(Document.ContentStart, Document.ContentEnd).Text);
 #if DEBUG
-            var xaml = XamlWriter.Save(Document);
-            SetValue(XamlTextProperty, xaml);
+            try
+            {
+                var xaml = XamlWriter.Save(Document);
+                SetValue(XamlTextProperty, xaml);
+            }
+            catch { }
 #endif
         }
 
