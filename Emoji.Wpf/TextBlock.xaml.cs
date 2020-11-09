@@ -38,6 +38,10 @@ namespace Emoji.Wpf
             FontSizeProperty.OverrideMetadata(typeof(TextBlock), new FrameworkPropertyMetadata(
                 (double)FontSizeProperty.GetMetadata(typeof(Controls.TextBlock)).DefaultValue,
                 (o, e) => (o as TextBlock).OnFontSizeChanged((double)e.NewValue)));
+
+            TextWrappingProperty.OverrideMetadata(typeof(TextBlock), new FrameworkPropertyMetadata(
+                (TextWrapping)TextWrappingProperty.GetMetadata(typeof(Controls.TextBlock)).DefaultValue,
+                (o, e) => (o as TextBlock).OnTextWrappingChanged((TextWrapping)e.NewValue)));
         }
 
         public TextBlock()
@@ -65,13 +69,21 @@ namespace Emoji.Wpf
             DependencyProperty.Register(nameof(Text), typeof(string), typeof(TextBlock));
 
         private void OnTextChanged(string text)
+            => RecomputeInlines(text, TextWrapping);
+
+        private void OnTextWrappingChanged(TextWrapping wrapping)
+            => RecomputeInlines(Text, wrapping);
+
+        private void RecomputeInlines(string text, TextWrapping wrapping)
         {
             Inlines.Clear();
             if (string.IsNullOrEmpty(text))
                 return;
 
+            var regex = wrapping == TextWrapping.Wrap ? EmojiData.MatchOne
+                                                      : EmojiData.MatchMultiple;
             int pos = 0;
-            foreach (Match m in EmojiData.MatchMultiple.Matches(text))
+            foreach (Match m in regex.Matches(text))
             {
                 Inlines.Add(text.Substring(pos, m.Index - pos));
                 Inlines.Add(new EmojiInline()
