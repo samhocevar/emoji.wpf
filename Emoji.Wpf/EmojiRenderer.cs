@@ -1,7 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017—2018 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017—2020 Sam Hocevar <sam@hocevar.net>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -11,7 +11,7 @@
 //
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -20,11 +20,38 @@ namespace Emoji.Wpf
 {
     public static class EmojiRenderer
     {
+        // This is enough to store all emojis at size 32×32
+        public static long MaxCachedBitmaps = 4000;
+        public static long MaxCachedPixels = 5120000;
+
         public static BitmapSource RenderBitmap(string text, double font_size, Brush fallback)
         {
+            // If the cache is too large, remove the first element repeatedly until it’s OK.
+            while (m_cache.Count >= MaxCachedBitmaps || m_cached_pixels >= MaxCachedPixels)
+            {
+                var it = m_cache.GetEnumerator();
+                it.MoveNext();
+                m_cached_pixels -= ((RenderKey)it.Key).Pixels;
+                m_cache.RemoveAt(0);
+            }
+
+            // Query the cache for this bitmap and render it if not found
+            BitmapSource ret;
             var key = new RenderKey() { Text = text, FontSize = font_size, Fallback = fallback };
-            if (!m_cache.TryGetValue(key, out var ret))
+            if (m_cache.Contains(key))
+            {
+                ret = m_cache[key] as BitmapSource;
+                m_cache.Remove(key);
+                m_cache[key] = ret;
+                ++m_cache_hits;
+            }
+            else
+            {
                 m_cache[key] = ret = RenderBitmapInternal(text, font_size, fallback);
+                m_cached_pixels += key.Pixels;
+                ++m_cache_misses;
+            }
+
             return ret;
         }
 
@@ -33,14 +60,19 @@ namespace Emoji.Wpf
             public string Text;
             public double FontSize;
             public Brush Fallback;
+
+            public long Pixels => (long)Math.Pow(Math.Ceiling(FontSize), 2.0);
         };
 
         /// <summary>
-        /// A cache of bitmaps, indexed by source string, font size, and fallback
-        /// brush. This may grow large with some projects, so in the future we
-        /// should probably add an expiration mechanism.
+        /// A cache of bitmaps, indexed by source string, font size, and fallback brush.
         /// </summary>
-        private static IDictionary<RenderKey, BitmapSource> m_cache = new Dictionary<RenderKey, BitmapSource>();
+        private static OrderedDictionary m_cache = new OrderedDictionary();
+
+        private static long m_cached_pixels = 0;
+
+        private static long m_cache_hits = 0;
+        private static long m_cache_misses = 0;
 
         public static BitmapSource RenderBitmapInternal(string text, double font_size, Brush fallback)
         {
