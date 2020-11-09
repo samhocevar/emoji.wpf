@@ -29,19 +29,19 @@ namespace Emoji.Wpf
         {
             TextProperty.OverrideMetadata(typeof(TextBlock), new FrameworkPropertyMetadata(
                 (string)Controls.TextBlock.TextProperty.GetMetadata(typeof(Controls.TextBlock)).DefaultValue,
-                (o, e) => (o as TextBlock).OnTextChanged(e.NewValue as string)));
+                (o, e) => (o as TextBlock)?.OnTextChanged(e.NewValue as string)));
 
             ForegroundProperty.OverrideMetadata(typeof(TextBlock), new FrameworkPropertyMetadata(
                 (Brush)ForegroundProperty.GetMetadata(typeof(Controls.TextBlock)).DefaultValue,
-                (o, e) => (o as TextBlock).OnForegroundChanged(e.NewValue as Brush)));
+                (o, e) => (o as TextBlock)?.OnForegroundChanged(e.NewValue as Brush)));
 
             FontSizeProperty.OverrideMetadata(typeof(TextBlock), new FrameworkPropertyMetadata(
                 (double)FontSizeProperty.GetMetadata(typeof(Controls.TextBlock)).DefaultValue,
-                (o, e) => (o as TextBlock).OnFontSizeChanged((double)e.NewValue)));
+                (o, e) => (o as TextBlock)?.OnFontSizeChanged((double)e.NewValue)));
 
             TextWrappingProperty.OverrideMetadata(typeof(TextBlock), new FrameworkPropertyMetadata(
                 (TextWrapping)TextWrappingProperty.GetMetadata(typeof(Controls.TextBlock)).DefaultValue,
-                (o, e) => (o as TextBlock).OnTextWrappingChanged((TextWrapping)e.NewValue)));
+                (o, e) => (o as TextBlock)?.OnTextWrappingChanged((TextWrapping)e.NewValue)));
         }
 
         public TextBlock()
@@ -101,15 +101,15 @@ namespace Emoji.Wpf
         private void OnForegroundChanged(Brush brush)
         {
             foreach (var inline in Inlines)
-                if (inline is EmojiInline)
-                    (inline as EmojiInline).Foreground = brush;
+                if (inline is EmojiInline emoji)
+                    emoji.Foreground = brush;
         }
 
         private void OnFontSizeChanged(double size)
         {
             foreach (var inline in Inlines)
-                if (inline is EmojiInline)
-                    (inline as EmojiInline).FontSize = size;
+                if (inline is EmojiInline emoji)
+                    emoji.FontSize = size;
         }
 
         private static readonly DependencyPropertyDescriptor m_text_dpd =

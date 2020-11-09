@@ -98,8 +98,8 @@ namespace Emoji.Wpf
             // Maybe try the Firefox EmojiOne font?
             var firefox_key = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\firefox.exe";
             var firefox_path = Microsoft.Win32.Registry.GetValue(firefox_key, "Path", null);
-            if (firefox_path is string)
-                all_candidates.Add((firefox_path as string) + @"\fonts\EmojiOneMozilla.ttf");
+            if (firefox_path is string s)
+                all_candidates.Add($@"{s}\fonts\EmojiOneMozilla.ttf");
 
             // Last resort fallbacks
             all_candidates.Add("Segoe UI Symbol"); // for older versions of Windows
