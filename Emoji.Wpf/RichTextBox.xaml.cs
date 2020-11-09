@@ -148,7 +148,7 @@ namespace Emoji.Wpf
 
                     // Preserve caret position
                     bool caret_was_next = (0 == next.CompareTo(CaretPosition));
-                    next = Replace(word, inline);
+                    next = ReplaceRange(word, inline);
                     if (caret_was_next)
                         CaretPosition = next;
                 }
@@ -174,28 +174,33 @@ namespace Emoji.Wpf
 
         private bool m_pending_change = false;
 
-        public TextPointer Replace(TextRange range, Inline inline)
+        /// <summary>
+        /// Replace a text range with an inline object
+        /// </summary>
+        /// <param name="range"></param>
+        /// <param name="inline"></param>
+        /// <returns></returns>
+        public TextPointer ReplaceRange(TextRange range, Inline inline)
         {
             var run = range.Start.Parent as Run;
             if (run == null)
                 return range.End;
 
-            var before = new TextRange(run.ContentStart, range.Start).Text;
-            var after = new TextRange(range.End, run.ContentEnd).Text;
-            var inlines = run.SiblingInlines;
+            var text_before = new TextRange(run.ContentStart, range.Start).Text;
+            var text_after = new TextRange(range.End, run.ContentEnd).Text;
+            var siblings = run.SiblingInlines;
 
-            /* Insert new inlines in reverse order after the run */
-            if (!string.IsNullOrEmpty(after))
-                inlines.InsertAfter(run, new Run(after));
+            if (!string.IsNullOrEmpty(text_before))
+                siblings.InsertBefore(run, new Run(text_before));
 
-            inlines.InsertAfter(run, inline);
+            siblings.InsertBefore(run, inline);
 
-            if (!string.IsNullOrEmpty(before))
-                inlines.InsertAfter(run, new Run(before));
+            if (string.IsNullOrEmpty(text_after))
+                siblings.Remove(run);
+            else
+                run.Text = text_after;
 
-            TextPointer ret = inline.ContentEnd; // FIXME
-            inlines.Remove(run);
-            return ret;
+            return inline.ContentEnd;
         }
 
         public new TextSelection Selection { get; private set; }
