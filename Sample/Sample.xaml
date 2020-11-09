@@ -59,14 +59,13 @@
             </GroupBox>
         </StackPanel>
 
-        <DockPanel>
-            <GroupBox DockPanel.Dock="Right" Header="Variation Selectors" Margin="4">
-                <StackPanel Orientation="Vertical">
-                    <TextBlock Text="{StaticResource QualifiedEmoji}"/>
-                    <emoji:TextBlock Text="{StaticResource QualifiedEmoji}"/>
-                </StackPanel>
-            </GroupBox>
-            <GroupBox Header="emoji:RichTextBox" Margin="4">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <GroupBox Grid.Column="0" Header="emoji:RichTextBox" Margin="4">
                 <emoji:RichTextBox FontSize="20" Margin="5" x:Name="EmojiRichTextBox"
                                    VerticalScrollBarVisibility="Auto"
                                    ToolTip="{Binding Text, ElementName=EmojiRichTextBox, Mode=TwoWay}"
@@ -79,7 +78,17 @@
                     </FlowDocument>
                 </emoji:RichTextBox>
             </GroupBox>
-        </DockPanel>
+            <GroupBox Grid.Column="1" Header="Data Binding" Margin="4">
+                <emoji:TextBlock FontSize="12"
+                                 Text="{Binding Text, ElementName=EmojiRichTextBox, Mode=TwoWay}"/>
+            </GroupBox>
+            <GroupBox Grid.Column="2" Header="Variation Selectors" Margin="4">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="{StaticResource QualifiedEmoji}"/>
+                    <emoji:TextBlock Text="{StaticResource QualifiedEmoji}"/>
+                </StackPanel>
+            </GroupBox>
+        </Grid>
 
     </DockPanel>
 </Window>
