@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>$id$</id>
-    <version>0.0.19-experimental</version>
+    <version>0.1.0</version>
     <title>$title$</title>
     <authors>Sam Hocevar &lt;sam@hocevar.net&gt;</authors>
     <owners>Sam Hocevar</owners>
@@ -13,7 +13,7 @@
     <description>$description$</description>
     <summary>$description$</summary>
     <releaseNotes>Experimental proof of concept.</releaseNotes>
-    <copyright>Copyright © 2017—2019 Sam Hocevar</copyright>
+    <copyright>Copyright © 2017—2020 Sam Hocevar</copyright>
     <tags>Emoji Unicode WPF XAML</tags>
   </metadata>
   <files>
