@@ -61,7 +61,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="UnicodeEmoji\emoji-test.txt" />
+    <Item Include="UnicodeEmoji\emoji-test.txt" />
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="$(OutputPath)\emoji-test.txt.gz">
       <Visible>false</Visible>
       <LogicalName>emoji-test.txt.gz</LogicalName>
