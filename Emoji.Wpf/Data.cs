@@ -47,6 +47,7 @@ namespace Emoji.Wpf
         {
             public string Name { get; set; }
             public string Text { get; set; }
+            public bool Renderable { get; set; }
 
             public Group Group => SubGroup.Group;
             public SubGroup SubGroup;
@@ -91,22 +92,38 @@ namespace Emoji.Wpf
             }
         }
 
+        // FIXME: this could be read directly from emoji-test.txt.gz
+        private static List<string> SkinToneComponents = new List<string>()
+        {
+            "🏻", // light skin tone
+            "🏼", // medium-light skin tone
+            "🏽", // medium skin tone
+            "🏾", // medium-dark skin tone
+            "🏿", // dark skin tone
+        };
+
+        private static List<string> HairStyleComponents = new List<string>()
+        {
+            "🦰", // red hair
+            "🦱", // curly hair
+            "🦳", // white hair
+            "🦲", // bald
+        };
+
         private static void ParseEmojiList()
         {
-            var modifiers_list = new string[] { "🏻", "🏼", "🏽", "🏾", "🏿" };
-            var modifiers_string = "(" + string.Join("|", modifiers_list) + ")";
-
             var match_group = new Regex(@"^# group: (.*)");
             var match_subgroup = new Regex(@"^# subgroup: (.*)");
-            var match_sequence = new Regex(@"^([0-9a-fA-F ]+[0-9a-fA-F]).*; (fully-|minimally-|un)qualified.*# [^ ]* (.*)");
-            var match_modifier = new Regex(modifiers_string);
+            var match_sequence = new Regex(@"^([0-9a-fA-F ]+[0-9a-fA-F]).*; (fully-|minimally-|un)qualified.*# [^ ]* (E[0-9.]*) (.*)");
+            var match_skin_tone = new Regex($"({string.Join("|", SkinToneComponents.ToArray())})");
+            var match_hair_style = new Regex($"({string.Join("|", HairStyleComponents.ToArray())})");
             var list = new List<Group>();
-            var lookup = new Dictionary<string, Emoji>();
+            var text_lookup = new Dictionary<string, Emoji>();
+            var name_lookup = new Dictionary<string, Emoji>();
             var alltext = new List<string>();
 
             Group last_group = null;
             SubGroup last_subgroup = null;
-            Emoji last_emoji = null;
 
             foreach (var line in EmojiDescriptionLines())
             {
@@ -130,7 +147,7 @@ namespace Emoji.Wpf
                 if (m.Success)
                 {
                     string sequence = m.Groups[1].ToString();
-                    string name = m.Groups[3].ToString();
+                    string name = m.Groups[4].ToString();
 
                     string text = "";
                     foreach (var item in sequence.Split(' '))
@@ -139,20 +156,24 @@ namespace Emoji.Wpf
                         text += char.ConvertFromUtf32(codepoint);
                     }
 
-                    // Only include emojis that we know how to render
-                    if (!Typeface.CanRender(text))
-                        continue;
-
+                    // Construct a regex to Replace e.g. "🏻" with "(🏻|🏼|🏽|🏾|🏿)" in a big
+                    // regex so that we can match all variations of this Emoji
                     bool has_modifier = false;
-                    bool has_high_modifier = false;
-                    var regex_text = match_modifier.Replace(text, (x) =>
-                    {
-                        has_modifier = true;
-                        has_high_modifier |= x.Value != modifiers_list[0];
-                        return modifiers_string;
-                    });
+                    bool has_nonfirst_modifier = false;
+                    var regex_text = match_skin_tone.Replace(
+                        match_hair_style.Replace(text, (x) =>
+                        {
+                            has_modifier = true;
+                            has_nonfirst_modifier |= x.Value != HairStyleComponents[0];
+                            return match_hair_style.ToString();
+                        }), (x) =>
+                        {
+                            has_modifier = true;
+                            has_nonfirst_modifier |= x.Value != SkinToneComponents[0];
+                            return match_skin_tone.ToString();
+                        });
 
-                    if (!has_high_modifier)
+                    if (!has_nonfirst_modifier)
                         alltext.Add(has_modifier ? regex_text : text);
 
                     // Only add fully-qualified characters to the groups, or we will
@@ -160,26 +181,29 @@ namespace Emoji.Wpf
                     if (line.Contains("unqualified") || line.Contains("minimally-qualified"))
                     {
                         // Skip this if there is already a fully qualified version
-                        if (lookup.ContainsKey(text + "\ufe0f"))
+                        if (text_lookup.ContainsKey(text + "\ufe0f"))
                             continue;
-                        if (lookup.ContainsKey(text.Replace("\u20e3", "\ufe0f\u20e3")))
+                        if (text_lookup.ContainsKey(text.Replace("\u20e3", "\ufe0f\u20e3")))
                             continue;
                     }
 
-                    var emoji = new Emoji() { Name = name, Text = text, SubGroup = last_subgroup };
-                    lookup[text] = emoji;
-                    if (has_modifier)
+                    var emoji = new Emoji()
                     {
-                        // We assume this is a variation of the previous emoji
-                        if (last_emoji.VariationList.Count == 0)
-                            last_emoji.VariationList.Add(last_emoji);
-                        last_emoji.VariationList.Add(emoji);
-                    }
+                        Name = name,
+                        Text = text,
+                        SubGroup = last_subgroup,
+                        Renderable = Typeface.CanRender(text),
+                    };
+                    text_lookup[text] = emoji;
+                    name_lookup[name] = emoji;
+
+                    // Get the left part of the name and check whether we’re a variation of an existing
+                    // emoji. If so, append to that emoji. Otherwise, add to current subgroup.
+                    // FIXME: does not work properly because variations can appear before the generic emoji
+                    if (has_modifier && name_lookup.TryGetValue(name.Split(':')[0], out var parent_emoji))
+                        parent_emoji.VariationList.Add(emoji);
                     else
-                    {
-                        last_emoji = emoji;
                         last_subgroup.EmojiList.Add(emoji);
-                    }
                 }
             }
 
@@ -189,7 +213,7 @@ namespace Emoji.Wpf
                     list.RemoveAt(i);
 
             AllGroups = list;
-            Lookup = lookup;
+            Lookup = text_lookup;
 
             // Build a regex that matches any Emoji
             var textarray = alltext.ToArray();

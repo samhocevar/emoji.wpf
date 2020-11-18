@@ -1,7 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017—2020 Sam Hocevar <sam@hocevar.net>
 //
 //  This program is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -51,7 +51,7 @@ namespace FontViewer
                 }
 
                 UnicodeText = s;
-                UnicodeSeq = string.Join(" ", codepoints.ConvertAll(x => string.Format("U+{0:X4}", x)).ToArray());
+                UnicodeSeq = string.Join(" ", codepoints.ConvertAll(x => $"U+{x:X4}").ToArray());
                 EmojiName = emojiname;
             }
         }
@@ -63,7 +63,8 @@ namespace FontViewer
             var emoji_list = new ObservableCollection<MyEmoji>();
 
             foreach (var emoji in EmojiData.AllEmoji)
-                emoji_list.Add(new MyEmoji(emoji.Text, emoji.Name));
+                if (emoji.Renderable)
+                    emoji_list.Add(new MyEmoji(emoji.Text, emoji.Name));
 
             EmojiFontList.ItemsSource = emoji_list;
         }
