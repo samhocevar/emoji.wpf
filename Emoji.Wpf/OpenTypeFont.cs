@@ -94,7 +94,7 @@ namespace Emoji.Wpf
             };
 
             // Cache the glyph index for the zero-width joiner
-            foreach (var g in GlyphLayout("‍"))
+            foreach (var g in GlyphLayout("\u200d"))
                 m_zwj_glyph = g.glyphIndex;
         }
 

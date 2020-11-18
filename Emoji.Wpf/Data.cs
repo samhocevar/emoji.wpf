@@ -122,24 +122,24 @@ namespace Emoji.Wpf
             var name_lookup = new Dictionary<string, Emoji>();
             var alltext = new List<string>();
 
-            Group last_group = null;
-            SubGroup last_subgroup = null;
+            Group current_group = null;
+            SubGroup current_subgroup = null;
 
             foreach (var line in EmojiDescriptionLines())
             {
                 var m = match_group.Match(line);
                 if (m.Success)
                 {
-                    last_group = new Group() { Name = m.Groups[1].ToString() };
-                    list.Add(last_group);
+                    current_group = new Group() { Name = m.Groups[1].ToString() };
+                    list.Add(current_group);
                     continue;
                 }
 
                 m = match_subgroup.Match(line);
                 if (m.Success)
                 {
-                    last_subgroup = new SubGroup() { Name = m.Groups[1].ToString(), Group = last_group };
-                    last_group.SubGroups.Add(last_subgroup);
+                    current_subgroup = new SubGroup() { Name = m.Groups[1].ToString(), Group = current_group };
+                    current_group.SubGroups.Add(current_subgroup);
                     continue;
                 }
 
@@ -156,8 +156,9 @@ namespace Emoji.Wpf
                         text += char.ConvertFromUtf32(codepoint);
                     }
 
-                    // Construct a regex to Replace e.g. "🏻" with "(🏻|🏼|🏽|🏾|🏿)" in a big
-                    // regex so that we can match all variations of this Emoji
+                    // Construct a regex to replace e.g. "🏻" with "(🏻|🏼|🏽|🏾|🏿)" in a big
+                    // regex so that we can match all variations of this Emoji even if they are
+                    // not in the standard.
                     bool has_modifier = false;
                     bool has_nonfirst_modifier = false;
                     var regex_text = match_skin_tone.Replace(
@@ -191,7 +192,7 @@ namespace Emoji.Wpf
                     {
                         Name = name,
                         Text = text,
-                        SubGroup = last_subgroup,
+                        SubGroup = current_subgroup,
                         Renderable = Typeface.CanRender(text),
                     };
                     text_lookup[text] = emoji;
@@ -203,7 +204,7 @@ namespace Emoji.Wpf
                     if (has_modifier && name_lookup.TryGetValue(name.Split(':')[0], out var parent_emoji))
                         parent_emoji.VariationList.Add(emoji);
                     else
-                        last_subgroup.EmojiList.Add(emoji);
+                        current_subgroup.EmojiList.Add(emoji);
                 }
             }
 
