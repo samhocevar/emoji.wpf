@@ -114,7 +114,7 @@ namespace Emoji.Wpf
         {
             var match_group = new Regex(@"^# group: (.*)");
             var match_subgroup = new Regex(@"^# subgroup: (.*)");
-            var match_sequence = new Regex(@"^([0-9a-fA-F ]+[0-9a-fA-F]).*; (fully-|minimally-|un)qualified.*# [^ ]* (E[0-9.]*) (.*)");
+            var match_sequence = new Regex(@"^([0-9a-fA-F ]+[0-9a-fA-F]).*; *([-a-z]*) *# [^ ]* (E[0-9.]* )?(.*)");
             var match_skin_tone = new Regex($"({string.Join("|", SkinToneComponents.ToArray())})");
             var match_hair_style = new Regex($"({string.Join("|", HairStyleComponents.ToArray())})");
             var list = new List<Group>();
@@ -231,8 +231,8 @@ namespace Emoji.Wpf
                 {
                     yield return line;
 
-                    // Hack to support those extra Microsoft emojis
-                    if (line.StartsWith("1F431  ")) // 🐱 cat face
+                    // Append these extra Microsoft emojis after 😾 E2.0 pouting cat
+                    if (line.StartsWith("1F63E  "))
                     {
                         yield return "1F431 200D 1F3CD ; fully-qualified # 🐱‍🏍 stunt cat";
                         yield return "1F431 200D 1F453 ; fully-qualified # 🐱‍👓 hipster cat";
