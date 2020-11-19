@@ -1,6 +1,6 @@
 [submodule "Typography"]
 	path = Typography
-	url = ../../samhocevar/fork-typography.git
+	url = ../../samhocevar-forks/typography.git
 	branch = emoji.wpf
 
 [submodule "UnicodeCLDR"]
