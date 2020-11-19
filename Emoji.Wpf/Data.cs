@@ -30,7 +30,7 @@ namespace Emoji.Wpf
             }
         }
 
-        public static IEnumerable<Group> AllGroups { get; private set; }
+        public static IList<Group> AllGroups { get; private set; }
 
         public static IDictionary<string, Emoji> Lookup { get; private set; }
 
