@@ -42,26 +42,34 @@ namespace Emoji.Wpf
         public double GetScale(double point_size)
             => m_fonts[0].GetScale(point_size);
 
-        public GlyphPlanSequence MakeGlyphPlanSequence(string s)
+        public List<ushort> MakeGlyphIndexList(string s)
+        {
+            var ret = new List<ushort>();
+            var gpl = MakeGlyphPlanList(s);
+            for (int i = 0; i < gpl.Count; ++i)
+                ret.Add(gpl[i].glyphIndex);
+            return ret;
+        }
+
+        internal IUnscaledGlyphPlanList MakeGlyphPlanList(string s)
         {
             if (!m_cache.TryGetValue(s, out var ret))
             {
-                var l = new UnscaledGlyphPlanList();
-                foreach (var g in m_fonts[0].GlyphLayout(s))
-                    l.Append(g);
-                m_cache[s] = ret = new GlyphPlanSequence(l);
+                m_cache[s] = ret = new UnscaledGlyphPlanList();
+                foreach (var gp in m_fonts[0].GlyphLayout(s))
+                    ret.Append(gp);
             }
             return ret;
         }
 
-        public void RenderGlyph(DrawingContext dc, ushort gid, Point origin, double size, Brush fallback_brush)
+        internal void RenderGlyph(DrawingContext dc, ushort gid, Point origin, double size, Brush fallback_brush)
             => m_fonts[0].RenderGlyph(dc, gid, origin, size, fallback_brush);
 
         /// <summary>
         /// A cache of GlyphPlanSequence objects, indexed by source strings. Should
         /// remain pretty lightweight because they are small objects.
         /// </summary>
-        private IDictionary<string, GlyphPlanSequence> m_cache = new Dictionary<string, GlyphPlanSequence>();
+        private IDictionary<string, IUnscaledGlyphPlanList> m_cache = new Dictionary<string, IUnscaledGlyphPlanList>();
 
         private IList<ColorTypeface> m_fonts = new List<ColorTypeface>();
     }
@@ -148,7 +156,7 @@ namespace Emoji.Wpf
             return true;
         }
 
-        public IEnumerable<UnscaledGlyphPlan> GlyphLayout(string s)
+        internal IEnumerable<UnscaledGlyphPlan> GlyphLayout(string s)
         {
             lock (m_layout)
             {

@@ -11,7 +11,7 @@
 
     <Window.Resources>
         <!-- FIXME: I used to have "👩🏽‍👩🏽‍👦🏽‍👦🏽" here but it has kerning issues. -->
-        <clr:String x:Key="SampleText">Hello! ♥😁🐨🐱‍🐉👩🏿‍👩🏻‍👦🏽 lol</clr:String>
+        <clr:String x:Key="SampleText">Hello! ♥😁🐨|👨‍👦|🐱‍🐉👩🏿‍👩🏻‍👦🏽 lol</clr:String>
         <clr:String x:Key="PickerEmoji">🍣</clr:String>
         <clr:String x:Key="FontSizeEmoji">🍷🐉</clr:String>
         <clr:String x:Key="QualifiedEmoji">▶︎ ▶ ▶️</clr:String>

@@ -15,6 +15,7 @@ using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Typography.TextLayout;
 
 namespace Emoji.Wpf
 {
@@ -77,7 +78,8 @@ namespace Emoji.Wpf
         public static BitmapSource RenderBitmapInternal(string text, double font_size, Brush fallback)
         {
             var font = EmojiData.Typeface;
-            var glyphplansequence = font.MakeGlyphPlanSequence(text ?? "");
+            var glyphplanlist = font.MakeGlyphPlanList(text ?? "");
+            var glyphplansequence = new GlyphPlanSequence(glyphplanlist);
 
 #if false
             // Check whether the Emoji font knows about all codepoints;

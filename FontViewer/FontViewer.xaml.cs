@@ -38,6 +38,7 @@ namespace FontViewer
         {
             public string UnicodeText { get; set; }
             public string UnicodeSeq { get; set; }
+            public string GlyphSeq { get; set; }
             public string EmojiName { get; set; }
 
             public MyEmoji(string s, string emojiname)
@@ -52,6 +53,7 @@ namespace FontViewer
 
                 UnicodeText = s;
                 UnicodeSeq = string.Join(" ", codepoints.ConvertAll(x => $"U+{x:X4}").ToArray());
+                GlyphSeq = string.Join(" ", EmojiData.Typeface.MakeGlyphIndexList(s).ConvertAll(x => $"#{x}").ToArray());
                 EmojiName = emojiname;
             }
         }

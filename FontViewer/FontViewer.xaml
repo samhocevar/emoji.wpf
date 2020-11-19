@@ -33,6 +33,7 @@
                             <TextBlock Text="{Binding EmojiName}" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
                             <Separator/>
                             <TextBlock Text="{Binding UnicodeSeq}" FontSize="12" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding GlyphSeq}" FontSize="10" FontStyle="Italic" HorizontalAlignment="Center"/>
                             <emoji:TextBlock FontSize="160" Text="{Binding UnicodeText}" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </StackPanel.ToolTip>
