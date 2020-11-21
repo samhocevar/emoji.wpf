@@ -51,14 +51,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Emoji.Wpf\Emoji.Wpf.csproj">
       <Project>{6a9c0ad6-14f7-451a-a0d4-38987a275f0d}</Project>
       <Name>Emoji.Wpf</Name>

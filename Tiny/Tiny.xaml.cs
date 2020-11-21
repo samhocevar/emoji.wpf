@@ -12,26 +12,29 @@
 
 using System;
 using System.Windows;
+using System.Windows.Input;
 
-namespace Sample
+namespace Tiny
 {
     /// <summary>
-    /// Interaction logic for Sample.xaml
+    /// Interaction logic for Tiny.xaml
     /// </summary>
-    public partial class SampleWindow : Window
+    public partial class TinyWindow : Window
     {
         [STAThread]
         public static void Main()
         {
             Application app = new Application();
-            app.StartupUri = new Uri("Sample.xaml", UriKind.Relative);
+            app.StartupUri = new Uri("Tiny.xaml", UriKind.Relative);
             app.Run();
         }
 
-        public SampleWindow()
+        public TinyWindow()
         {
             InitializeComponent();
         }
+
+        private void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+            => DragMove();
     }
 }
-

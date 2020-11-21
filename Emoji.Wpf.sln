@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emoji.Wpf", "Emoji.Wpf\Emoj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample", "Sample\Sample.csproj", "{4C358318-FF04-4FF7-9F5C-18165927A7E2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tiny", "Tiny\Tiny.csproj", "{A1AD34BF-A47B-42D2-B9DB-DF382B1D8F0C}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FontViewer", "FontViewer\FontViewer.csproj", "{7F68102E-00A3-4E83-8DA8-0F9CF736ED2C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Typography.OpenFont", "Typography\Build\N20\Typography.OpenFont\Typography.OpenFont.csproj", "{F7D71E61-9342-4DD7-9AFD-69045F2EC98B}"
@@ -31,6 +33,10 @@ Global
 		{4C358318-FF04-4FF7-9F5C-18165927A7E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4C358318-FF04-4FF7-9F5C-18165927A7E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4C358318-FF04-4FF7-9F5C-18165927A7E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1AD34BF-A47B-42D2-B9DB-DF382B1D8F0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1AD34BF-A47B-42D2-B9DB-DF382B1D8F0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1AD34BF-A47B-42D2-B9DB-DF382B1D8F0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1AD34BF-A47B-42D2-B9DB-DF382B1D8F0C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7F68102E-00A3-4E83-8DA8-0F9CF736ED2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7F68102E-00A3-4E83-8DA8-0F9CF736ED2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F68102E-00A3-4E83-8DA8-0F9CF736ED2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
