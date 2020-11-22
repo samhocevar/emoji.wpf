@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:Sample"
         xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
         mc:Ignorable="d"
-        Title="Emoji.Wpf Sample" Height="400" Width="525">
+        Title="Emoji.Wpf Sample" Height="400" Width="600">
 
     <Window.Resources>
         <!-- FIXME: I used to have "👩🏽‍👩🏽‍👦🏽‍👦🏽" here but it has kerning issues. -->
