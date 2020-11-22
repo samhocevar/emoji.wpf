@@ -24,7 +24,7 @@ namespace Emoji.Wpf
         // Need an empty constructor for serialisation (undo/redo)
         public EmojiInline()
         {
-            // FIXME: not sure this is the correct value; but Baseline does not work.
+            // FIXME: not sure TextBottom is the correct value; but Baseline does not work.
             BaselineAlignment = BaselineAlignment.TextBottom;
             Child = new EmojiCanvas();
         }

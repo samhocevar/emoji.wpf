@@ -27,11 +27,8 @@ namespace Emoji.Wpf
     /// </summary>
     public class EmojiTypeface
     {
-        public EmojiTypeface()
-            => m_fonts.Add(new ColorTypeface(null));
-
-        public EmojiTypeface(string name)
-            => m_fonts.Add(new ColorTypeface(name));
+        public EmojiTypeface(string font_name = null)
+            => m_fonts.Add(new ColorTypeface(font_name));
 
         public double Baseline
             => m_fonts[0].Baseline;

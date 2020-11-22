@@ -37,9 +37,13 @@ namespace Emoji.Wpf
         public static Regex MatchOne { get; private set; }
         public static Regex MatchMultiple { get; private set; }
 
-        static EmojiData()
+        // FIXME: should we lazy load this? If the user calls Load() later, then
+        // this first Load() call will have been for nothing.
+        static EmojiData() => Load(null);
+
+        public static void Load(string font_name = null)
         {
-            Typeface = new EmojiTypeface();
+            Typeface = new EmojiTypeface(font_name);
             ParseEmojiList();
         }
 
