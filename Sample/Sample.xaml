@@ -4,14 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:clr="clr-namespace:System;assembly=mscorlib"
-        xmlns:local="clr-namespace:Sample"
         xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
         mc:Ignorable="d"
-        Title="Emoji.Wpf Sample" Height="400" Width="600">
+        Title="Emoji.Wpf Sample" Width="620" Height="400">
 
     <Window.Resources>
-        <!-- FIXME: I used to have "👩🏽‍👩🏽‍👦🏽‍👦🏽" here but it has kerning issues. -->
-        <clr:String x:Key="SampleText">Hello! ♥😁🐨|👨‍👦|🐱‍🐉👩🏿‍👩🏻‍👦🏽 lol</clr:String>
+        <clr:String x:Key="SampleText">Hello! ♥😁🐨🐱‍🐉|👨‍👦👨🏻‍👩🏿‍👧🏽‍👦🏽‍‍</clr:String>
         <clr:String x:Key="PickerEmoji">🍣</clr:String>
         <clr:String x:Key="FontSizeEmoji">🍷🐉</clr:String>
         <clr:String x:Key="QualifiedEmoji">▶︎ ▶ ▶️</clr:String>

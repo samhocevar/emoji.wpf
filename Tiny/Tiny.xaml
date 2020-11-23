@@ -12,9 +12,10 @@
         Title="Emoji.Wpf Tiny" Width="600" Height="200">
 
     <Window.Resources>
-        <clr:String x:Key="SampleText">Hi👨‍👩‍👧‍👦Lol</clr:String>
+        <clr:String x:Key="SampleText">Hi👨🏻‍👩🏿‍👧🏽‍👦🏽lol</clr:String>
     </Window.Resources>
 
     <emoji:TextBlock FontSize="120" Text="{StaticResource SampleText}"
-                     FontFamily="Segoe UI Emoji, Segoe UI, Arial" TextWrapping="Wrap"/>
+                     FontFamily="Segoe UI Emoji, Segoe UI, Arial" TextWrapping="Wrap"
+                     VerticalAlignment="Center" HorizontalAlignment="Center"/>
 </Window>

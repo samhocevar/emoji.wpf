@@ -8,6 +8,7 @@
 
  - **Very experimental** for now.
  - **Colour emojis**! 😨 💩 🍰 ✈ ✏ 📞 ☘
+ - **Multiracial family emojis**! 👩🏿‍👩🏻‍👦🏽 👨🏻‍👩🏿‍👧🏽‍👦🏽 👩🏻‍👶🏽
  - **Full vector emojis**!
  - **Lightweight**; does not embed a font, or emoji images.
  - Works with **old .NET versions** such as 3.0.
