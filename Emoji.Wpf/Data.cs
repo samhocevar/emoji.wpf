@@ -121,6 +121,11 @@ namespace Emoji.Wpf
             var match_sequence = new Regex(@"^([0-9a-fA-F ]+[0-9a-fA-F]).*; *([-a-z]*) *# [^ ]* (E[0-9.]* )?(.*)");
             var match_skin_tone = new Regex($"({string.Join("|", SkinToneComponents.ToArray())})");
             var match_hair_style = new Regex($"({string.Join("|", HairStyleComponents.ToArray())})");
+
+            var adult = "(👨|👩)(🏻|🏼|🏽|🏾|🏿)?";
+            var child = "(👦|👧|👶)(🏻|🏼|🏽|🏾|🏿)?";
+            var match_family = new Regex($"{adult}(\u200d{adult})*(\u200d{child})+");
+
             var list = new List<Group>();
             var text_lookup = new Dictionary<string, Emoji>();
             var name_lookup = new Dictionary<string, Emoji>();
@@ -160,26 +165,35 @@ namespace Emoji.Wpf
                         text += char.ConvertFromUtf32(codepoint);
                     }
 
-                    // Construct a regex to replace e.g. "🏻" with "(🏻|🏼|🏽|🏾|🏿)" in a big
-                    // regex so that we can match all variations of this Emoji even if they are
-                    // not in the standard.
                     bool has_modifier = false;
-                    bool has_nonfirst_modifier = false;
-                    var regex_text = match_skin_tone.Replace(
-                        match_hair_style.Replace(text, (x) =>
-                        {
-                            has_modifier = true;
-                            has_nonfirst_modifier |= x.Value != HairStyleComponents[0];
-                            return match_hair_style.ToString();
-                        }), (x) =>
-                        {
-                            has_modifier = true;
-                            has_nonfirst_modifier |= x.Value != SkinToneComponents[0];
-                            return match_skin_tone.ToString();
-                        });
 
-                    if (!has_nonfirst_modifier)
-                        alltext.Add(has_modifier ? regex_text : text);
+                    if (match_family.Match(text).Success)
+                    {
+                        // If this is a family emoji, no need to add it to our big matching
+                        // regex, since the match_family regex is already included.
+                    }
+                    else
+                    {
+                        // Construct a regex to replace e.g. "🏻" with "(🏻|🏼|🏽|🏾|🏿)" in a big
+                        // regex so that we can match all variations of this Emoji even if they are
+                        // not in the standard.
+                        bool has_nonfirst_modifier = false;
+                        var regex_text = match_skin_tone.Replace(
+                            match_hair_style.Replace(text, (x) =>
+                            {
+                                has_modifier = true;
+                                has_nonfirst_modifier |= x.Value != HairStyleComponents[0];
+                                return match_hair_style.ToString();
+                            }), (x) =>
+                            {
+                                has_modifier = true;
+                                has_nonfirst_modifier |= x.Value != SkinToneComponents[0];
+                                return match_skin_tone.ToString();
+                            });
+
+                        if (!has_nonfirst_modifier)
+                            alltext.Add(has_modifier ? regex_text : text);
+                    }
 
                     // Only add fully-qualified characters to the groups, or we will
                     // end with a lot of dupes.
@@ -223,7 +237,7 @@ namespace Emoji.Wpf
             // Build a regex that matches any Emoji
             var textarray = alltext.ToArray();
             Array.Sort(textarray, (a, b) => b.Length - a.Length);
-            var regextext = "(" + string.Join("|", textarray).Replace("*", "[*]") + ")";
+            var regextext = "(" + match_family.ToString() + "|" + string.Join("|", textarray).Replace("*", "[*]") + ")";
             MatchOne = new Regex(regextext);
             MatchMultiple = new Regex(regextext + "+");
         }
@@ -239,12 +253,12 @@ namespace Emoji.Wpf
                     // Append these extra Microsoft emojis after 😾 E2.0 pouting cat
                     if (line.StartsWith("1F63E  "))
                     {
-                        yield return "1F431 200D 1F3CD ; fully-qualified # 🐱‍🏍 stunt cat";
-                        yield return "1F431 200D 1F453 ; fully-qualified # 🐱‍👓 hipster cat";
-                        yield return "1F431 200D 1F680 ; fully-qualified # 🐱‍🚀 astro cat";
-                        yield return "1F431 200D 1F464 ; fully-qualified # 🐱‍👤 ninja cat";
-                        yield return "1F431 200D 1F409 ; fully-qualified # 🐱‍🐉 dino cat";
-                        yield return "1F431 200D 1F4BB ; fully-qualified # 🐱‍💻 hacker cat";
+                        yield return "1F431 200D 1F3CD ; fully-qualified # 🐱\u200d🏍 stunt cat";
+                        yield return "1F431 200D 1F453 ; fully-qualified # 🐱\u200d👓 hipster cat";
+                        yield return "1F431 200D 1F680 ; fully-qualified # 🐱\u200d🚀 astro cat";
+                        yield return "1F431 200D 1F464 ; fully-qualified # 🐱\u200d👤 ninja cat";
+                        yield return "1F431 200D 1F409 ; fully-qualified # 🐱\u200d🐉 dino cat";
+                        yield return "1F431 200D 1F4BB ; fully-qualified # 🐱\u200d💻 hacker cat";
                     }
                 }
             }
