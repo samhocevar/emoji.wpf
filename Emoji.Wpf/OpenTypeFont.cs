@@ -1,7 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017—2020 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017—2021 Sam Hocevar <sam@hocevar.net>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -192,6 +192,12 @@ namespace Emoji.Wpf
                     int cid = m_openfont.CPALTable.Palettes[palette] + m_openfont.COLRTable.GlyphPalettes[i];
                     byte R, G, B, A;
                     m_openfont.CPALTable.GetColor(cid, out R, out G, out B, out A);
+                    if (fallback_brush is SolidColorBrush brush)
+                    {
+                        R = (byte)(R + (255 - R) * brush.Color.R / 255);
+                        G = (byte)(G + (255 - G) * brush.Color.G / 255);
+                        B = (byte)(B + (255 - B) * brush.Color.B / 255);
+                    }
                     Brush b = new SolidColorBrush(Color.FromArgb(A, R, G, B));
 
                     dc.DrawGlyphRun(b, r);

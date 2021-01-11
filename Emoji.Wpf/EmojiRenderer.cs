@@ -1,7 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017—2020 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017—2021 Sam Hocevar <sam@hocevar.net>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -25,7 +25,7 @@ namespace Emoji.Wpf
         public static long MaxCachedBitmaps = 4000;
         public static long MaxCachedPixels = 5120000;
 
-        public static BitmapSource RenderBitmap(string text, double font_size, Brush fallback)
+        public static BitmapSource RenderBitmap(string text, double font_size, Brush brush)
         {
             // If the cache is too large, remove the first element repeatedly until it’s OK.
             while (m_cache.Count >= MaxCachedBitmaps || m_cached_pixels >= MaxCachedPixels)
@@ -38,7 +38,7 @@ namespace Emoji.Wpf
 
             // Query the cache for this bitmap and render it if not found
             BitmapSource ret;
-            var key = new RenderKey() { Text = text, FontSize = font_size, Fallback = fallback };
+            var key = new RenderKey() { Text = text, FontSize = font_size, Foreground = brush };
             if (m_cache.Contains(key))
             {
                 ret = m_cache[key] as BitmapSource;
@@ -48,7 +48,7 @@ namespace Emoji.Wpf
             }
             else
             {
-                m_cache[key] = ret = RenderBitmapInternal(text, font_size, fallback);
+                m_cache[key] = ret = RenderBitmapInternal(text, font_size, brush);
                 m_cached_pixels += key.Pixels;
                 ++m_cache_misses;
             }
@@ -60,13 +60,13 @@ namespace Emoji.Wpf
         {
             public string Text;
             public double FontSize;
-            public Brush Fallback;
+            public Brush Foreground;
 
             public long Pixels => (long)Math.Pow(Math.Ceiling(FontSize), 2.0);
         };
 
         /// <summary>
-        /// A cache of bitmaps, indexed by source string, font size, and fallback brush.
+        /// A cache of bitmaps, indexed by source string, font size, and foreground brush.
         /// </summary>
         private static OrderedDictionary m_cache = new OrderedDictionary();
 
@@ -75,7 +75,7 @@ namespace Emoji.Wpf
         private static long m_cache_hits = 0;
         private static long m_cache_misses = 0;
 
-        public static BitmapSource RenderBitmapInternal(string text, double font_size, Brush fallback)
+        public static BitmapSource RenderBitmapInternal(string text, double font_size, Brush brush)
         {
             var font = EmojiData.Typeface;
             var glyphplanlist = font.MakeGlyphPlanList(text ?? "");
@@ -115,7 +115,7 @@ namespace Emoji.Wpf
                     var g = glyphplansequence[i];
                     var origin = new Point(Math.Round(startx + g.OffsetX * scale),
                                            Math.Round(starty + g.OffsetY * scale));
-                    font.RenderGlyph(dc, g.glyphIndex, origin, font_size, fallback);
+                    font.RenderGlyph(dc, g.glyphIndex, origin, font_size, brush);
                     startx += g.AdvanceX * scale;
                 }
 

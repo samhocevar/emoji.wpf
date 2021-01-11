@@ -1,7 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017—2018 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017—2021 Sam Hocevar <sam@hocevar.net>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -44,19 +44,9 @@ namespace Emoji.Wpf
             set => SetValue(TextProperty, value);
         }
 
-        public Brush FallbackBrush
-        {
-            get => (Brush)GetValue(FallbackBrushProperty);
-            set => SetValue(FallbackBrushProperty, value);
-        }
-
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
             nameof(Text), typeof(string), typeof(EmojiInline),
             new PropertyMetadata(""));
-
-        public static readonly DependencyProperty FallbackBrushProperty = DependencyProperty.Register(
-            nameof(FallbackBrush), typeof(Brush), typeof(EmojiInline),
-            new PropertyMetadata(Brushes.Black));
 
         protected override bool ShouldSerializeProperty(DependencyProperty dp)
             => dp.Name == nameof(Text) && base.ShouldSerializeProperty(dp);
@@ -74,7 +64,7 @@ namespace Emoji.Wpf
             {
                 // If FontSize < 32 (aka. 2**5) we render at a larger resolution
                 double scale = Math.Pow(2.0, Math.Max(0.0, Math.Ceiling(5.0 - Math.Log(FontSize, 2.0))));
-                m_bitmap = EmojiRenderer.RenderBitmap(Text ?? "", FontSize * scale, FallbackBrush);
+                m_bitmap = EmojiRenderer.RenderBitmap(Text ?? "", FontSize * scale, Foreground);
                 // Try to compute our own widget size
                 Child.Width = Math.Floor(m_bitmap.Width / scale);
                 Child.Height = Math.Floor(m_bitmap.Height / scale);
@@ -91,7 +81,11 @@ namespace Emoji.Wpf
                 // Debug the bounding box
                 dc.DrawRectangle(Brushes.Bisque, new Pen(Brushes.LightCoral, 1.0), rect);
 #endif
+
+                double opacity = Foreground is SolidColorBrush brush ? brush.Color.A / 255.0f : 1.0;
+                dc.PushOpacity(opacity);
                 dc.DrawImage(m_bitmap, rect);
+                dc.Pop();
             }
         }
 
@@ -99,14 +93,13 @@ namespace Emoji.Wpf
         {
             base.OnPropertyChanged(e);
 
-            // FIXME: split this into two different code paths
-            if (e.Property == FontSizeProperty || e.Property == TextProperty)
+            // FIXME: split this into several code paths
+            if (e.Property == FontSizeProperty || e.Property == TextProperty
+                 || e.Property == ForegroundProperty)
             {
                 Child?.InvalidateVisual();
                 m_dirty = true;
             }
-            else if (e.Property == FallbackBrushProperty)
-                Child?.InvalidateVisual();
         }
 
         public bool Invalid { get; private set; }
