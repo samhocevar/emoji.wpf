@@ -28,22 +28,25 @@
                 </Border>
                 <DockPanel LastChildFill="True">
                     <StackPanel Margin="4" DockPanel.Dock="Right" Orientation="Vertical">
-                        <TextBlock Margin="0 0 0 2" Text="Brush color:"/>
                         <ComboBox Width="150" x:Name="ColorPicker">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                         <Border Width="24" Height="16" Margin="2"
-                                            Background="{Binding Value}" BorderBrush="Black" BorderThickness="1"/>
+                                                Background="{Binding Value}" BorderBrush="Black" BorderThickness="1"/>
                                         <TextBlock Text="{Binding Key}"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
+                        <CheckBox x:Name="BlendingCheckBox" IsChecked="True">
+                            <TextBlock Margin="0 2 0 0" Text="Color blending"/>
+                        </CheckBox>
                     </StackPanel>
                     <Border BorderBrush="LightGray" BorderThickness="1" CornerRadius="4" Margin="4" Padding="4" SnapsToDevicePixels="True">
                         <emoji:TextBlock FontSize="24" Text="{StaticResource SampleText}"
                                          Foreground="{Binding SelectedItem.Value, ElementName=ColorPicker}"
+                                         Blending="{Binding IsChecked, ElementName=BlendingCheckBox}"
                                          SnapsToDevicePixels="True" HorizontalAlignment="Left" TextWrapping="Wrap"/>
                     </Border>
                 </DockPanel>

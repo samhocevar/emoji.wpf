@@ -68,6 +68,19 @@ namespace Emoji.Wpf
         public static new readonly DependencyProperty TextProperty =
             DependencyProperty.Register(nameof(Text), typeof(string), typeof(TextBlock));
 
+        /// <summary>
+        /// Specify whether emoji are blended with the foreground colour.
+        /// </summary>
+        public bool Blending
+        {
+            get => (bool)GetValue(BlendingProperty);
+            set => SetValue(BlendingProperty, value);
+        }
+
+        public static readonly DependencyProperty BlendingProperty =
+             DependencyProperty.Register(nameof(Blending), typeof(bool), typeof(TextBlock),
+                 new PropertyMetadata(true, (o, e) => (o as TextBlock)?.OnBlendingChanged((bool)e.NewValue)));
+
         private void OnTextChanged(string text)
             => RecomputeInlines(text, TextWrapping);
 
@@ -98,11 +111,18 @@ namespace Emoji.Wpf
             Inlines.Add(text.Substring(pos));
         }
 
+        private void OnBlendingChanged(bool blending)
+        {
+            foreach (var inline in Inlines)
+                if (inline is EmojiInline emoji)
+                    emoji.Foreground = blending ? Foreground : Brushes.Black;
+        }
+
         private void OnForegroundChanged(Brush brush)
         {
             foreach (var inline in Inlines)
                 if (inline is EmojiInline emoji)
-                    emoji.Foreground = brush;
+                    emoji.Foreground = Blending ? brush : Brushes.Black;
         }
 
         private void OnFontSizeChanged(double size)
