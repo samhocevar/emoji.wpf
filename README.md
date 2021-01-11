@@ -6,7 +6,6 @@
 
 ### Features
 
- - **Very experimental** for now.
  - **Colour emojis**! 😨 💩 🍰 ✈ ✏ 📞 ☘
  - **Multiracial family emojis**! 👩🏿‍👩🏻‍👦🏽 👨🏻‍👩🏿‍👧🏽‍👦🏽 👩🏻‍👶🏽
  - **Full vector emojis**!
@@ -50,3 +49,16 @@ More classes are to come, but feedback on what is needed is welcome.
 I am not a very good WPF or even C# developer, but I think this could become a very
 useful and robust library if given enough care. Any help appreciated!
 
+### Version changelog
+
+ - v0.1.6 (2021/01/11):
+   - add support for colour blending
+ - v0.1.4 (2020/11/23):
+   - add support for complex family emojis and mixed skin tone families
+ - v0.1.2 (2020/11/22):
+   - support hair style variation emojis
+   - fix kerning and positioning issues with family emojis
+ - v0.1.1 (2020/11/10):
+   - support wrapping in `emoji:TextBlock`
+ - v0.1.0 (2020/11/9):
+   - first non-experimental release

@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>$id$</id>
-    <version>0.1.5</version>
+    <version>0.1.6</version>
     <title>$title$</title>
     <authors>Sam Hocevar &lt;sam@hocevar.net&gt;</authors>
     <owners>Sam Hocevar</owners>
