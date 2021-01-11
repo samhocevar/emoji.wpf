@@ -1,7 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017—2020 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017—2021 Sam Hocevar <sam@hocevar.net>
 //
 //  This program is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -11,7 +11,10 @@
 //
 
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using System.Windows;
+using System.Windows.Media;
 
 namespace Sample
 {
@@ -31,6 +34,11 @@ namespace Sample
         public SampleWindow()
         {
             InitializeComponent();
+
+            var brushes = new Dictionary<string, Brush>();
+            foreach (var p in typeof(Brushes).GetProperties(BindingFlags.Static | BindingFlags.Public))
+                brushes[p.Name] = (Brush)p.GetValue(null, null);
+            ColorPicker.ItemsSource = brushes;
         }
     }
 }
