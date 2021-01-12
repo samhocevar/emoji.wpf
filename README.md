@@ -53,8 +53,10 @@ useful and robust library if given enough care. Any help appreciated!
 
 ### Version changelog
 
+ - v0.1.7 (2021/01/12):
+   - colour blending is off by default; use `ColorBlend="True"` to enable
  - v0.1.6 (2021/01/11):
-   - add support for colour blending in `emoji:TextBlock`; use `Blending="False"` to disable
+   - add support for colour blending in `emoji:TextBlock`; ~~use `Blending="False"` to disable~~
  - v0.1.4 (2020/11/23):
    - add support for complex family emojis and mixed skin tone families
  - v0.1.2 (2020/11/22):
