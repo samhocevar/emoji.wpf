@@ -2,6 +2,8 @@
 
 `Emoji.Wpf` is a proof of concept implementation of Emoji for WPF.
 
+![Demo 1](/Resources/emoji.wpf.gif)
+
 ### Features
 
  - **Colour emojis**! 😨 💩 🍰 ✈ ✏ 📞 ☘
@@ -42,7 +44,7 @@ Here is how to use Emoji.Wpf in your XAML:
 
 More classes are to come, but feedback on what is needed is welcome.
 
-![Demo 1](/Resources/emoji.wpf.gif) ![Demo 2](/Resources/emoji.wpf.png)
+![Demo 2](/Resources/emoji.wpf.png)
 
 ### Help needed!
 
