@@ -2,8 +2,6 @@
 
 `Emoji.Wpf` is a proof of concept implementation of Emoji for WPF.
 
-![Demo 1](/Resources/emoji.wpf.gif) ![Demo 2](/Resources/emoji.wpf.png)
-
 ### Features
 
  - **Colour emojis**! 😨 💩 🍰 ✈ ✏ 📞 ☘
@@ -44,6 +42,8 @@ Here is how to use Emoji.Wpf in your XAML:
 
 More classes are to come, but feedback on what is needed is welcome.
 
+![Demo 1](/Resources/emoji.wpf.gif) ![Demo 2](/Resources/emoji.wpf.png)
+
 ### Help needed!
 
 I am not a very good WPF or even C# developer, but I think this could become a very
@@ -52,7 +52,7 @@ useful and robust library if given enough care. Any help appreciated!
 ### Version changelog
 
  - v0.1.6 (2021/01/11):
-   - add support for colour blending
+   - add support for colour blending in `emoji:TextBlock`; use `Blending="False"` to disable
  - v0.1.4 (2020/11/23):
    - add support for complex family emojis and mixed skin tone families
  - v0.1.2 (2020/11/22):
