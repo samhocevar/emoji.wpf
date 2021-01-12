@@ -10,11 +10,19 @@
     <projectUrl>https://github.com/samhocevar/emoji.wpf</projectUrl>
     <icon>icon.png</icon>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>$description$</description>
-    <summary>$description$</summary>
-    <releaseNotes>Experimental proof of concept.</releaseNotes>
-    <copyright>Copyright © 2017—2020 Sam Hocevar</copyright>
+    <description>Emoji rendering for WPF applications</description>
+    <summary>Emoji rendering for WPF applications</summary>
+    <copyright>Copyright © 2017—2021 Sam Hocevar</copyright>
     <tags>Emoji Unicode WPF XAML</tags>
+    <dependencies>
+      <group targetFramework=".NETFramework3.0"/>
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="PresentationCore"/>
+      <frameworkAssembly assemblyName="PresentationFramework"/>
+      <frameworkAssembly assemblyName="System"/>
+      <frameworkAssembly assemblyName="WindowsBase"/>
+    </frameworkAssemblies>
   </metadata>
   <files>
     <file src="bin/Release/Typography.OpenFont.dll" target="lib\net30"/>

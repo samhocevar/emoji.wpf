@@ -11,7 +11,8 @@ DEVENV = "$(shell $(VSWHERE) | sed -ne 's/^productPath: //p' | sed 's/devenv.exe
 all:
 	$(DEVENV) Emoji.Wpf.sln //clean $(CONFIG)
 	$(DEVENV) Emoji.Wpf.sln //build $(CONFIG)
-	nuget pack Emoji.Wpf/Emoji.Wpf.csproj -Properties Configuration=Release
+	# Disable warning 5128 until https://github.com/NuGet/Home/issues/8713 is fixed
+	nuget pack Emoji.Wpf/Emoji.Wpf.csproj -Properties Configuration=Release -Properties NoWarn=NU5128
 
 clean:
 	$(DEVENV) Emoji.Wpf.sln //clean $(CONFIG)
