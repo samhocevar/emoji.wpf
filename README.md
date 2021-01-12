@@ -6,7 +6,7 @@
 
 ### Features
 
- - **Colour emojis**! 😨 💩 🍰 ✈ ✏ 📞 ☘
+ - **Colour emojis**! 😨 💩 🍰 ✈️ ✏️ 📞 ☘️
  - **Multiracial family emojis**! 👩🏿‍👩🏻‍👦🏽 👨🏻‍👩🏿‍👧🏽‍👦🏽 👩🏻‍👶🏽
  - **Full vector emojis**!
  - **Lightweight**; does not embed a font, or emoji images.
@@ -35,7 +35,7 @@ Here is how to use Emoji.Wpf in your XAML:
         ...
         <emoji:RichTextBox FontSize="24" Margin="5"/>
         ...
-        <emoji:TextBlock FontSize="24" Text="Hello! ♥😁🐨🐱‍🐉👩🏿‍👩🏻‍👦🏽 lol"/>
+        <emoji:TextBlock FontSize="24" Text="Hello! 💖😁🐨🐱‍🐉👩🏿‍👩🏻‍👦🏽 lol"/>
         ...
         <emoji:Picker FontSize="40"/>
         ...
