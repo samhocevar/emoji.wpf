@@ -39,6 +39,9 @@ namespace Sample
             foreach (var p in typeof(Brushes).GetProperties(BindingFlags.Static | BindingFlags.Public))
                 brushes[p.Name] = (Brush)p.GetValue(null, null);
             ColorPicker.ItemsSource = brushes;
+
+            EmojiPicker.Picked += (o, e) =>
+                EmojiRichTextBox.CaretPosition.InsertTextInRun(e.Emoji);
         }
     }
 }

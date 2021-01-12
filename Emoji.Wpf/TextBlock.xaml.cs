@@ -102,7 +102,7 @@ namespace Emoji.Wpf
                 Inlines.Add(new EmojiInline()
                 {
                     FontSize = FontSize,
-                    Foreground = color_blend ? Foreground : Brushes.Black,
+                    Foreground = ColorBlend ? Foreground : Brushes.Black,
                     Text = text.Substring(m.Index, m.Length),
                 });
 

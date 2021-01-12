@@ -23,6 +23,16 @@ using System.Windows.Markup;
 
 namespace Emoji.Wpf
 {
+    public class EmojiPickedEventArgs : EventArgs
+    {
+        public EmojiPickedEventArgs() { }
+        public EmojiPickedEventArgs(string emoji) => Emoji = emoji;
+
+        public string Emoji;
+    }
+
+    public delegate void EmojiPickedEventHandler(object sender, EmojiPickedEventArgs e);
+
     /// <summary>
     /// Interaction logic for Picker.xaml
     /// </summary>
@@ -43,6 +53,8 @@ namespace Emoji.Wpf
 
         public event PropertyChangedEventHandler SelectionChanged;
 
+        public event EmojiPickedEventHandler Picked;
+
         private static void OnSelectionPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
         {
             (source as Picker)?.OnSelectionChanged(e.NewValue as string);
@@ -62,7 +74,7 @@ namespace Emoji.Wpf
             SelectionChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Selection)));
         }
 
-        private void OnEmojiSelected(object sender, RoutedEventArgs e)
+        private void OnEmojiPicked(object sender, RoutedEventArgs e)
         {
             if (m_current_toggle != null)
             {
@@ -77,6 +89,7 @@ namespace Emoji.Wpf
                 Selection = emoji.Text;
                 Button_INTERNAL.IsChecked = false;
                 e.Handled = true;
+                Picked?.Invoke(this, new EmojiPickedEventArgs(Selection));
             }
 
             if (sender is ToggleButton && emoji.VariationList.Count > 0)

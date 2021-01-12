@@ -14,7 +14,7 @@
         <clr:String x:Key="FontSizeEmoji">🍷🐉</clr:String>
         <clr:String x:Key="ButtonText">💾 Save All</clr:String>
         <clr:String x:Key="QualifiedEmoji">▶︎ ▶ ▶️</clr:String>
-        <clr:String x:Key="EditableText" xml:space="preserve">Hi🙌, I♥emojis☺&#x0a;Edit me!&#x0a;🍰✈✏📞☘️💩</clr:String>
+        <clr:String x:Key="EditableText" xml:space="preserve">Hi🙌, I♥emojis☺&#x0a;Edit me! Or use the picker!&#x0a;🍰✈✏📞☘️💩</clr:String>
     </Window.Resources>
 
     <DockPanel LastChildFill="True">
