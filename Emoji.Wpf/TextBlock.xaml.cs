@@ -71,15 +71,15 @@ namespace Emoji.Wpf
         /// <summary>
         /// Specify whether emoji are blended with the foreground colour.
         /// </summary>
-        public bool Blending
+        public bool ColorBlend
         {
-            get => (bool)GetValue(BlendingProperty);
-            set => SetValue(BlendingProperty, value);
+            get => (bool)GetValue(ColorBlendProperty);
+            set => SetValue(ColorBlendProperty, value);
         }
 
-        public static readonly DependencyProperty BlendingProperty =
-             DependencyProperty.Register(nameof(Blending), typeof(bool), typeof(TextBlock),
-                 new PropertyMetadata(true, (o, e) => (o as TextBlock)?.OnBlendingChanged((bool)e.NewValue)));
+        public static readonly DependencyProperty ColorBlendProperty =
+             DependencyProperty.Register(nameof(ColorBlend), typeof(bool), typeof(TextBlock),
+                 new PropertyMetadata(false, (o, e) => (o as TextBlock)?.OnColorBlendChanged((bool)e.NewValue)));
 
         private void OnTextChanged(string text)
             => RecomputeInlines(text, TextWrapping);
@@ -111,18 +111,18 @@ namespace Emoji.Wpf
             Inlines.Add(text.Substring(pos));
         }
 
-        private void OnBlendingChanged(bool blending)
+        private void OnColorBlendChanged(bool color_blend)
         {
             foreach (var inline in Inlines)
                 if (inline is EmojiInline emoji)
-                    emoji.Foreground = blending ? Foreground : Brushes.Black;
+                    emoji.Foreground = color_blend ? Foreground : Brushes.Black;
         }
 
         private void OnForegroundChanged(Brush brush)
         {
             foreach (var inline in Inlines)
                 if (inline is EmojiInline emoji)
-                    emoji.Foreground = Blending ? brush : Brushes.Black;
+                    emoji.Foreground = ColorBlend ? brush : Brushes.Black;
         }
 
         private void OnFontSizeChanged(double size)

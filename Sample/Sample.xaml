@@ -39,14 +39,14 @@
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
-                        <CheckBox x:Name="BlendingCheckBox" IsChecked="True">
+                        <CheckBox x:Name="BlendCheckBox" IsChecked="True">
                             <TextBlock Margin="0 2 0 0" Text="Color blending"/>
                         </CheckBox>
                     </StackPanel>
                     <Border BorderBrush="LightGray" BorderThickness="1" CornerRadius="4" Margin="4" Padding="4" SnapsToDevicePixels="True">
                         <emoji:TextBlock FontSize="24" Text="{StaticResource SampleText}"
                                          Foreground="{Binding SelectedItem.Value, ElementName=ColorPicker}"
-                                         Blending="{Binding IsChecked, ElementName=BlendingCheckBox}"
+                                         ColorBlend="{Binding IsChecked, ElementName=BlendCheckBox}"
                                          SnapsToDevicePixels="True" HorizontalAlignment="Left" TextWrapping="Wrap"/>
                     </Border>
                 </DockPanel>
@@ -80,10 +80,10 @@
             <GroupBox Header="Button" Margin="4">
                 <StackPanel Orientation="Vertical">
                     <Button Margin="4" IsEnabled="False">
-                        <emoji:TextBlock Margin="2 0" Text="{StaticResource ButtonText}"/>
+                        <emoji:TextBlock Margin="2 0" Text="{StaticResource ButtonText}" ColorBlend="True"/>
                     </Button>
                     <Button Margin="4">
-                        <emoji:TextBlock Margin="2 0" Text="{StaticResource ButtonText}"/>
+                        <emoji:TextBlock Margin="2 0" Text="{StaticResource ButtonText}" ColorBlend="True"/>
                     </Button>
                 </StackPanel>
             </GroupBox>
