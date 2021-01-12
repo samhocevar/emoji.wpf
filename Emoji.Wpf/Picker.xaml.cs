@@ -83,7 +83,10 @@ namespace Emoji.Wpf
                 m_current_toggle = null;
             }
 
-            var emoji = (sender as Control).DataContext as EmojiData.Emoji;
+            if (!(sender is Control control))
+                return;
+
+            var emoji = control.DataContext as EmojiData.Emoji;
             if (emoji.VariationList.Count == 0 || sender is Button)
             {
                 Selection = emoji.Text;
@@ -92,9 +95,9 @@ namespace Emoji.Wpf
                 Picked?.Invoke(this, new EmojiPickedEventArgs(Selection));
             }
 
-            if (sender is ToggleButton && emoji.VariationList.Count > 0)
+            if (sender is ToggleButton toggle && emoji.VariationList.Count > 0)
             {
-                m_current_toggle = sender as ToggleButton;
+                m_current_toggle = toggle;
             }
         }
 
@@ -105,16 +108,19 @@ namespace Emoji.Wpf
 
         private void OnPopupKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Escape && sender is Popup)
+            if (e.Key == Key.Escape && sender is Popup popup)
             {
-                (sender as Popup).IsOpen = false;
+                popup.IsOpen = false;
                 e.Handled = true;
             }
         }
 
         private void OnPopupLoaded(object sender, RoutedEventArgs e)
         {
-            var child = (sender as Popup).Child;
+            if (!(sender is Popup popup))
+                return;
+
+            var child = popup.Child;
             IInputElement old_focus = null;
             child.Focusable = true;
             child.IsVisibleChanged += (o, ea) =>
@@ -126,7 +132,7 @@ namespace Emoji.Wpf
                 }
             };
 
-            (sender as Popup).Closed += (o, ea) => Keyboard.Focus(old_focus);
+            popup.Closed += (o, ea) => Keyboard.Focus(old_focus);
         }
     }
 
