@@ -53,6 +53,8 @@ useful and robust library if given enough care. Any help appreciated!
 
 ### Version changelog
 
+ - v0.1.8 (2021/01/13):
+   - new `Picked` event in `emoji:Picker`
  - v0.1.7 (2021/01/12):
    - colour blending is off by default; use `ColorBlend="True"` to enable
  - v0.1.6 (2021/01/11):
