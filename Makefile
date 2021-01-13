@@ -6,11 +6,11 @@
 CONFIG = Release
 
 VSWHERE = "${ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
-DEVENV = "$(shell $(VSWHERE) | sed -ne 's/^productPath: //p' | sed 's/devenv.exe/devenv.com/' | head -n 1)"
+MSBUILD = "$(shell $(VSWHERE) -find msbuild | head -n 1)/Current/Bin/MSBuild.exe"
 
 all:
-	$(DEVENV) Emoji.Wpf.sln //clean $(CONFIG)
-	$(DEVENV) Emoji.Wpf.sln //build $(CONFIG)
+	$(MSBUILD) Emoji.Wpf.sln -t:clean -p:configuration=$(CONFIG)
+	$(MSBUILD) Emoji.Wpf.sln -t:build -p:configuration=$(CONFIG)
 	# Disable warning 5128 until https://github.com/NuGet/Home/issues/8713 is fixed
 	nuget pack Emoji.Wpf/Emoji.Wpf.csproj -Properties Configuration=Release -Properties NoWarn=NU5128
 
