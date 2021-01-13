@@ -139,6 +139,18 @@ namespace Emoji.Wpf
                 TextRange word = new TextRange(cur, next);
                 if (EmojiData.MatchOne.IsMatch(word.Text))
                 {
+                    // We found an emoji, but it’s possible that GetNextInsertionPosition
+                    // was mistaken and the actual emoji sequence is longer, so we grow
+                    // the word if that’s that case. This may be suboptimal but I could
+                    // not think of a better way.
+                    var run_text = cur.GetTextInRun(LogicalDirection.Forward);
+                    var match = EmojiData.MatchOne.Match(run_text);
+                    while (match.Length > word.Text.Length)
+                    {
+                        next = next.GetNextInsertionPosition(LogicalDirection.Forward);
+                        word = new TextRange(cur, next);
+                    }
+
                     Inline inline = new EmojiInline()
                     {
                         FontSize = FontSize,
