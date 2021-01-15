@@ -102,14 +102,6 @@ namespace Emoji.Wpf
                 Clipboard.SetText(selection);
                 e.Handled = true;
             }
-            else if (e.Command == ApplicationCommands.Undo)
-            {
-                /// Disable Undo to prevent the widget internals from adding data to the
-                /// FlowDocument. This is unfortunate but there are too many crashes caused
-                /// by this. We probably need a custom undo/redo stack.
-                /// Easy crash repro: backspace twice on emojis, Ctrl-Z twice.
-                e.Handled = true;
-            }
         }
 
         /// <summary>
@@ -125,8 +117,7 @@ namespace Emoji.Wpf
 
             base.OnTextChanged(e);
 
-            /* This will prevent our operation from polluting the undo buffer, but it
-             * will create an infinite undo stack... need to fix this. */
+            // Prevent our operation from polluting the undo buffer
             BeginChange();
 
             TextPointer cur = Document.ContentStart;
