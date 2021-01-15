@@ -12,6 +12,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media;
@@ -112,25 +113,16 @@ namespace Emoji.Wpf
         }
 
         private void OnColorBlendChanged(bool color_blend)
-        {
-            foreach (var inline in Inlines)
-                if (inline is EmojiInline emoji)
-                    emoji.Foreground = color_blend ? Foreground : Brushes.Black;
-        }
+            => UpdateForegrounds(color_blend ? Foreground : Brushes.Black);
 
         private void OnForegroundChanged(Brush brush)
-        {
-            foreach (var inline in Inlines)
-                if (inline is EmojiInline emoji)
-                    emoji.Foreground = ColorBlend ? brush : Brushes.Black;
-        }
+            => UpdateForegrounds(ColorBlend ? brush : Brushes.Black);
+
+        private void UpdateForegrounds(Brush brush)
+            => Inlines.OfType<EmojiInline>().ForAll(e => e.Foreground = brush);
 
         private void OnFontSizeChanged(double size)
-        {
-            foreach (var inline in Inlines)
-                if (inline is EmojiInline emoji)
-                    emoji.FontSize = size;
-        }
+            => Inlines.OfType<EmojiInline>().ForAll(e => e.FontSize = size);
 
         private static readonly DependencyPropertyDescriptor m_text_dpd =
             DependencyPropertyDescriptor.FromProperty(TextProperty, typeof(TextBlock));

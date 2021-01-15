@@ -1,7 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017—2020 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017—2021 Sam Hocevar <sam@hocevar.net>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Emoji.Wpf
@@ -21,14 +22,9 @@ namespace Emoji.Wpf
         public static EmojiTypeface Typeface { get; private set; }
 
         public static IEnumerable<Emoji> AllEmoji
-        {
-            get
-            {
-                foreach (var group in AllGroups)
-                    foreach (var emoji in group.EmojiList)
-                        yield return emoji;
-            }
-        }
+            => from g in AllGroups
+               from e in g.EmojiList
+               select e;
 
         public static IList<Group> AllGroups { get; private set; }
 
@@ -75,25 +71,12 @@ namespace Emoji.Wpf
             public IList<SubGroup> SubGroups { get; } = new List<SubGroup>();
 
             public int EmojiCount
-            {
-                get
-                {
-                    int i = 0;
-                    foreach (var subgroup in SubGroups)
-                        i += subgroup.EmojiList.Count;
-                    return i;
-                }
-            }
+                => SubGroups.Select(s => s.EmojiList.Count).Sum();
 
             public IEnumerable<Emoji> EmojiList
-            {
-                get
-                {
-                    foreach (var subgroup in SubGroups)
-                        foreach (var emoji in subgroup.EmojiList)
-                            yield return emoji;
-                }
-            }
+                => from s in SubGroups
+                   from e in s.EmojiList
+                   select e;
         }
 
         // FIXME: this could be read directly from emoji-test.txt.gz
@@ -158,13 +141,8 @@ namespace Emoji.Wpf
                     string sequence = m.Groups[1].ToString();
                     string name = m.Groups[4].ToString();
 
-                    string text = "";
-                    foreach (var item in sequence.Split(' '))
-                    {
-                        int codepoint = Convert.ToInt32(item, 16);
-                        text += char.ConvertFromUtf32(codepoint);
-                    }
-
+                    string text = string.Join("", from n in sequence.Split(' ')
+                                                  select char.ConvertFromUtf32(Convert.ToInt32(n, 16)));
                     bool has_modifier = false;
 
                     if (match_family.Match(text).Success)
@@ -227,17 +205,14 @@ namespace Emoji.Wpf
             }
 
             // Remove empty groups, for instance the Components
-            for (int i = list.Count; --i > 0;)
-                if (list[i].EmojiCount == 0)
-                    list.RemoveAt(i);
+            list.RemoveAll(g => g.EmojiCount == 0);
 
             AllGroups = list;
             Lookup = text_lookup;
 
             // Build a regex that matches any Emoji
-            var textarray = alltext.ToArray();
-            Array.Sort(textarray, (a, b) => b.Length - a.Length);
-            var regextext = "(" + match_family.ToString() + "|" + string.Join("|", textarray).Replace("*", "[*]") + ")";
+            var sortedtext = alltext.OrderByDescending(x => x.Length);
+            var regextext = "(" + match_family.ToString() + "|" + string.Join("|", sortedtext).Replace("*", "[*]") + ")";
             MatchOne = new Regex(regextext);
             MatchMultiple = new Regex(regextext + "+");
         }

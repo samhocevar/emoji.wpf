@@ -96,6 +96,7 @@
     <Compile Include="Data.cs" />
     <Compile Include="EmojiRenderer.cs" />
     <Compile Include="EmojiInline.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="OpenTypeFont.cs" />
     <Compile Include="Picker.xaml.cs">
       <DependentUpon>Picker.xaml</DependentUpon>
