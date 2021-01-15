@@ -210,7 +210,7 @@ namespace Emoji.Wpf
             if (string.IsNullOrEmpty(text_after))
                 siblings.Remove(run);
             else
-                run.Text = text_after;
+                run.ContentStart.DeleteTextInRun(run.Text.Length - text_after.Length);
 
             return inline.ContentEnd;
         }
