@@ -127,31 +127,34 @@ namespace Emoji.Wpf
                 if (next == null)
                     break;
 
-                TextRange word = new TextRange(cur, next);
-                if (EmojiData.MatchOne.IsMatch(word.Text))
+                var text = new TextRange(cur, next).Text;
+                if (EmojiData.MatchOne.IsMatch(text))
                 {
+                    // Preserve caret position
+                    bool caret_was_next = (0 == next.CompareTo(CaretPosition));
+
                     // We found an emoji, but it’s possible that GetNextInsertionPosition
                     // was mistaken and the actual emoji sequence is longer, so we grow
-                    // the word if that’s that case. This may be suboptimal but I could
+                    // the word if that’s the case. This may be suboptimal but I could
                     // not think of a better way.
-                    var run_text = cur.GetTextInRun(LogicalDirection.Forward);
-                    var match = EmojiData.MatchOne.Match(run_text);
-                    while (match.Length > word.Text.Length)
+                    var full_text = cur.GetTextInRun(LogicalDirection.Forward);
+                    var match = EmojiData.MatchOne.Match(full_text);
+                    while (match.Length > text.Length)
                     {
                         next = next.GetNextInsertionPosition(LogicalDirection.Forward);
-                        word = new TextRange(cur, next);
+                        text = new TextRange(cur, next).Text;
                     }
 
-                    Inline inline = new EmojiInline()
+                    // Delete the Unicode characters and insert our emoji inline instead.
+                    cur.DeleteTextInRun(match.Value.Length);
+                    Inline inline = new EmojiInline(cur)
                     {
                         FontSize = FontSize,
                         Foreground = Foreground,
-                        Text = word.Text,
+                        Text = match.Value,
                     };
 
-                    // Preserve caret position
-                    bool caret_was_next = (0 == next.CompareTo(CaretPosition));
-                    next = ReplaceRange(word, inline);
+                    next = inline.ContentEnd;
                     if (caret_was_next)
                         CaretPosition = next;
                 }
@@ -176,35 +179,6 @@ namespace Emoji.Wpf
         }
 
         private bool m_pending_change = false;
-
-        /// <summary>
-        /// Replace a text range with an inline object
-        /// </summary>
-        /// <param name="range"></param>
-        /// <param name="inline"></param>
-        /// <returns></returns>
-        public TextPointer ReplaceRange(TextRange range, Inline inline)
-        {
-            var run = range.Start.Parent as Run;
-            if (run == null)
-                return range.End;
-
-            var text_before = new TextRange(run.ContentStart, range.Start).Text;
-            var text_after = new TextRange(range.End, run.ContentEnd).Text;
-            var siblings = run.SiblingInlines;
-
-            if (!string.IsNullOrEmpty(text_before))
-                siblings.InsertBefore(run, new Run(text_before));
-
-            siblings.InsertBefore(run, inline);
-
-            if (string.IsNullOrEmpty(text_after))
-                siblings.Remove(run);
-            else
-                run.ContentStart.DeleteTextInRun(run.Text.Length - text_after.Length);
-
-            return inline.ContentEnd;
-        }
 
         public new TextSelection Selection { get; private set; }
 
