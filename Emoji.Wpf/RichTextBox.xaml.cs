@@ -11,6 +11,9 @@
 //
 
 using System.Text;
+#if DEBUG
+using System.Text.RegularExpressions;
+#endif
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -127,26 +130,31 @@ namespace Emoji.Wpf
                 if (next == null)
                     break;
 
-                var text = new TextRange(cur, next).Text;
-                if (EmojiData.MatchOne.IsMatch(text))
+                var emoji_range = new TextRange(cur, next);
+                if (EmojiData.MatchOne.IsMatch(emoji_range.Text))
                 {
                     // Preserve caret position
                     bool caret_was_next = (0 == next.CompareTo(CaretPosition));
 
                     // We found an emoji, but it’s possible that GetNextInsertionPosition
-                    // was mistaken and the actual emoji sequence is longer, so we grow
-                    // the word if that’s the case. This may be suboptimal but I could
-                    // not think of a better way.
-                    var full_text = cur.GetTextInRun(LogicalDirection.Forward);
-                    var match = EmojiData.MatchOne.Match(full_text);
-                    while (match.Length > text.Length)
+                    // did not pick enough characters and the emoji sequence is actually
+                    // longer. To avoid this, we look up to 50 characters ahead and retry
+                    // the match.
+                    var lookup = cur.GetNextContextPosition(LogicalDirection.Forward);
+                    if (cur.GetOffsetToPosition(lookup) > 50)
+                        lookup = cur.GetPositionAtOffset(50, LogicalDirection.Forward);
+                    var full_text = new TextRange(cur, lookup).Text;
+                    var match = EmojiData.MatchOne.Match(new TextRange(cur, lookup).Text);
+                    while (match.Length > emoji_range.Text.Length)
                     {
                         next = next.GetNextInsertionPosition(LogicalDirection.Forward);
-                        text = new TextRange(cur, next).Text;
+                        if (next == null)
+                            break;
+                        emoji_range = new TextRange(cur, next);
                     }
 
                     // Delete the Unicode characters and insert our emoji inline instead.
-                    cur.DeleteTextInRun(match.Value.Length);
+                    emoji_range.Text = "";
                     Inline inline = new EmojiInline(cur)
                     {
                         FontSize = FontSize,
@@ -172,6 +180,7 @@ namespace Emoji.Wpf
             try
             {
                 var xaml = XamlWriter.Save(Document);
+                xaml = Regex.Replace(xaml, "<FlowDocument[^>]*>", "<FlowDocument>");
                 SetValue(XamlTextProperty, xaml);
             }
             catch { }
