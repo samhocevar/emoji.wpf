@@ -140,7 +140,7 @@ namespace Emoji.Wpf
                     // did not pick enough characters and the emoji sequence is actually
                     // longer. To avoid this, we look up to 50 characters ahead and retry
                     // the match.
-                    var lookup = cur.GetNextContextPosition(LogicalDirection.Forward);
+                    var lookup = next.GetNextContextPosition(LogicalDirection.Forward);
                     if (cur.GetOffsetToPosition(lookup) > 50)
                         lookup = cur.GetPositionAtOffset(50, LogicalDirection.Forward);
                     var full_text = new TextRange(cur, lookup).Text;
