@@ -102,7 +102,7 @@ namespace Emoji.Wpf
                 var selection = Selection.Text;
                 if (e.Command == ApplicationCommands.Cut)
                     Cut();
-                Clipboard.SetText(selection);
+                try { Clipboard.SetText(selection); } catch { }
                 e.Handled = true;
             }
         }
