@@ -180,12 +180,15 @@ namespace Emoji.Wpf
                         emoji_range = new TextRange(cur, next);
                     }
 
+                    var font_size = emoji_range.GetPropertyValue(TextElement.FontSizeProperty);
+                    var foreground = emoji_range.GetPropertyValue(TextElement.ForegroundProperty);
+
                     // Delete the Unicode characters and insert our emoji inline instead.
                     emoji_range.Text = "";
                     Inline inline = new EmojiInline(cur)
                     {
-                        FontSize = FontSize,
-                        Foreground = Foreground,
+                        FontSize = (double)(font_size ?? FontSize),
+                        Foreground = (Brush)(foreground ?? Foreground),
                         Text = match.Value,
                     };
 
