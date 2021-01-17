@@ -40,7 +40,7 @@ namespace Sample
                 brushes[p.Name] = (Brush)p.GetValue(null, null);
             ColorPicker.ItemsSource = brushes;
 
-            EmojiPicker.Picked += (o, e) =>
+            EditorPicker.Picked += (o, e) =>
                 EmojiRichTextBox.CaretPosition.InsertTextInRun(e.Emoji);
         }
     }
