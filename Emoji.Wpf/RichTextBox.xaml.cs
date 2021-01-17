@@ -19,6 +19,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Markup;
+using System.Windows.Media;
 
 namespace Emoji.Wpf
 {
@@ -81,9 +82,19 @@ namespace Emoji.Wpf
             Selection = new TextSelection(base.Selection.Start, base.Selection.End);
         }
 
-        protected override void OnPreviewKeyDown(KeyEventArgs e)
+        protected override void OnMouseDown(MouseButtonEventArgs e)
         {
-            base.OnPreviewKeyDown(e);
+            // Override MouseDown for emoji elements because the default behaviour is
+            // to select the whole InlineUIContainer instead of positioning the caret.
+            var pos = e.GetPosition(this);
+            var hit = VisualTreeHelper.HitTest(this, pos);
+            if (hit.VisualHit is EmojiCanvas emoji && emoji.Parent is InlineUIContainer container)
+            {
+                var middle = emoji.TranslatePoint(new Point(0, 0), this).X + emoji.ActualWidth / 2;
+                CaretPosition = pos.X < middle ? container.ContentStart : container.ContentEnd;
+                e.Handled = true;
+            }
+            base.OnMouseDown(e);
         }
 
         private static void PreviewExecuted(object sender, ExecutedRoutedEventArgs e)
