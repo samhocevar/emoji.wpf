@@ -1,16 +1,16 @@
 # ![Icon](/Resources/icon.png) Emoji.Wpf
 
-`Emoji.Wpf` is a proof of concept implementation of Emoji for WPF.
+`Emoji.Wpf` adds Emoji rendering support to WPF applications.
 
 ![Demo 1](/Resources/emoji.wpf.gif)
 
-### Features
+## Features
 
- - **Colour emojis**! 😨 💩 🍰 ✈️ ✏️ 📞 ☘️
- - **Multiracial family emojis**! 👩🏿‍👩🏻‍👦🏽 👨🏻‍👩🏿‍👧🏽‍👦🏽 👩🏻‍👶🏽
- - **Full vector emojis**!
+ - **Colour emoji**! 😨 💩 🍰 ✈️ ✏️ 📞 ☘️
+ - **Multiracial family emoji**! 👩🏿‍👩🏻‍👦🏽 👨🏻‍👩🏿‍👧🏽‍👦🏽 👩🏻‍👶🏽
+ - **Full vector emoji**!
  - **Lightweight**; does not embed a font, or emoji images.
- - Works with **old .NET versions** such as 3.0.
+ - Works with **old .NET versions** such as Framework 4.0.
  - Uses the Segoe UI Emoji system font, even on **Windows 7 or Windows 8** (if
    installed in `c:/Windows/Fonts`) by implementing Microsoft’s COLR/CPAL font
    format extensions.
@@ -61,10 +61,10 @@ useful and robust library if given enough care. Any help appreciated!
  - v0.1.6 (2021/01/11):
    - add support for colour blending in `emoji:TextBlock`; ~~use `Blending="False"` to disable~~
  - v0.1.4 (2020/11/23):
-   - add support for complex family emojis and mixed skin tone families
+   - add support for complex family emoji and mixed skin tone families
  - v0.1.2 (2020/11/22):
-   - support hair style variation emojis
-   - fix kerning and positioning issues with family emojis
+   - support hair style variation emoji
+   - fix kerning and positioning issues with family emoji
  - v0.1.1 (2020/11/10):
    - support wrapping in `emoji:TextBlock`
  - v0.1.0 (2020/11/9):
