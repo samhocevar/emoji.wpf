@@ -79,20 +79,36 @@ namespace Emoji.Wpf
         protected override void OnSelectionChanged(RoutedEventArgs e)
         {
             base.OnSelectionChanged(e);
+            if (m_override_selection != null)
+            {
+                var tmp = m_override_selection; // Prevent infinite recursion
+                m_override_selection = null;
+                base.Selection.Select(tmp.Start, tmp.End);
+            }
             Selection = new TextSelection(base.Selection.Start, base.Selection.End);
         }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
-            // Override MouseDown for emoji elements because the default behaviour is
-            // to select the whole InlineUIContainer instead of positioning the caret.
-            var pos = e.GetPosition(this);
-            var hit = VisualTreeHelper.HitTest(this, pos);
-            if (hit.VisualHit is EmojiCanvas emoji && emoji.Parent is InlineUIContainer container)
+            // If the user clicked on an emoji, remember where it was. The default RichTextBox
+            // behaviour is to select the whole InlineUIContainer instead of positioning the
+            // caret, so in the case of a single click we want to cancel that.
+            var hit = VisualTreeHelper.HitTest(this, e.GetPosition(this));
+            if (hit.VisualHit is EmojiCanvas cv && cv.Parent is EmojiInline emoji)
             {
-                var middle = emoji.TranslatePoint(new Point(0, 0), this).X + emoji.ActualWidth / 2;
-                CaretPosition = pos.X < middle ? container.ContentStart : container.ContentEnd;
-                e.Handled = true;
+                // Single click: cancel selection and position caret instead.
+                // Double click: select a single emoji glyph
+                // Triple click: default RichTextBox behaviour (select all)
+                if (e.ClickCount == 1)
+                {
+                    var caret = e.GetPosition(cv).X < cv.ActualWidth / 2
+                              ? emoji.ContentStart : emoji.ContentEnd;
+                    m_override_selection = new TextSelection(caret, caret);
+                }
+                else if (e.ClickCount == 2)
+                    m_override_selection = new TextSelection(emoji.ContentStart, emoji.ContentEnd);
+                else
+                    m_override_selection = null;
             }
             base.OnMouseDown(e);
         }
@@ -199,6 +215,8 @@ namespace Emoji.Wpf
         }
 
         private bool m_pending_change = false;
+
+        private TextSelection m_override_selection;
 
         public new TextSelection Selection { get; private set; }
 
