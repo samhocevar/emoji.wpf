@@ -202,10 +202,10 @@ namespace Emoji.Wpf
 
             EndChange();
 
-            m_pending_change = false;
-
-            // FIXME: this could be done on-demand by detecting GetValue() calls maybe
+            // FIXME: make this call lazy inside Text.get()
             SetValue(TextProperty, new TextSelection(Document.ContentStart, Document.ContentEnd).Text);
+
+            m_pending_change = false;
 #if DEBUG
             try
             {
@@ -217,17 +217,31 @@ namespace Emoji.Wpf
 #endif
         }
 
+        private void OnTextPropertyChanged(string text)
+        {
+            if (m_pending_change)
+                return;
+
+            Document.Blocks.Clear();
+            Document.Blocks.Add(new Paragraph(new Run(text)));
+            CaretPosition = Document.ContentEnd;
+        }
+
         private bool m_pending_change = false;
 
         private TextSelection m_override_selection;
 
         public new TextSelection Selection { get; private set; }
 
-        public string Text => (string)GetValue(TextProperty);
+        public string Text
+        {
+            get => (string)GetValue(TextProperty);
+            set => SetValue(TextProperty, value);
+        }
 
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
-            nameof(Text), typeof(string), typeof(RichTextBox),
-            new PropertyMetadata(""));
+            nameof(Text), typeof(string), typeof(RichTextBox), new PropertyMetadata("",
+            (o, e) => (o as RichTextBox)?.OnTextPropertyChanged(e.NewValue as string)));
 
 #if DEBUG
         public string XamlText => (string)GetValue(XamlTextProperty);
@@ -238,4 +252,3 @@ namespace Emoji.Wpf
 #endif
     }
 }
-
