@@ -16,6 +16,7 @@ using System.Text.RegularExpressions;
 #endif
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Markup;
@@ -240,8 +241,9 @@ namespace Emoji.Wpf
         }
 
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
-            nameof(Text), typeof(string), typeof(RichTextBox), new PropertyMetadata("",
-            (o, e) => (o as RichTextBox)?.OnTextPropertyChanged(e.NewValue as string)));
+            nameof(Text), typeof(string), typeof(RichTextBox), new FrameworkPropertyMetadata("",
+                (o, e) => (o as RichTextBox)?.OnTextPropertyChanged(e.NewValue as string))
+            { DefaultUpdateSourceTrigger = UpdateSourceTrigger.LostFocus });
 
 #if DEBUG
         public string XamlText => (string)GetValue(XamlTextProperty);
