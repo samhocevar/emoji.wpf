@@ -10,6 +10,7 @@
 //  See http://www.wtfpl.net/ for more details.
 //
 
+using System.Collections.Generic;
 using System.Text;
 #if DEBUG
 using System.Text.RegularExpressions;
@@ -68,7 +69,7 @@ namespace Emoji.Wpf
         }
     }
 
-    public partial class RichTextBox : System.Windows.Controls.RichTextBox
+    public partial class RichTextBox : System.Windows.Controls.RichTextBox, IEmojiControl
     {
         public RichTextBox()
         {
@@ -189,7 +190,7 @@ namespace Emoji.Wpf
                     Inline inline = new EmojiInline(cur)
                     {
                         FontSize = (double)(font_size ?? FontSize),
-                        Foreground = (Brush)(foreground ?? Foreground),
+                        Foreground = ColorBlend ? (Brush)(foreground ?? Foreground) : Brushes.Black,
                         Text = match.Value,
                     };
 
@@ -228,6 +229,9 @@ namespace Emoji.Wpf
             CaretPosition = Document.ContentEnd;
         }
 
+        private void OnColorBlendChanged(bool color_blend)
+            => EmojiInlines.ForAll(e => e.Foreground = color_blend ? Foreground : Brushes.Black);
+
         private bool m_pending_change = false;
 
         private TextSelection m_override_selection;
@@ -244,6 +248,31 @@ namespace Emoji.Wpf
             nameof(Text), typeof(string), typeof(RichTextBox), new FrameworkPropertyMetadata("",
                 (o, e) => (o as RichTextBox)?.OnTextPropertyChanged(e.NewValue as string))
             { DefaultUpdateSourceTrigger = UpdateSourceTrigger.LostFocus });
+
+        public bool ColorBlend
+        {
+            get => (bool)GetValue(ColorBlendProperty);
+            set => SetValue(ColorBlendProperty, value);
+        }
+
+        public static readonly DependencyProperty ColorBlendProperty =
+             DependencyProperty.Register(nameof(ColorBlend), typeof(bool), typeof(RichTextBox),
+                 new PropertyMetadata(false, (o, e) => (o as RichTextBox)?.OnColorBlendChanged((bool)e.NewValue)));
+
+        public IEnumerable<EmojiInline> EmojiInlines
+        {
+            get
+            {
+                for (TextPointer p = Document.ContentStart, next = null;
+                     p != null && p.CompareTo(Document.ContentEnd) < 0;
+                     p = p.GetNextContextPosition(LogicalDirection.Forward))
+                {
+                    if (p.GetPointerContext(LogicalDirection.Forward) == TextPointerContext.ElementStart)
+                        if (p.GetAdjacentElement(LogicalDirection.Forward) is EmojiInline emoji)
+                            yield return emoji;
+                }
+             }
+        }
 
 #if DEBUG
         public string XamlText => (string)GetValue(XamlTextProperty);

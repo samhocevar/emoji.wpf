@@ -10,7 +10,7 @@
 //  See http://www.wtfpl.net/ for more details.
 //
 
-using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -24,7 +24,7 @@ namespace Emoji.Wpf
     /// <summary>
     /// A simple WPF text control that is emoji-aware.
     /// </summary>
-    public partial class TextBlock : Controls.TextBlock
+    public partial class TextBlock : Controls.TextBlock, IEmojiControl
     {
         static TextBlock()
         {
@@ -69,9 +69,6 @@ namespace Emoji.Wpf
         public static new readonly DependencyProperty TextProperty =
             DependencyProperty.Register(nameof(Text), typeof(string), typeof(TextBlock));
 
-        /// <summary>
-        /// Specify whether emoji are blended with the foreground colour.
-        /// </summary>
         public bool ColorBlend
         {
             get => (bool)GetValue(ColorBlendProperty);
@@ -81,6 +78,9 @@ namespace Emoji.Wpf
         public static readonly DependencyProperty ColorBlendProperty =
              DependencyProperty.Register(nameof(ColorBlend), typeof(bool), typeof(TextBlock),
                  new PropertyMetadata(false, (o, e) => (o as TextBlock)?.OnColorBlendChanged((bool)e.NewValue)));
+
+        public IEnumerable<EmojiInline> EmojiInlines
+            => Inlines.OfType<EmojiInline>();
 
         private void OnTextChanged(string text)
             => RecomputeInlines(text, TextWrapping);
@@ -113,16 +113,13 @@ namespace Emoji.Wpf
         }
 
         private void OnColorBlendChanged(bool color_blend)
-            => UpdateForegrounds(color_blend ? Foreground : Brushes.Black);
+            => EmojiInlines.ForAll(e => e.Foreground = color_blend ? Foreground : Brushes.Black);
 
         private void OnForegroundChanged(Brush brush)
-            => UpdateForegrounds(ColorBlend ? brush : Brushes.Black);
-
-        private void UpdateForegrounds(Brush brush)
-            => Inlines.OfType<EmojiInline>().ForAll(e => e.Foreground = brush);
+            => EmojiInlines.ForAll(e => e.Foreground = ColorBlend ? brush : Brushes.Black);
 
         private void OnFontSizeChanged(double size)
-            => Inlines.OfType<EmojiInline>().ForAll(e => e.FontSize = size);
+            => EmojiInlines.ForAll(e => e.FontSize = size);
 
         private static readonly DependencyPropertyDescriptor m_text_dpd =
             DependencyPropertyDescriptor.FromProperty(TextProperty, typeof(TextBlock));

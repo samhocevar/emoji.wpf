@@ -66,7 +66,7 @@
                 <emoji:RichTextBox IsReadOnly="True" BorderThickness="0">
                     <FlowDocument>
                         <Paragraph>
-                            <!-- Formatting is weird to avoid implicit spaces -->
+                            <!-- The weird XAML formatting avoids implicit spaces in the document -->
                             <Run FontSize="6" Text="{StaticResource FontSizeEmoji}"/><Run
                                  FontSize="8" Text="{StaticResource FontSizeEmoji}"/><Run
                                  FontSize="12" Text="{StaticResource FontSizeEmoji}"/><Run
@@ -102,7 +102,7 @@
                         <emoji:Picker x:Name="EditorPicker" FontSize="20" Margin="4"/>
                     </StackPanel>
                     <emoji:RichTextBox FontSize="20" Margin="5" x:Name="EmojiRichTextBox"
-                                       VerticalScrollBarVisibility="Auto"
+                                       VerticalScrollBarVisibility="Auto" Foreground="Navy"
                                        ToolTip="{Binding Text, ElementName=EmojiRichTextBox, Mode=TwoWay}"
                                        ToolTipService.HasDropShadow="True"
                                        ToolTipService.ShowDuration="60000">
