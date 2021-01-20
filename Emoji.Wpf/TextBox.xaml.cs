@@ -25,11 +25,6 @@ namespace Emoji.Wpf
             InitializeComponent();
         }
 
-        private static IEnumerable<PropertyDescriptor> GetReadWriteProperties(Type t)
-            => TypeDescriptor.GetProperties(t, new Attribute[] { new PropertyFilterAttribute(PropertyFilterOptions.All) })
-                             .Cast<PropertyDescriptor>()
-                             .Where(x => !x.IsReadOnly);
-
         public override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
@@ -44,17 +39,23 @@ namespace Emoji.Wpf
 
             // Iterate over all RichTextBox properties; for each found match, create a
             // two-way binding with the TextBox element.
-            var rtb = Template.FindName("PART_RichTextBox", this) as RichTextBox;
+            var rtb = Template.FindName("RichTextBox_INTERNAL", this) as RichTextBox;
             foreach (var dpd in GetReadWriteProperties(typeof(RichTextBox))
-                                 .Where(x => propset.Contains(x.Name))
-                                 .Select(x => DependencyPropertyDescriptor.FromProperty(x))
-                                 .Where(x => x != null))
+                                   .Where(x => propset.Contains(x.Name))
+                                   .Select(x => DependencyPropertyDescriptor.FromProperty(x))
+                                   .Where(x => x != null))
             {
-                Binding binding = new Binding(dpd.Name);
-                binding.Source = this;
-                binding.Mode = BindingMode.TwoWay;
-                rtb.SetBinding(dpd.DependencyProperty, binding);
+                rtb.SetBinding(dpd.DependencyProperty, new Binding(dpd.Name)
+                {
+                    Source = this,
+                    Mode = BindingMode.TwoWay,
+                });
             }
         }
+
+        private static IEnumerable<PropertyDescriptor> GetReadWriteProperties(Type t)
+            => TypeDescriptor.GetProperties(t, new Attribute[] { new PropertyFilterAttribute(PropertyFilterOptions.All) })
+                             .Cast<PropertyDescriptor>()
+                             .Where(x => !x.IsReadOnly);
     }
 }

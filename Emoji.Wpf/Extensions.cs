@@ -22,5 +22,9 @@ namespace Emoji.Wpf
             foreach (var e in elements)
                 fn(e);
         }
+
+        internal static HashSet<T> ToHashSet<T>(this IEnumerable<T> elements,
+                                                IEqualityComparer<T> comparer = null)
+            => new HashSet<T>(elements, comparer);
     }
 }

@@ -86,6 +86,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="TextBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="TextBlock.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -109,6 +113,9 @@
     </Compile>
     <Compile Include="TextBlock.xaml.cs">
       <DependentUpon>TextBlock.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="TextBox.xaml.cs">
+      <DependentUpon>TextBox.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>

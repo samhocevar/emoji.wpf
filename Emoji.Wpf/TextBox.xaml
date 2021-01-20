@@ -6,12 +6,9 @@
          xmlns:local="clr-namespace:Emoji.Wpf"
          mc:Ignorable="d"
          d:DesignHeight="450" d:DesignWidth="800">
-
     <TextBox.Template>
         <ControlTemplate TargetType="TextBox">
-            <local:RichTextBox x:Name="PART_RichTextBox"
-                 Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"/>
+            <local:RichTextBox x:Name="RichTextBox_INTERNAL"/>
         </ControlTemplate>
     </TextBox.Template>
-
 </TextBox>
