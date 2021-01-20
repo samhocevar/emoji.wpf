@@ -73,6 +73,7 @@ namespace Emoji.Wpf
     {
         public RichTextBox()
         {
+            InitializeComponent();
             CommandManager.AddPreviewExecutedHandler(this, PreviewExecuted);
             SetValue(Block.LineHeightProperty, 1.0);
             Selection = new TextSelection(Document.ContentStart, Document.ContentStart);
@@ -263,14 +264,10 @@ namespace Emoji.Wpf
         {
             get
             {
-                for (TextPointer p = Document.ContentStart, next = null;
-                     p != null && p.CompareTo(Document.ContentEnd) < 0;
-                     p = p.GetNextContextPosition(LogicalDirection.Forward))
-                {
+                for (var p = Document.ContentStart; p != null; p = p.GetNextContextPosition(LogicalDirection.Forward))
                     if (p.GetPointerContext(LogicalDirection.Forward) == TextPointerContext.ElementStart)
                         if (p.GetAdjacentElement(LogicalDirection.Forward) is EmojiInline emoji)
                             yield return emoji;
-                }
              }
         }
 
