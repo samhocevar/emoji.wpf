@@ -114,12 +114,9 @@
                     </emoji:RichTextBox>
                 </DockPanel>
             </GroupBox>
-            <GroupBox Grid.Column="2" Header="Data Binding" Margin="4">
-<!--                <emoji:TextBlock FontSize="12" TextWrapping="Wrap"
-                                 Text="{Binding Text, ElementName=EmojiRichTextBox, Mode=TwoWay}"/>-->
-<emoji:TextBox FontSize="10" Margin="5"
-Foreground="Red"
-Text="{Binding Text, ElementName=EmojiRichTextBox, Mode=TwoWay}"/>
+            <GroupBox Grid.Column="2" Header="emoji:TextBox (WIP)" Margin="4">
+                <emoji:TextBox FontSize="10" Margin="5" Foreground="Red" IsReadOnly="True"
+                               Text="{Binding Text, ElementName=EmojiRichTextBox, Mode=TwoWay}"/>
             </GroupBox>
         </Grid>
 
