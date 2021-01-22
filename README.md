@@ -6,14 +6,15 @@
 
 ## Features
 
+ - Provides drop-in replacements for `TextBlock` and `RichTextBox`, no additional
+   code required.
  - **Colour emoji**! 😨 💩 🍰 ✈️ ✏️ 📞 ☘️
  - **Multiracial family emoji**! 👩🏿‍👩🏻‍👦🏽 👨🏻‍👩🏿‍👧🏽‍👦🏽 👩🏻‍👶🏽
  - **Full vector emoji**!
- - **Lightweight**; does not embed a font, or emoji images.
- - Works with **old .NET versions** such as Framework 4.0.
- - Uses the Segoe UI Emoji system font, even on **Windows 7 or Windows 8** (if
-   installed in `c:/Windows/Fonts`) by implementing Microsoft’s COLR/CPAL font
-   format extensions.
+ - **Lightweight**; does not embed a font or emoji images; just uses the system font.
+ - Works with **old .NET versions** such as .NET Framework 4.0.
+ - Can work on **Windows 7 or Windows 8** by installing the Segoe UI Emoji font in
+   `c:/Windows/Fonts`.
  - [Free, opensource software](http://www.wftpl.net/), with no strings attached.
  - Available as a [Nuget package](https://www.nuget.org/packages/Emoji.Wpf).
 
@@ -53,6 +54,10 @@ useful and robust library if given enough care. Any help appreciated!
 
 ### Version changelog
 
+ - v0.2.1 (2021/01/22):
+   - `emoji:RichTextBox.Text` is two-way bindable and binding defaults to `LostFocus`
+   - all base controls implement an `IEmojiControl` interface for convenience
+   - fixed a warning caused by the Typography DLLs about `ExtensionAttribute` being redefined
  - v0.2.0 (2021/01/17):
    - support for undo/redo and numerous bugfixes in `emoji:RichTextBox`
    - minimal .NET version is now Framework 4.0 (was 3.0).
@@ -72,3 +77,9 @@ useful and robust library if given enough care. Any help appreciated!
    - support wrapping in `emoji:TextBlock`
  - v0.1.0 (2020/11/9):
    - first non-experimental release
+
+### How does it work?
+
+Emoji.Wpf renders emoji as images, using the text rendering engine. In the Segoe UI Emoji
+font, emoji are encoded using multiple layers of single-colour text glyphs, using Microsoft’s
+COLR/CPAL format extensions.
