@@ -96,6 +96,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Behaviors.cs" />
     <Compile Include="CompressedResource.cs" />
     <Compile Include="Data.cs" />
     <Compile Include="EmojiRenderer.cs" />

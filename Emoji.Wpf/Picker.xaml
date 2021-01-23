@@ -35,15 +35,18 @@
                 <DataTemplate>
                     <StackPanel Orientation="Vertical">
                         <TextBlock Margin="4" Text="{Binding Name}" FontStyle="Italic"/>
-                        <ListView Name="EmojiListView" ItemsSource="{Binding EmojiList}"
+                        <ListView Name="EmojiListView" ItemsSource="{Binding EmojiChunkList}"
                                   BorderThickness="0"
                                   MaxWidth="400" MaxHeight="400" Height="Auto" Padding="0" Margin="1"
+                                  VirtualizingStackPanel.IsVirtualizing="True"
+                                  VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                  emoji:PixelBasedScrollingBehavior.IsEnabled="True"
                                   ScrollViewer.VerticalScrollBarVisibility="Visible"
                                   ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                             <!-- Put everything in a WrapPanel for now to allow for variable width emojis -->
                             <ListView.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <WrapPanel/>
+                                    <VirtualizingStackPanel emoji:PixelBasedScrollingBehavior.IsEnabled="True"/>
                                 </ItemsPanelTemplate>
                             </ListView.ItemsPanel>
                             <!-- Get rid of the ugly padding and margin in default ListViewItem -->
@@ -57,42 +60,60 @@
                             <!-- Now for our actual content -->
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel>
-                                        <ToggleButton IsHitTestVisible="{Binding ElementName=VariationPopup, Path=IsOpen, Mode=OneWay, Converter={emoji:BoolInverter}}"
-                                                      x:Name="VariationButton" Background="Transparent" BorderBrush="Transparent"
-                                                      Margin="0" Padding="2" Click="OnEmojiPicked" Focusable="False"
-                                                      ToolTip="{Binding Path=Name}">
-                                            <emoji:TextBlock MinWidth="16" MinHeight="16" FontSize="18" Text="{Binding Path=Text}"/>
-                                        </ToggleButton>
-                                        <Popup IsOpen="{Binding IsChecked, ElementName=VariationButton, Mode=TwoWay}"
-                                               x:Name="VariationPopup" StaysOpen="False"
-                                               AllowsTransparency="True" Margin="0">
-                                            <ListView Name="VariationListView" ItemsSource="{Binding VariationList}"
-                                                      BorderThickness="1" Height="Auto" Padding="0" Margin="1">
-                                                <ListView.ItemsPanel>
-                                                    <ItemsPanelTemplate>
-                                                        <StackPanel Orientation="Horizontal"/>
-                                                    </ItemsPanelTemplate>
-                                                </ListView.ItemsPanel>
-                                                <ListView.ItemContainerStyle>
-                                                    <Style TargetType="{x:Type ListViewItem}">
-                                                        <Setter Property="Padding" Value="0"/>
-                                                        <Setter Property="Margin" Value="0"/>
-                                                        <Setter Property="BorderThickness" Value="0"/>
-                                                    </Style>
-                                                </ListView.ItemContainerStyle>
-                                                <ListView.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <Button Background="Transparent" BorderBrush="Transparent"
-                                                                Margin="0" Padding="2" Click="OnEmojiPicked"
-                                                                ToolTip="{Binding Path=Name}">
-                                                            <emoji:TextBlock MinWidth="16" MinHeight="16" FontSize="18" Text="{Binding Path=Text}"/>
-                                                        </Button>
-                                                    </DataTemplate>
-                                                </ListView.ItemTemplate>
-                                            </ListView>
-                                        </Popup>
-                                    </StackPanel>
+                                    <ListView ItemsSource="{Binding}">
+                                        <ListView.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal" Height="48"/>
+                                            </ItemsPanelTemplate>
+                                        </ListView.ItemsPanel>
+                                        <ListView.ItemContainerStyle>
+                                            <Style TargetType="{x:Type ListViewItem}">
+                                                <Setter Property="Padding" Value="0"/>
+                                                <Setter Property="Margin" Value="0"/>
+                                                <Setter Property="BorderThickness" Value="0"/>
+                                            </Style>
+                                        </ListView.ItemContainerStyle>
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Width="48">
+                                                    <ToggleButton IsHitTestVisible="{Binding ElementName=VariationPopup, Path=IsOpen, Mode=OneWay, Converter={emoji:BoolInverter}}"
+                                                                  x:Name="VariationButton" Background="Transparent" BorderBrush="Transparent"
+                                                                  Margin="0" Padding="2" Click="OnEmojiPicked" Focusable="False"
+                                                                  ToolTip="{Binding Path=Name}">
+                                                        <emoji:TextBlock MinWidth="16" MinHeight="16" FontSize="18" Text="{Binding Path=Text}"/>
+                                                    </ToggleButton>
+                                                    <Popup IsOpen="{Binding IsChecked, ElementName=VariationButton, Mode=TwoWay}"
+                                                           x:Name="VariationPopup" StaysOpen="False"
+                                                           AllowsTransparency="True" Margin="0">
+                                                        <ListView Name="VariationListView" ItemsSource="{Binding VariationList}"
+                                                                  BorderThickness="1" Height="Auto" Padding="0" Margin="1">
+                                                            <ListView.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <StackPanel Orientation="Horizontal"/>
+                                                                </ItemsPanelTemplate>
+                                                            </ListView.ItemsPanel>
+                                                            <ListView.ItemContainerStyle>
+                                                                <Style TargetType="{x:Type ListViewItem}">
+                                                                    <Setter Property="Padding" Value="0"/>
+                                                                    <Setter Property="Margin" Value="0"/>
+                                                                    <Setter Property="BorderThickness" Value="0"/>
+                                                                </Style>
+                                                            </ListView.ItemContainerStyle>
+                                                            <ListView.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Button Background="Transparent" BorderBrush="Transparent"
+                                                                            Margin="0" Padding="2" Click="OnEmojiPicked"
+                                                                            ToolTip="{Binding Path=Name}">
+                                                                        <emoji:TextBlock MinWidth="16" MinHeight="16" FontSize="18" Text="{Binding Path=Text}"/>
+                                                                    </Button>
+                                                                </DataTemplate>
+                                                            </ListView.ItemTemplate>
+                                                        </ListView>
+                                                    </Popup>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
