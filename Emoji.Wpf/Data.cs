@@ -74,7 +74,7 @@ namespace Emoji.Wpf
                 => SubGroups.Select(s => s.EmojiList.Count).Sum();
 
             public IEnumerable<IEnumerable<Emoji>> EmojiChunkList
-                => EmojiList.Chunk(6);
+                => EmojiList.Chunk(8);
 
             public IEnumerable<Emoji> EmojiList
                 => from s in SubGroups

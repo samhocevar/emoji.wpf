@@ -8,6 +8,53 @@
             Orientation="Horizontal"
             mc:Ignorable="d">
 
+    <StackPanel.Resources>
+
+        <ControlTemplate x:Key="VariationPopup">
+            <Popup IsOpen="{Binding IsChecked, ElementName=VariationButton, Mode=TwoWay}"
+                   x:Name="VariationPopup" StaysOpen="False"
+                   AllowsTransparency="True" Margin="0">
+                <ListView Name="VariationListView" ItemsSource="{Binding VariationList}"
+                          BorderThickness="1" Height="Auto" Padding="0" Margin="1">
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListViewItem}">
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="Margin" Value="0"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Button Background="Transparent" BorderBrush="Transparent"
+                                    Margin="0" Padding="2" Click="OnEmojiPicked"
+                                    Width="40" Height="40" ToolTip="{Binding Path=Name}">
+                                <emoji:TextBlock MinWidth="16" MinHeight="16" FontSize="18" Text="{Binding Path=Text}"/>
+                            </Button>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Popup>
+        </ControlTemplate>
+
+        <DataTemplate x:Key="CellTemplate">
+            <StackPanel>
+                <ToggleButton IsHitTestVisible="{Binding ElementName=VariationPopup, Path=IsOpen, Mode=OneWay, Converter={emoji:BoolInverter}}"
+                              x:Name="VariationButton" Background="Transparent" BorderBrush="Transparent"
+                              Margin="0" Padding="2" Click="OnEmojiPicked" Focusable="False"
+                              Width="40" Height="40" ToolTip="{Binding Path=Name}">
+                    <emoji:TextBlock MinWidth="16" MinHeight="16" FontSize="18" Text="{Binding Path=Text}"/>
+                </ToggleButton>
+                <Control Template="{StaticResource ResourceKey=VariationPopup}"/>
+            </StackPanel>
+        </DataTemplate>
+
+    </StackPanel.Resources>
+
     <ToggleButton x:Name="Button_INTERNAL"
                   IsHitTestVisible="{Binding IsOpen, ElementName=Popup_INTERNAL, Mode=OneWay, Converter={emoji:BoolInverter}}">
         <emoji:TextBlock x:Name="TextBlock" Text="{Binding ElementName=StackPanel_INTERNAL, Mode=OneWay, Path=Selection, UpdateSourceTrigger=PropertyChanged}"/>
@@ -43,77 +90,38 @@
                                   emoji:PixelBasedScrollingBehavior.IsEnabled="True"
                                   ScrollViewer.VerticalScrollBarVisibility="Visible"
                                   ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                            <!-- Put everything in a WrapPanel for now to allow for variable width emojis -->
                             <ListView.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <VirtualizingStackPanel emoji:PixelBasedScrollingBehavior.IsEnabled="True"/>
                                 </ItemsPanelTemplate>
                             </ListView.ItemsPanel>
-                            <!-- Get rid of the ugly padding and margin in default ListViewItem -->
                             <ListView.ItemContainerStyle>
                                 <Style TargetType="{x:Type ListViewItem}">
+                                    <!-- Get rid of the ugly padding and margin in default ListViewItem -->
                                     <Setter Property="Padding" Value="0"/>
                                     <Setter Property="Margin" Value="0"/>
                                     <Setter Property="BorderThickness" Value="0"/>
+                                    <!-- Remove the mouse over highlight -->
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type ListViewItem}">
+                                                <ContentPresenter />
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
                                 </Style>
                             </ListView.ItemContainerStyle>
                             <!-- Now for our actual content -->
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <ListView ItemsSource="{Binding}">
-                                        <ListView.ItemsPanel>
+                                    <ItemsControl ItemsSource="{Binding}"
+                                                  ItemTemplate="{StaticResource ResourceKey=CellTemplate}">
+                                        <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
-                                                <StackPanel Orientation="Horizontal" Height="48"/>
+                                                <StackPanel Orientation="Horizontal"/>
                                             </ItemsPanelTemplate>
-                                        </ListView.ItemsPanel>
-                                        <ListView.ItemContainerStyle>
-                                            <Style TargetType="{x:Type ListViewItem}">
-                                                <Setter Property="Padding" Value="0"/>
-                                                <Setter Property="Margin" Value="0"/>
-                                                <Setter Property="BorderThickness" Value="0"/>
-                                            </Style>
-                                        </ListView.ItemContainerStyle>
-                                        <ListView.ItemTemplate>
-                                            <DataTemplate>
-                                                <StackPanel Width="48">
-                                                    <ToggleButton IsHitTestVisible="{Binding ElementName=VariationPopup, Path=IsOpen, Mode=OneWay, Converter={emoji:BoolInverter}}"
-                                                                  x:Name="VariationButton" Background="Transparent" BorderBrush="Transparent"
-                                                                  Margin="0" Padding="2" Click="OnEmojiPicked" Focusable="False"
-                                                                  ToolTip="{Binding Path=Name}">
-                                                        <emoji:TextBlock MinWidth="16" MinHeight="16" FontSize="18" Text="{Binding Path=Text}"/>
-                                                    </ToggleButton>
-                                                    <Popup IsOpen="{Binding IsChecked, ElementName=VariationButton, Mode=TwoWay}"
-                                                           x:Name="VariationPopup" StaysOpen="False"
-                                                           AllowsTransparency="True" Margin="0">
-                                                        <ListView Name="VariationListView" ItemsSource="{Binding VariationList}"
-                                                                  BorderThickness="1" Height="Auto" Padding="0" Margin="1">
-                                                            <ListView.ItemsPanel>
-                                                                <ItemsPanelTemplate>
-                                                                    <StackPanel Orientation="Horizontal"/>
-                                                                </ItemsPanelTemplate>
-                                                            </ListView.ItemsPanel>
-                                                            <ListView.ItemContainerStyle>
-                                                                <Style TargetType="{x:Type ListViewItem}">
-                                                                    <Setter Property="Padding" Value="0"/>
-                                                                    <Setter Property="Margin" Value="0"/>
-                                                                    <Setter Property="BorderThickness" Value="0"/>
-                                                                </Style>
-                                                            </ListView.ItemContainerStyle>
-                                                            <ListView.ItemTemplate>
-                                                                <DataTemplate>
-                                                                    <Button Background="Transparent" BorderBrush="Transparent"
-                                                                            Margin="0" Padding="2" Click="OnEmojiPicked"
-                                                                            ToolTip="{Binding Path=Name}">
-                                                                        <emoji:TextBlock MinWidth="16" MinHeight="16" FontSize="18" Text="{Binding Path=Text}"/>
-                                                                    </Button>
-                                                                </DataTemplate>
-                                                            </ListView.ItemTemplate>
-                                                        </ListView>
-                                                    </Popup>
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </ListView.ItemTemplate>
-                                    </ListView>
+                                        </ItemsControl.ItemsPanel>
+                                    </ItemsControl>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
