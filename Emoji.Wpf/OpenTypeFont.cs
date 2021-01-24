@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 
@@ -39,23 +40,13 @@ namespace Emoji.Wpf
         public double GetScale(double point_size)
             => m_fonts[0].GetScale(point_size);
 
-        public List<ushort> MakeGlyphIndexList(string s)
-        {
-            var ret = new List<ushort>();
-            var gpl = MakeGlyphPlanList(s);
-            for (int i = 0; i < gpl.Count; ++i)
-                ret.Add(gpl[i].glyphIndex);
-            return ret;
-        }
+        public IEnumerable<ushort> MakeGlyphIndexList(string s)
+            => MakeGlyphPlanList(s).Select(x => x.glyphIndex);
 
-        internal IUnscaledGlyphPlanList MakeGlyphPlanList(string s)
+        internal EmojiGlyphPlanList MakeGlyphPlanList(string s)
         {
             if (!m_cache.TryGetValue(s, out var ret))
-            {
-                m_cache[s] = ret = new UnscaledGlyphPlanList();
-                foreach (var gp in m_fonts[0].StringToGlyphLayout(s))
-                    ret.Append(gp);
-            }
+                m_cache[s] = ret = m_fonts[0].StringToGlyphLayout(s);
             return ret;
         }
 
@@ -66,7 +57,7 @@ namespace Emoji.Wpf
         /// A cache of GlyphPlanSequence objects, indexed by source strings. Should
         /// remain pretty lightweight because they are small objects.
         /// </summary>
-        private IDictionary<string, IUnscaledGlyphPlanList> m_cache = new Dictionary<string, IUnscaledGlyphPlanList>();
+        private IDictionary<string, EmojiGlyphPlanList> m_cache = new Dictionary<string, EmojiGlyphPlanList>();
 
         private IList<ColorTypeface> m_fonts = new List<ColorTypeface>();
     }
@@ -99,8 +90,7 @@ namespace Emoji.Wpf
             };
 
             // Cache the glyph index for the zero-width joiner
-            foreach (var g in StringToGlyphLayout("\u200d", use_gpos: false))
-                m_zwj_glyph = g.glyphIndex;
+            m_zwj_glyph = StringToGlyphLayout("\u200d", use_gpos: false).FirstOrDefault().glyphIndex;
         }
 
         private GlyphTypeface GetGlyphTypeface(string first_candidate)
@@ -146,20 +136,16 @@ namespace Emoji.Wpf
         /// <param name="s"></param>
         /// <returns></returns>
         public bool CanRender(string s)
-        {
-            foreach (var g in StringToGlyphLayout(s, use_gpos: false))
-                if (g.glyphIndex == 0 || g.glyphIndex == m_zwj_glyph)
-                    return false;
-            return true;
-        }
+            => StringToGlyphLayout(s, use_gpos: false)
+                   .All(g => g.glyphIndex != 0 && g.glyphIndex != m_zwj_glyph);
 
-        internal IEnumerable<UnscaledGlyphPlan> StringToGlyphLayout(string s, bool use_gpos = true)
+        internal EmojiGlyphPlanList StringToGlyphLayout(string s, bool use_gpos = true)
         {
             lock (m_layout)
             {
                 m_layout.EnableGpos = use_gpos;
                 m_layout.Layout(s.ToCharArray(), 0, s.Length);
-                return m_layout.GetUnscaledGlyphPlanIter();
+                return new EmojiGlyphPlanList(m_layout.GetUnscaledGlyphPlanIter());
             }
         }
 
@@ -219,6 +205,16 @@ namespace Emoji.Wpf
         protected GlyphLayout m_layout;
 
         protected ushort m_zwj_glyph;
+    }
+
+    internal class EmojiGlyphPlanList : List<UnscaledGlyphPlan>, IUnscaledGlyphPlanList
+    {
+        public EmojiGlyphPlanList(IEnumerable<UnscaledGlyphPlan> elements)
+            : base(elements)
+        { }
+
+        public void Append(UnscaledGlyphPlan glyphPlan)
+            => base.Add(glyphPlan);
     }
 }
 
