@@ -1,7 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017—2020 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017—2021 Sam Hocevar <sam@hocevar.net>
 //
 //  This program is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -13,13 +13,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Markup;
 
 namespace Emoji.Wpf
 {
@@ -135,16 +132,4 @@ namespace Emoji.Wpf
             popup.Closed += (o, ea) => Keyboard.Focus(old_focus);
         }
     }
-
-    public class BoolInverter : MarkupExtension, IValueConverter
-    {
-        public override object ProvideValue(IServiceProvider serviceProvider) => this;
-
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-            => value is bool ? !(bool)value : value;
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-            => value is bool ? !(bool)value : value;
-    }
 }
-
