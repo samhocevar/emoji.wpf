@@ -54,6 +54,9 @@ useful and robust library if given enough care. Any help appreciated!
 
 ### Version changelog
 
+ - v0.2.2 (2021/01/25):
+   - increased picker performance through virtualisation
+   - rendering fallback for emoji ZWJ sequences
  - v0.2.1 (2021/01/22):
    - `emoji:RichTextBox.Text` is two-way bindable and binding defaults to `LostFocus`
    - all base controls implement an `IEmojiControl` interface for convenience
