@@ -15,7 +15,7 @@
         <ControlTemplate x:Key="VariationPopupTemplate" TargetType="ContentControl">
             <ListView Name="VariationListView" ItemsSource="{Binding VariationList}"
                       BorderThickness="1" Height="Auto" Padding="0" Margin="1"
-                      ScrollViewer.VerticalScrollBarVisibility="Visible"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"
                       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                       MaxWidth="320">
                 <ListView.ItemsPanel>
