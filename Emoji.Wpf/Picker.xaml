@@ -10,6 +10,8 @@
 
     <StackPanel.Resources>
 
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
         <ControlTemplate x:Key="VariationPopupTemplate" TargetType="ContentControl">
             <ListView Name="VariationListView" ItemsSource="{Binding VariationList}"
                       BorderThickness="1" Height="Auto" Padding="0" Margin="1"
@@ -41,18 +43,22 @@
         </ControlTemplate>
 
         <DataTemplate x:Key="CellTemplate">
-            <Grid>
-                <ToggleButton Width="40" Height="40" Margin="0" Padding="2"
-                              x:Name="VariationButton" Background="Transparent" BorderBrush="Transparent"
-                              Click="OnEmojiPicked" Focusable="False" ToolTip="{Binding Path=Name}"
-                              IsHitTestVisible="{Binding ElementName=VariationPopup, Path=IsOpen, Mode=OneWay, Converter={emoji:BoolInverter}}">
-                    <emoji:TextBlock MinWidth="16" MinHeight="16" FontSize="18" Text="{Binding Path=Text}"/>
-                </ToggleButton>
-                <Popup x:Name="VariationPopup" StaysOpen="False" AllowsTransparency="True" Margin="0"
-                       IsOpen="{Binding IsChecked, ElementName=VariationButton, Mode=TwoWay}">
-                    <ContentControl Template="{StaticResource ResourceKey=VariationPopupTemplate}"/>
-                </Popup>
-            </Grid>
+            <ToggleButton Width="40" Height="40" Margin="0" Padding="2"
+                          x:Name="VariationButton" Background="Transparent" BorderBrush="Transparent"
+                          Click="OnEmojiPicked" Focusable="False" ToolTip="{Binding Path=Name}"
+                          IsHitTestVisible="{Binding ElementName=VariationPopup, Path=IsOpen, Mode=OneWay, Converter={emoji:BoolInverter}}">
+                <Grid Width="32" Height="32">
+                    <emoji:TextBlock MinWidth="16" MinHeight="16" FontSize="18" Text="{Binding Path=Text}"
+                                     VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    <Path Visibility="{Binding HasVariations, Converter={StaticResource BoolToVis}}"
+                          Width="6" Height="6" VerticalAlignment="Bottom" HorizontalAlignment="Right"
+                          Stretch="Fill" Data="M0,1 L1,1 L1,0 L0,1" Fill="Black"/>
+                    <Popup x:Name="VariationPopup" StaysOpen="False" AllowsTransparency="True" Margin="0"
+                           IsOpen="{Binding IsChecked, ElementName=VariationButton, Mode=TwoWay}">
+                        <ContentControl Template="{StaticResource ResourceKey=VariationPopupTemplate}"/>
+                    </Popup>
+                </Grid>
+            </ToggleButton>
         </DataTemplate>
 
     </StackPanel.Resources>

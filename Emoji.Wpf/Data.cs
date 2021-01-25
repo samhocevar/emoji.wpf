@@ -48,6 +48,7 @@ namespace Emoji.Wpf
             public string Name { get; set; }
             public string Text { get; set; }
             public bool Renderable { get; set; }
+            public bool HasVariations => VariationList.Count > 0;
 
             public Group Group => SubGroup.Group;
             public SubGroup SubGroup;
