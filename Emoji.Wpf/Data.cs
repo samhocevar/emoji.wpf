@@ -50,6 +50,7 @@ namespace Emoji.Wpf
             public string Name { get; set; }
             public string Text { get; set; }
             public bool Renderable { get; set; }
+            public bool HasVariations => VariationList.Count > 0;
 
             public Group Group => SubGroup.Group;
             public SubGroup SubGroup;
@@ -74,6 +75,9 @@ namespace Emoji.Wpf
 
             public int EmojiCount
                 => SubGroups.Select(s => s.EmojiList.Count).Sum();
+
+            public IEnumerable<IEnumerable<Emoji>> EmojiChunkList
+                => EmojiList.Chunk(8);
 
             public IEnumerable<Emoji> EmojiList
                 => from s in SubGroups
