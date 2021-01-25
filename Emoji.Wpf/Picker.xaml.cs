@@ -76,32 +76,17 @@ namespace Emoji.Wpf
 
         private void OnEmojiPicked(object sender, RoutedEventArgs e)
         {
-            if (m_current_toggle != null)
+            if (sender is Control control && control.DataContext is EmojiData.Emoji emoji)
             {
-                m_current_toggle.IsChecked = false;
-                m_current_toggle.Focusable = false;
-                m_current_toggle = null;
-            }
-
-            if (!(sender is Control control))
-                return;
-
-            var emoji = control.DataContext as EmojiData.Emoji;
-            if (emoji.VariationList.Count == 0 || sender is Button)
-            {
-                Selection = emoji.Text;
-                Button_INTERNAL.IsChecked = false;
-                e.Handled = true;
-                Picked?.Invoke(this, new EmojiPickedEventArgs(Selection));
-            }
-
-            if (sender is ToggleButton toggle && emoji.VariationList.Count > 0)
-            {
-                m_current_toggle = toggle;
+                if (emoji.VariationList.Count == 0 || sender is Button)
+                {
+                    Selection = emoji.Text;
+                    Button_INTERNAL.IsChecked = false;
+                    e.Handled = true;
+                    Picked?.Invoke(this, new EmojiPickedEventArgs(Selection));
+                }
             }
         }
-
-        private ToggleButton m_current_toggle;
 
         public static readonly DependencyProperty SelectionProperty = DependencyProperty.Register(
             nameof(Selection), typeof(string), typeof(Picker), new FrameworkPropertyMetadata("☺", OnSelectionPropertyChanged));
