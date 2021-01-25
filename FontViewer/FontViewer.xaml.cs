@@ -13,6 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
 
 using Emoji.Wpf;
@@ -36,10 +37,10 @@ namespace FontViewer
 
         public class MyEmoji
         {
-            public string UnicodeText { get; set; }
-            public string UnicodeSeq { get; set; }
-            public string GlyphSeq { get; set; }
-            public string EmojiName { get; set; }
+            public string UnicodeText { get; private set; }
+            public string UnicodeSeq { get; private set; }
+            public string GlyphSeq { get; private set; }
+            public string EmojiName { get; private set; }
 
             public MyEmoji(string s, string emojiname)
             {
@@ -52,8 +53,8 @@ namespace FontViewer
                 }
 
                 UnicodeText = s;
-                UnicodeSeq = string.Join(" ", codepoints.ConvertAll(x => $"U+{x:X4}").ToArray());
-                GlyphSeq = string.Join(" ", EmojiData.Typeface.MakeGlyphIndexList(s).ConvertAll(x => $"#{x}").ToArray());
+                UnicodeSeq = string.Join(" ", codepoints.Select(x => $"U+{x:X4}"));
+                GlyphSeq = string.Join(" ", EmojiData.Typeface.MakeGlyphIndexList(s).Select(x => $"#{x}"));
                 EmojiName = emojiname;
             }
         }
@@ -62,13 +63,8 @@ namespace FontViewer
         {
             base.EndInit();
 
-            var emoji_list = new ObservableCollection<MyEmoji>();
-
-            foreach (var emoji in EmojiData.AllEmoji)
-                if (emoji.Renderable)
-                    emoji_list.Add(new MyEmoji(emoji.Text, emoji.Name));
-
-            EmojiFontList.ItemsSource = emoji_list;
+            EmojiFontList.ItemsSource = new ObservableCollection<MyEmoji>(
+                EmojiData.AllEmoji.Where(x => x.Renderable).Select(x => new MyEmoji(x.Text, x.Name)));
         }
     }
 }
