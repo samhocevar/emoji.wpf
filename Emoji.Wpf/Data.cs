@@ -33,6 +33,8 @@ namespace Emoji.Wpf
         public static Regex MatchOne { get; private set; }
         public static Regex MatchMultiple { get; private set; }
 
+        public static bool RenderingFallbackHack { get; } = true;
+
         // FIXME: should we lazy load this? If the user calls Load() later, then
         // this first Load() call will have been for nothing.
         static EmojiData() => Load(null);

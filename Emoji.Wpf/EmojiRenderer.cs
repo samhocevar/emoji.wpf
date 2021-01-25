@@ -109,14 +109,38 @@ namespace Emoji.Wpf
                 var dc = visual.RenderOpen();
                 double startx = 0;
                 double starty = font_size * font.Baseline;
+                bool zwj_hack = false;
 
                 for (int i = 0; i < glyphplansequence.Count; ++i)
                 {
                     var g = glyphplansequence[i];
-                    var origin = new Point(Math.Round(startx + g.OffsetX * scale),
-                                           Math.Round(starty + g.OffsetY * scale));
-                    font.RenderGlyph(dc, g.glyphIndex, origin, font_size, brush);
-                    startx += g.AdvanceX * scale;
+                    var size = font_size;
+                    var xpos = g.OffsetX * scale;
+                    var ypos = g.OffsetY * scale;
+
+                    if (EmojiData.RenderingFallbackHack)
+                    {
+                        if (zwj_hack)
+                        {
+                            zwj_hack = false;
+                            xpos += size * 0.25;
+                            size *= 0.75;
+                        }
+                        else if (i + 1 < glyphplansequence.Count && glyphplansequence[i + 1].glyphIndex == font.ZwjGlyph)
+                        {
+                            zwj_hack = true;
+                            ypos -= size * 0.25;
+                            size *= 0.75;
+                        }
+                    }
+
+                    var origin = new Point(Math.Round(startx + xpos), Math.Round(starty + ypos));
+                    font.RenderGlyph(dc, g.glyphIndex, origin, size, brush);
+
+                    if (zwj_hack)
+                        ++i;
+                    else
+                        startx += g.AdvanceX * scale;
                 }
 
                 dc.Close();
