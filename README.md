@@ -10,7 +10,7 @@
    code required.
  - **Colour emoji**! 😨 💩 🍰 ✈️ ✏️ 📞 ☘️
  - **Multiracial family emoji**! 👩🏿‍👩🏻‍👦🏽 👨🏻‍👩🏿‍👧🏽‍👦🏽 👩🏻‍👶🏽
- - **Full vector emoji**!
+ - **Full vector emoji**! Render at huge sizes without quality loss.
  - **Lightweight**; does not embed a font or emoji images; just uses the system font.
  - Works with **old .NET versions** such as .NET Framework 4.0.
  - Can work on **Windows 7 or Windows 8** by installing the Segoe UI Emoji font in
@@ -54,6 +54,8 @@ useful and robust library if given enough care. Any help appreciated!
 
 ### Version changelog
 
+ - v0.2.3 (2021/01/26):
+   - the rendering pipeline now exclusively uses vector objects
  - v0.2.2 (2021/01/25):
    - increased picker performance through virtualisation
    - rendering fallback for emoji ZWJ sequences
