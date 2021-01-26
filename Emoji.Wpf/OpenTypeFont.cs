@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
-
+using System.Windows.Shapes;
 using Typography.OpenFont;
 using Typography.TextLayout;
 
@@ -53,8 +53,8 @@ namespace Emoji.Wpf
             return ret;
         }
 
-        internal void RenderGlyph(DrawingContext dc, ushort gid, Point origin, double size, Brush fallback_brush)
-            => m_fonts[0].RenderGlyph(dc, gid, origin, size, fallback_brush);
+        internal List<Path> MakePaths(ushort gid, Point origin, double size, Brush fallback_brush)
+            => m_fonts[0].MakePaths(gid, origin, size, fallback_brush);
 
         /// <summary>
         /// A cache of GlyphPlanSequence objects, indexed by source strings. Should
@@ -178,11 +178,12 @@ namespace Emoji.Wpf
         public double Baseline => m_gtf.Baseline;
         public ushort ZwjGlyph { get; private set; }
 
-        public void RenderGlyph(DrawingContext dc, ushort gid, Point origin, double size, Brush fallback_brush)
+        public List<Path> MakePaths(ushort gid, Point origin, double size, Brush fallback_brush)
         {
-            ushort layer_index;
+            var ret = new List<Path>();
+
             if (m_openfont.COLRTable != null && m_openfont.CPALTable != null
-                 && m_openfont.COLRTable.LayerIndices.TryGetValue(gid, out layer_index))
+                 && m_openfont.COLRTable.LayerIndices.TryGetValue(gid, out var layer_index))
             {
                 int start = layer_index, stop = layer_index + m_openfont.COLRTable.LayerCounts[gid];
                 int palette = 0; // FIXME: support multiple palettes?
@@ -207,7 +208,12 @@ namespace Emoji.Wpf
                     }
                     Brush b = new SolidColorBrush(Color.FromArgb(A, R, G, B));
 
-                    dc.DrawGlyphRun(b, r);
+                    ret.Add(new Path()
+                    {
+                        Stroke = null,
+                        Fill = b,
+                        Data = r.BuildGeometry()
+                    });
                 }
             }
             else
@@ -217,8 +223,15 @@ namespace Emoji.Wpf
                                           origin, new double[] { 0 },
                                           null, null, null,
                                           null, null, null);
-                dc.DrawGlyphRun(fallback_brush, r);
+                ret.Add(new Path()
+                {
+                    Stroke = null,
+                    Fill = fallback_brush,
+                    Data = r.BuildGeometry()
+                });
             }
+
+            return ret;
         }
 
         protected GlyphTypeface m_gtf;

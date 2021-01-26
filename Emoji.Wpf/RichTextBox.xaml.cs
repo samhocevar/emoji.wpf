@@ -16,12 +16,13 @@ using System.Text;
 using System.Text.RegularExpressions;
 #endif
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
+
+using Controls = System.Windows.Controls;
 
 namespace Emoji.Wpf
 {
@@ -69,7 +70,7 @@ namespace Emoji.Wpf
         }
     }
 
-    public partial class RichTextBox : System.Windows.Controls.RichTextBox, IEmojiControl
+    public partial class RichTextBox : Controls.RichTextBox, IEmojiControl
     {
         public RichTextBox()
         {
@@ -141,7 +142,7 @@ namespace Emoji.Wpf
         /// Replace Emoji characters with EmojiInline objects inside the document.
         /// </summary>
         /// <param name="e"></param>
-        protected override void OnTextChanged(TextChangedEventArgs e)
+        protected override void OnTextChanged(Controls.TextChangedEventArgs e)
         {
             if (m_pending_change)
                 return;

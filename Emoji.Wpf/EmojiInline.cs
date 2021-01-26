@@ -10,15 +10,16 @@
 //  See http://www.wtfpl.net/ for more details.
 //
 
-using System;
 using System.Windows;
 using System.Windows.Documents;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using Controls = System.Windows.Controls;
 
 namespace Emoji.Wpf
 {
+    public class EmojiCanvas : Controls.Canvas
+    {
+    }
+
     public class EmojiInline : InlineUIContainer
     {
         // Need an empty constructor for serialisation (undo/redo)
@@ -59,39 +60,17 @@ namespace Emoji.Wpf
 
         protected bool ShouldSerializeChild() => false;
 
-        private bool m_dirty;
-        private BitmapSource m_bitmap;
-
-        private static EmojiTypeface m_font = EmojiData.Typeface;
-
-        public void Render(DrawingContext dc)
+        private void Rebuild()
         {
-            if (m_dirty)
+            // FIXME: How can Child be null in Sample.exe? Investigate.
+            if (Child != null)
             {
-                // If FontSize < 32 (aka. 2**5) we render at a larger resolution
-                double scale = Math.Pow(2.0, Math.Max(0.0, Math.Ceiling(5.0 - Math.Log(FontSize, 2.0))));
-                m_bitmap = EmojiRenderer.RenderBitmap(Text ?? "", FontSize * scale, Foreground);
-                // Try to compute our own widget size
-                Child.Width = Math.Floor(m_bitmap.Width / scale);
-                Child.Height = Math.Floor(m_bitmap.Height / scale);
-                Child.InvalidateVisual();
-                m_dirty = false;
-            }
-
-            if (Child.ActualWidth > 0 && Child.ActualHeight > 0)
-            {
-                var rect = new Rect(0, 0, Child.ActualWidth, Child.ActualHeight);
-
-                dc.DrawRectangle(Background, null, rect);
-#if false
-                // Debug the bounding box
-                dc.DrawRectangle(Brushes.Bisque, new Pen(Brushes.LightCoral, 1.0), rect);
-#endif
-
-                double opacity = Foreground is SolidColorBrush brush ? brush.Color.A / 255.0f : 1.0;
-                dc.PushOpacity(opacity);
-                dc.DrawImage(m_bitmap, rect);
-                dc.Pop();
+                Child?.Children.Clear();
+                var paths = EmojiRenderer.CreatePaths(Text ?? "", FontSize, Foreground, out var width, out var height);
+                foreach (var p in paths)
+                    Child.Children.Add(p);
+                Child.Width = width;
+                Child.Height = height;
             }
         }
 
@@ -103,30 +82,9 @@ namespace Emoji.Wpf
             if (e.Property == FontSizeProperty || e.Property == TextProperty
                  || e.Property == ForegroundProperty)
             {
-                Child?.InvalidateVisual();
-                m_dirty = true;
+                Rebuild();
             }
         }
-
-        public bool Invalid { get; private set; }
-    }
-
-    public class EmojiCanvas : Controls.Canvas
-    {
-        protected override void OnRender(DrawingContext dc)
-            => (Parent as EmojiInline)?.Render(dc);
-
-        // FIXME: reimplement this?
-#if false
-        protected override void OnVisualParentChanged(DependencyObject oldParent)
-        {
-            base.OnVisualParentChanged(oldParent);
-            //FontSize = (Parent as EmojiInline).FontSize;
-            // FIXME: compute the total length
-            //Width = FontSize * m_font.AdvanceWidths[m_font.CharacterToGlyphIndex(m_codepoint)];
-            //Height = FontSize * m_font.Height;
-        }
-#endif
     }
 }
 
