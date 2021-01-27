@@ -12,6 +12,7 @@
 
 using System.Windows;
 using System.Windows.Documents;
+using System.Windows.Media;
 using Controls = System.Windows.Controls;
 
 namespace Emoji.Wpf
@@ -66,9 +67,10 @@ namespace Emoji.Wpf
             if (Child != null)
             {
                 Child?.Children.Clear();
-                var paths = EmojiRenderer.CreatePaths(Text ?? "", FontSize, Foreground, out var width, out var height);
+                var paths = EmojiRenderer.CreatePaths(Text ?? "", Foreground, out var width, out var height);
                 foreach (var p in paths)
                     Child.Children.Add(p);
+                Child.LayoutTransform = new ScaleTransform(FontSize, FontSize);
                 Child.Width = width;
                 Child.Height = height;
             }

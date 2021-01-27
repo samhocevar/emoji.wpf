@@ -21,7 +21,7 @@ namespace Emoji.Wpf
 {
     internal static class EmojiRenderer
     {
-        internal static IEnumerable<Path> CreatePaths(string text, double font_size, Brush brush, out double width, out double height)
+        internal static IEnumerable<Path> CreatePaths(string text, Brush brush, out double width, out double height)
         {
             var ret = new List<Path>();
             var font = EmojiData.Typeface;
@@ -38,9 +38,9 @@ namespace Emoji.Wpf
 #endif
 
             // FIXME: I am not sure why the math below works
-            var scale = font.GetScale(font_size) * 0.75;
+            var scale = font.GetScale(1.0) * 0.75;
             width = glyphplansequence.CalculateWidth() * scale;
-            height = font_size / 0.75;
+            height = 1.0 / 0.75;
 
 #if false
             font_size *= Math.Min(bitmap.Width / width, bitmap.Height / height);
@@ -51,15 +51,15 @@ namespace Emoji.Wpf
             {
                 var visual = new DrawingVisual();
                 double startx = 0;
-                double starty = font_size * font.Baseline;
+                double starty = font.Baseline;
                 bool zwj_hack = false;
 
                 for (int i = 0; i < glyphplansequence.Count; ++i)
                 {
                     var g = glyphplansequence[i];
-                    var size = font_size;
-                    var xpos = g.OffsetX * scale;
-                    var ypos = g.OffsetY * scale;
+                    var size = 1.0;
+                    var xpos = startx + g.OffsetX * scale;
+                    var ypos = starty + g.OffsetY * scale;
 
                     if (EmojiData.RenderingFallbackHack)
                     {
@@ -77,8 +77,7 @@ namespace Emoji.Wpf
                         }
                     }
 
-                    var origin = new Point(startx + xpos, starty + ypos);
-                    ret.AddRange(font.MakePaths(g.glyphIndex, origin, size, brush));
+                    ret.AddRange(font.MakePaths(g.glyphIndex, new Point(xpos, ypos), size, brush));
 
                     if (zwj_hack)
                         ++i;
