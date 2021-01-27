@@ -12,9 +12,7 @@
 
 using System.Collections.Generic;
 using System.Text;
-#if DEBUG
 using System.Text.RegularExpressions;
-#endif
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Documents;
@@ -187,7 +185,7 @@ namespace Emoji.Wpf
                 else if (ColonSyntax && replace_range.Text == ":")
                 {
                     var end = next.GetNextContextPosition(LogicalDirection.Forward);
-                    var match = Regex.Match(new TextRange(cur, end).Text, "^:([-a-z]+):");
+                    var match = ColonSyntaxRegex.Match(new TextRange(cur, end).Text);
                     if (match.Success && EmojiData.LookupByName.TryGetValue(match.Groups[1].Value.Replace("-", " "), out var emoji))
                     {
                         replace_text = emoji.Text;
@@ -277,6 +275,8 @@ namespace Emoji.Wpf
         public static readonly DependencyProperty ColonSyntaxProperty =
              DependencyProperty.Register(nameof(ColonSyntax), typeof(bool), typeof(RichTextBox),
                  new PropertyMetadata(false));
+
+        private static readonly Regex ColonSyntaxRegex = new Regex("^:([-a-z]+):");
 
         public bool ColorBlend
         {
