@@ -1,7 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017—2019 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017—2021 Sam Hocevar <sam@hocevar.net>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -18,7 +18,7 @@ namespace Emoji.Wpf
 {
     internal class CompressedResourceStream : StreamReader
     {
-        public CompressedResourceStream(string name)
+        internal CompressedResourceStream(string name)
           : base(new GZipStream(Assembly.GetExecutingAssembly().GetManifestResourceStream(name), CompressionMode.Decompress))
         {
         }

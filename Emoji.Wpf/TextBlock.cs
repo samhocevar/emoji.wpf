@@ -24,7 +24,7 @@ namespace Emoji.Wpf
     /// <summary>
     /// A simple WPF text control that is emoji-aware.
     /// </summary>
-    public partial class TextBlock : Controls.TextBlock, IEmojiControl
+    public class TextBlock : Controls.TextBlock, IEmojiControl
     {
         static TextBlock()
         {
@@ -43,11 +43,6 @@ namespace Emoji.Wpf
             TextWrappingProperty.OverrideMetadata(typeof(TextBlock), new FrameworkPropertyMetadata(
                 (TextWrapping)TextWrappingProperty.GetMetadata(typeof(Controls.TextBlock)).DefaultValue,
                 (o, e) => (o as TextBlock)?.OnTextWrappingChanged((TextWrapping)e.NewValue)));
-        }
-
-        public TextBlock()
-        {
-            InitializeComponent();
         }
 
         /// <summary>

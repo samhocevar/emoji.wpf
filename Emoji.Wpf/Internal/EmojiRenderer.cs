@@ -19,9 +19,9 @@ using Typography.TextLayout;
 
 namespace Emoji.Wpf
 {
-    public static class EmojiRenderer
+    internal static class EmojiRenderer
     {
-        public static IEnumerable<Path> CreatePaths(string text, double font_size, Brush brush, out double width, out double height)
+        internal static IEnumerable<Path> CreatePaths(string text, double font_size, Brush brush, out double width, out double height)
         {
             var ret = new List<Path>();
             var font = EmojiData.Typeface;

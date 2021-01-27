@@ -19,7 +19,6 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Markup;
 using System.Windows.Media;
 
 using Controls = System.Windows.Controls;
@@ -70,11 +69,10 @@ namespace Emoji.Wpf
         }
     }
 
-    public partial class RichTextBox : Controls.RichTextBox, IEmojiControl
+    public class RichTextBox : Controls.RichTextBox, IEmojiControl
     {
         public RichTextBox()
         {
-            InitializeComponent();
             CommandManager.AddPreviewExecutedHandler(this, PreviewExecuted);
             SetValue(Block.LineHeightProperty, 1.0);
             Selection = new TextSelection(Document.ContentStart, Document.ContentStart);

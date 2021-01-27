@@ -18,15 +18,15 @@ using System.Windows.Controls;
 namespace Emoji.Wpf
 {
     // Code is inspired by https://stackoverflow.com/a/17431815/111461
-    public static class PixelBasedScrollingBehavior 
+    internal static class PixelBasedScrollingBehavior
     {
-        public static bool GetIsEnabled(DependencyObject o)
+        internal static bool GetIsEnabled(DependencyObject o)
             => (bool)o.GetValue(IsEnabledProperty);
 
-        public static void SetIsEnabled(DependencyObject o, bool val)
+        internal static void SetIsEnabled(DependencyObject o, bool val)
             => o.SetValue(IsEnabledProperty, val);
 
-        public static readonly DependencyProperty IsEnabledProperty =
+        internal static readonly DependencyProperty IsEnabledProperty =
             DependencyProperty.RegisterAttached("IsEnabled", typeof(bool), typeof(PixelBasedScrollingBehavior),
                                                 new UIPropertyMetadata(false, IsEnabledChanged));
 
@@ -41,7 +41,6 @@ namespace Emoji.Wpf
                 if (t != null && f?.GetValue(null) is DependencyProperty dp)
                 {
                     o.SetValue(dp, Enum.Parse(t, val ? "Pixel" : "Item"));
-                    return;
                 }
                 else if (o is VirtualizingPanel)
                 {
