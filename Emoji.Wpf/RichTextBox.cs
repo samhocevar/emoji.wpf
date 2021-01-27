@@ -19,6 +19,9 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+#if DEBUG
+using System.Windows.Markup;
+#endif
 using System.Windows.Media;
 
 using Controls = System.Windows.Controls;
@@ -159,12 +162,10 @@ namespace Emoji.Wpf
                 if (next == null)
                     break;
 
-                var emoji_range = new TextRange(cur, next);
-                if (EmojiData.MatchOne.IsMatch(emoji_range.Text))
+                string replace_text = null;
+                var replace_range = new TextRange(cur, next);
+                if (EmojiData.MatchOne.IsMatch(replace_range.Text))
                 {
-                    // Preserve caret position
-                    bool caret_was_next = (0 == next.CompareTo(CaretPosition));
-
                     // We found an emoji, but it’s possible that GetNextInsertionPosition
                     // did not pick enough characters and the emoji sequence is actually
                     // longer. To avoid this, we look up to 50 characters ahead and retry
@@ -172,26 +173,44 @@ namespace Emoji.Wpf
                     var lookup = next.GetNextContextPosition(LogicalDirection.Forward);
                     if (cur.GetOffsetToPosition(lookup) > 50)
                         lookup = cur.GetPositionAtOffset(50, LogicalDirection.Forward);
-                    var full_text = new TextRange(cur, lookup).Text;
                     var match = EmojiData.MatchOne.Match(new TextRange(cur, lookup).Text);
-                    while (match.Length > emoji_range.Text.Length)
+                    while (match.Length > replace_range.Text.Length)
                     {
                         next = next.GetNextInsertionPosition(LogicalDirection.Forward);
                         if (next == null)
                             break;
-                        emoji_range = new TextRange(cur, next);
+                        replace_range = new TextRange(cur, next);
                     }
 
-                    var font_size = emoji_range.GetPropertyValue(TextElement.FontSizeProperty);
-                    var foreground = emoji_range.GetPropertyValue(TextElement.ForegroundProperty);
+                    replace_text = match.Value;
+                }
+                else if (ColonSyntax && replace_range.Text == ":")
+                {
+                    var end = next.GetNextContextPosition(LogicalDirection.Forward);
+                    var match = Regex.Match(new TextRange(cur, end).Text, "^:([-a-z]+):");
+                    if (match.Success && EmojiData.LookupByName.TryGetValue(match.Groups[1].Value.Replace("-", " "), out var emoji))
+                    {
+                        replace_text = emoji.Text;
+                        next = cur.GetPositionAtCharOffset(match.Value.Length);
+                        replace_range = new TextRange(cur, next);
+                    }
+                }
+
+                if (replace_text != null)
+                {
+                    // Preserve caret position in case of replacement
+                    bool caret_was_next = (0 == next.CompareTo(CaretPosition));
+
+                    var font_size = replace_range.GetPropertyValue(TextElement.FontSizeProperty);
+                    var foreground = replace_range.GetPropertyValue(TextElement.ForegroundProperty);
 
                     // Delete the Unicode characters and insert our emoji inline instead.
-                    emoji_range.Text = "";
+                    replace_range.Text = "";
                     Inline inline = new EmojiInline(cur)
                     {
                         FontSize = (double)(font_size ?? FontSize),
                         Foreground = ColorBlend ? (Brush)(foreground ?? Foreground) : Brushes.Black,
-                        Text = match.Value,
+                        Text = replace_text,
                     };
 
                     next = inline.ContentEnd;
@@ -248,6 +267,16 @@ namespace Emoji.Wpf
             nameof(Text), typeof(string), typeof(RichTextBox), new FrameworkPropertyMetadata("",
                 (o, e) => (o as RichTextBox)?.OnTextPropertyChanged(e.NewValue as string))
             { DefaultUpdateSourceTrigger = UpdateSourceTrigger.LostFocus });
+
+        public bool ColonSyntax
+        {
+            get => (bool)GetValue(ColonSyntaxProperty);
+            set => SetValue(ColonSyntaxProperty, value);
+        }
+
+        public static readonly DependencyProperty ColonSyntaxProperty =
+             DependencyProperty.Register(nameof(ColonSyntax), typeof(bool), typeof(RichTextBox),
+                 new PropertyMetadata(false));
 
         public bool ColorBlend
         {

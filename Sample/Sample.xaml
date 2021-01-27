@@ -101,7 +101,7 @@
                     <StackPanel DockPanel.Dock="Left">
                         <emoji:Picker x:Name="EditorPicker" FontSize="20" Margin="4"/>
                     </StackPanel>
-                    <emoji:RichTextBox FontSize="20" Margin="5" x:Name="EmojiRichTextBox"
+                    <emoji:RichTextBox FontSize="20" Margin="5" x:Name="EmojiRichTextBox" ColonSyntax="True"
                                        VerticalScrollBarVisibility="Auto" Foreground="DarkCyan"
                                        ToolTip="{Binding Text, ElementName=EmojiRichTextBox, Mode=TwoWay}"
                                        ToolTipService.HasDropShadow="True"

@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Markup;
+using System.Windows.Documents;
 
 namespace Emoji.Wpf
 {
@@ -80,6 +81,27 @@ namespace Emoji.Wpf
         internal static HashSet<T> ToHashSet<T>(this IEnumerable<T> elements,
                                                 IEqualityComparer<T> comparer = null)
             => new HashSet<T>(elements, comparer);
+
+        /// <summary>
+        /// Advance a TextPointer to the nth character
+        /// </summary>
+        public static TextPointer GetPositionAtCharOffset(this TextPointer p, int offset)
+        {
+            var fallback = offset > 0 ? p.DocumentEnd : p.DocumentStart;
+            while (offset != 0 && p != null)
+            {
+                var dir = offset > 0 ? LogicalDirection.Forward : LogicalDirection.Backward;
+                if (p.GetPointerContext(dir) == TextPointerContext.Text)
+                {
+                    var text = p.GetTextInRun(dir);
+                    if (text.Length >= Math.Abs(offset))
+                        return p.GetPositionAtOffset(offset);
+                    offset -= Math.Sign(offset) * text.Length;
+                }
+                p = p.GetNextContextPosition(dir);
+            }
+            return p ?? fallback;
+        }
     }
 
     internal class BoolInverter : MarkupExtension, IValueConverter

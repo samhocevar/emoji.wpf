@@ -28,7 +28,10 @@ namespace Emoji.Wpf
 
         public static IList<Group> AllGroups { get; private set; }
 
-        public static IDictionary<string, Emoji> Lookup { get; private set; }
+        public static IDictionary<string, Emoji> LookupByText { get; private set; }
+            = new Dictionary<string, Emoji>();
+        public static IDictionary<string, Emoji> LookupByName { get; private set; }
+            = new Dictionary<string, Emoji>();
 
         public static Regex MatchOne { get; private set; }
         public static Regex MatchMultiple { get; private set; }
@@ -116,8 +119,6 @@ namespace Emoji.Wpf
             var match_family = new Regex($"{adult}(\u200d{adult})*(\u200d{child})+");
 
             var list = new List<Group>();
-            var text_lookup = new Dictionary<string, Emoji>();
-            var name_lookup = new Dictionary<string, Emoji>();
             var alltext = new List<string>();
 
             Group current_group = null;
@@ -184,9 +185,9 @@ namespace Emoji.Wpf
                     if (line.Contains("unqualified") || line.Contains("minimally-qualified"))
                     {
                         // Skip this if there is already a fully qualified version
-                        if (text_lookup.ContainsKey(text + "\ufe0f"))
+                        if (LookupByText.ContainsKey(text + "\ufe0f"))
                             continue;
-                        if (text_lookup.ContainsKey(text.Replace("\u20e3", "\ufe0f\u20e3")))
+                        if (LookupByText.ContainsKey(text.Replace("\u20e3", "\ufe0f\u20e3")))
                             continue;
                     }
 
@@ -197,13 +198,13 @@ namespace Emoji.Wpf
                         SubGroup = current_subgroup,
                         Renderable = Typeface.CanRender(text),
                     };
-                    text_lookup[text] = emoji;
-                    name_lookup[name] = emoji;
+                    LookupByText[text] = emoji;
+                    LookupByName[name] = emoji;
 
                     // Get the left part of the name and check whether we’re a variation of an existing
                     // emoji. If so, append to that emoji. Otherwise, add to current subgroup.
                     // FIXME: does not work properly because variations can appear before the generic emoji
-                    if (has_modifier && name_lookup.TryGetValue(name.Split(':')[0], out var parent_emoji))
+                    if (has_modifier && LookupByName.TryGetValue(name.Split(':')[0], out var parent_emoji))
                         parent_emoji.VariationList.Add(emoji);
                     else
                         current_subgroup.EmojiList.Add(emoji);
@@ -214,7 +215,6 @@ namespace Emoji.Wpf
             list.RemoveAll(g => g.EmojiCount == 0);
 
             AllGroups = list;
-            Lookup = text_lookup;
 
             // Build a regex that matches any Emoji
             var sortedtext = alltext.OrderByDescending(x => x.Length);
