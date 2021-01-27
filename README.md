@@ -54,8 +54,10 @@ useful and robust library if given enough care. Any help appreciated!
 
 ### Version changelog
 
- - v0.2.3 (2021/01/26):
+ - v0.2.3 (2021/01/27):
    - the rendering pipeline now exclusively uses vector objects
+   - subpixel glyph positioning
+   - use `ColonSyntax="True"` in `emoji:RichTextBox` for replace-as-you-type: `:koala:` becomes 🐨 _etc._
  - v0.2.2 (2021/01/25):
    - increased picker performance through virtualisation
    - rendering fallback for emoji ZWJ sequences
@@ -85,6 +87,6 @@ useful and robust library if given enough care. Any help appreciated!
 
 ### How does it work?
 
-Emoji.Wpf renders emoji as images, using the text rendering engine. In the Segoe UI Emoji
-font, emoji are encoded using multiple layers of single-colour text glyphs, using Microsoft’s
-COLR/CPAL format extensions.
+Emoji.Wpf renders emoji as vector images, using the WPF text rendering engine. The geometry
+information is found in the Segoe UI Emoji font glyphs. The colour information is found in the
+same font, using Microsoft’s COLR/CPAL format extensions.
