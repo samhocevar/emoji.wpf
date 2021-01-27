@@ -13,6 +13,8 @@
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
+using Typography.TextLayout;
+
 using Controls = System.Windows.Controls;
 
 namespace Emoji.Wpf
@@ -67,12 +69,8 @@ namespace Emoji.Wpf
             if (Child != null)
             {
                 Child?.Children.Clear();
-                var paths = EmojiRenderer.CreatePaths(Text ?? "", Foreground, out var width, out var height);
-                foreach (var p in paths)
-                    Child.Children.Add(p);
+                CreatePathsFromText(Text ?? "", Foreground);
                 Child.LayoutTransform = new ScaleTransform(FontSize, FontSize);
-                Child.Width = width;
-                Child.Height = height;
             }
         }
 
@@ -85,6 +83,68 @@ namespace Emoji.Wpf
                  || e.Property == ForegroundProperty)
             {
                 Rebuild();
+            }
+        }
+
+        protected void CreatePathsFromText(string text, Brush brush)
+        {
+            var font = EmojiData.Typeface;
+            var glyphplanlist = font.MakeGlyphPlanList(text);
+            var glyphplansequence = new GlyphPlanSequence(glyphplanlist);
+
+#if false
+            // Check whether the Emoji font knows about all codepoints;
+            // otherwise, set Invalid to true.
+            bool invalid = false;
+            for (int i = 0; i < glyphplanlist.Count; ++i)
+                if (glyphplanlist[i].glyphIndex == 0)
+                    invalid = true;
+#endif
+
+            // FIXME: I am not sure why the math below works
+            var scale = font.GetScale(1.0) * 0.75;
+            Child.Width = glyphplansequence.CalculateWidth() * scale;
+            Child.Height = 1.0 / 0.75;
+
+            // Render our image
+            if (glyphplansequence.Count > 0 && Child.Width > 0 && Child.Height > 0)
+            {
+                var visual = new DrawingVisual();
+                double startx = 0;
+                double starty = font.Baseline;
+                bool zwj_hack = false;
+
+                for (int i = 0; i < glyphplansequence.Count; ++i)
+                {
+                    var g = glyphplansequence[i];
+                    var size = 1.0;
+                    var xpos = startx + g.OffsetX * scale;
+                    var ypos = starty + g.OffsetY * scale;
+
+                    if (EmojiData.RenderingFallbackHack)
+                    {
+                        if (zwj_hack)
+                        {
+                            zwj_hack = false;
+                            xpos += size * 0.25;
+                            size *= 0.75;
+                        }
+                        else if (i + 1 < glyphplansequence.Count && glyphplansequence[i + 1].glyphIndex == font.ZwjGlyph)
+                        {
+                            zwj_hack = true;
+                            ypos -= size * 0.25;
+                            size *= 0.75;
+                        }
+                    }
+
+                    foreach (var p in font.MakePaths(g.glyphIndex, new Point(xpos, ypos), size, brush))
+                        Child.Children.Add(p);
+
+                    if (zwj_hack)
+                        ++i;
+                    else
+                        startx += g.AdvanceX * scale;
+                }
             }
         }
     }

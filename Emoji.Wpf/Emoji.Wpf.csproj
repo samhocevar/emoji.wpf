@@ -91,7 +91,6 @@
     <Compile Include="Internal\Behaviors.cs" />
     <Compile Include="Internal\CompressedResource.cs" />
     <Compile Include="Internal\Data.cs" />
-    <Compile Include="Internal\EmojiRenderer.cs" />
     <Compile Include="Internal\EmojiInline.cs" />
     <Compile Include="Internal\Extensions.cs" />
     <Compile Include="IEmojiControl.cs" />
