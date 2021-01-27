@@ -77,7 +77,7 @@ namespace Emoji.Wpf
                         }
                     }
 
-                    var origin = new Point(Math.Round(startx + xpos), Math.Round(starty + ypos));
+                    var origin = new Point(startx + xpos, starty + ypos);
                     ret.AddRange(font.MakePaths(g.glyphIndex, origin, size, brush));
 
                     if (zwj_hack)
