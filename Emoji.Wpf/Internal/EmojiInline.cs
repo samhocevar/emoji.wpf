@@ -10,6 +10,7 @@
 //  See http://www.wtfpl.net/ for more details.
 //
 
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
@@ -19,22 +20,18 @@ using Controls = System.Windows.Controls;
 
 namespace Emoji.Wpf
 {
-    public class EmojiCanvas : Controls.Canvas
-    {
-    }
-
     public class EmojiInline : InlineUIContainer
     {
         // Need an empty constructor for serialisation (undo/redo)
         public EmojiInline()
-            : base(new EmojiCanvas())
+            : base(new Controls.Image())
         {
             // FIXME: not sure TextBottom is the correct value; but Baseline does not work.
             BaselineAlignment = BaselineAlignment.TextBottom;
         }
 
         public EmojiInline(TextPointer pos)
-            : base(new EmojiCanvas(), pos)
+            : base(new Controls.Image(), pos)
         {
             BaselineAlignment = BaselineAlignment.TextBottom;
         }
@@ -42,9 +39,9 @@ namespace Emoji.Wpf
         /// <summary>
         /// Redeclare the Child property to prevent it from being serialized.
         /// </summary>
-        public new EmojiCanvas Child
+        public new Controls.Image Child
         {
-            get => base.Child as EmojiCanvas;
+            get => base.Child as Controls.Image;
             private set => base.Child = value;
         }
 
@@ -63,15 +60,41 @@ namespace Emoji.Wpf
 
         protected bool ShouldSerializeChild() => false;
 
+        private struct CacheItem
+        {
+            internal DrawingImage di;
+            internal double width, height;
+        };
+
+        private Dictionary<string, CacheItem> m_cache = new Dictionary<string, CacheItem>();
+
         private void Rebuild()
         {
             // FIXME: How can Child be null in Sample.exe? Investigate.
-            if (Child != null)
+            if (Child == null)
+                return;
+
+            if (string.IsNullOrEmpty(Text))
             {
-                Child?.Children.Clear();
-                CreatePathsFromText(Text ?? "", Foreground);
-                Child.LayoutTransform = new ScaleTransform(FontSize, FontSize);
+                Child.Source = null;
+                return;
             }
+
+            if (Foreground != Brushes.Black || !m_cache.TryGetValue(Text, out var item))
+            {
+                var dg = new DrawingGroup();
+                using (var dc = dg.Open())
+                    RenderText(dc, Text, Foreground, out item.width, out item.height);
+                item.di = new DrawingImage(dg);
+                item.di.Freeze();
+
+                if (Foreground == Brushes.Black)
+                    m_cache[Text] = item;
+            }
+
+            Child.Source = item.di;
+            Child.Width = item.width * FontSize;
+            Child.Height = item.height * FontSize;
         }
 
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
@@ -86,7 +109,7 @@ namespace Emoji.Wpf
             }
         }
 
-        protected void CreatePathsFromText(string text, Brush brush)
+        protected void RenderText(DrawingContext dc, string text, Brush brush, out double width, out double height)
         {
             var font = EmojiData.Typeface;
             var glyphplanlist = font.MakeGlyphPlanList(text);
@@ -103,11 +126,17 @@ namespace Emoji.Wpf
 
             // FIXME: I am not sure why the math below works
             var scale = font.GetScale(1.0) * 0.75;
-            Child.Width = glyphplansequence.CalculateWidth() * scale;
-            Child.Height = 1.0 / 0.75;
+            width = glyphplansequence.CalculateWidth() * scale;
+            height = 1.0 / 0.75;
+
+            // Clip to the render area, and draw a transparent rectangle to avoid
+            // automatic resizing. See https://stackoverflow.com/a/8824459/111461
+            var area = new Rect(0, 0, width, height);
+            dc.PushClip(new RectangleGeometry(area));
+            dc.DrawRectangle(Brushes.Transparent, null, area);
 
             // Render our image
-            if (glyphplansequence.Count > 0 && Child.Width > 0 && Child.Height > 0)
+            if (glyphplansequence.Count > 0 && width > 0 && height > 0)
             {
                 var visual = new DrawingVisual();
                 double startx = 0;
@@ -138,7 +167,7 @@ namespace Emoji.Wpf
                     }
 
                     foreach (var p in font.MakePaths(g.glyphIndex, new Point(xpos, ypos), size, brush))
-                        Child.Children.Add(p);
+                        dc.DrawGeometry(p.Fill, null, p.Data);
 
                     if (zwj_hack)
                         ++i;
@@ -149,4 +178,3 @@ namespace Emoji.Wpf
         }
     }
 }
-

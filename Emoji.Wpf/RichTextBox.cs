@@ -97,14 +97,14 @@ namespace Emoji.Wpf
             // behaviour is to select the whole InlineUIContainer instead of positioning the
             // caret, so in the case of a single click we want to cancel that.
             var hit = VisualTreeHelper.HitTest(this, e.GetPosition(this));
-            if (hit.VisualHit is EmojiCanvas cv && cv.Parent is EmojiInline emoji)
+            if (hit.VisualHit is Controls.Image im && im.Parent is EmojiInline emoji)
             {
                 // Single click: cancel selection and position caret instead.
                 // Double click: select a single emoji glyph
                 // Triple click: default RichTextBox behaviour (select all)
                 if (e.ClickCount == 1)
                 {
-                    var caret = e.GetPosition(cv).X < cv.ActualWidth / 2
+                    var caret = e.GetPosition(im).X < im.ActualWidth / 2
                               ? emoji.ContentStart : emoji.ContentEnd;
                     m_override_selection = new TextSelection(caret, caret);
                 }
