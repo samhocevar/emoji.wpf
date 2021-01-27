@@ -199,7 +199,7 @@ namespace Emoji.Wpf
                 if (replace_text != null)
                 {
                     // Preserve caret position in case of replacement
-                    bool caret_was_next = (0 == next.CompareTo(CaretPosition));
+                    bool caret_was_next = cur.CompareTo(CaretPosition) < 0 && next.CompareTo(CaretPosition) >= 0;
 
                     var font_size = replace_range.GetPropertyValue(TextElement.FontSizeProperty);
                     var foreground = replace_range.GetPropertyValue(TextElement.ForegroundProperty);
