@@ -95,12 +95,12 @@
                                   MaxHeight="320" Height="Auto" Padding="0" Margin="1"
                                   VirtualizingStackPanel.IsVirtualizing="True"
                                   VirtualizingStackPanel.VirtualizationMode="Recycling"
-                                  emoji:PixelBasedScrollingBehavior.IsEnabled="True"
+                                  emoji:Behaviors.SmoothScrolling="True"
                                   ScrollViewer.VerticalScrollBarVisibility="Visible"
                                   ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                             <ListView.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <VirtualizingStackPanel emoji:PixelBasedScrollingBehavior.IsEnabled="True"/>
+                                    <VirtualizingStackPanel emoji:Behaviors.SmoothScrolling="True"/>
                                 </ItemsPanelTemplate>
                             </ListView.ItemsPanel>
                             <ListView.ItemContainerStyle>

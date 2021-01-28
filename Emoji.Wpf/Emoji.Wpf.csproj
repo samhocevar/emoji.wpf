@@ -88,8 +88,8 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Behaviors.cs" />
     <Compile Include="Image.cs" />
-    <Compile Include="Internal\Behaviors.cs" />
     <Compile Include="Internal\CompressedResource.cs" />
     <Compile Include="Internal\Data.cs" />
     <Compile Include="Internal\EmojiInline.cs" />
