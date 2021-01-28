@@ -25,6 +25,11 @@
 
  - `Emoji.Wpf.Picker`: an emoji picker
 
+### Available dependency properties
+
+ - `Emoji.Image.Source`: attach to either `System.Windows.Controls.Image` control or
+   `System.Windows.Media.DrawingImage` object in order to manipulate emoji images
+
 ### Examples
 
 Here is how to use Emoji.Wpf in your XAML:
@@ -33,12 +38,19 @@ Here is how to use Emoji.Wpf in your XAML:
     <Window ...
             xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
             ...>
+        <Window.Resources>
+            <DrawingImage x:Key="MyImageSource" emoji:Image.Source="👻"/>
+        </Window.Resources>
         ...
         <emoji:RichTextBox FontSize="24" Margin="5"/>
         ...
         <emoji:TextBlock FontSize="24" Text="Hello! 💖😁🐨🐱‍🐉👩🏿‍👩🏻‍👦🏽 lol"/>
         ...
         <emoji:Picker FontSize="40"/>
+        ...
+        <Image Source="{StaticResource MyImageSource}"/>
+        ...
+        <Image emoji:Image.Source="🦑"/>
         ...
     </Window>
 ```
