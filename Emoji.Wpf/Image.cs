@@ -21,29 +21,32 @@ namespace Emoji.Wpf
     public static class Image
     {
         public static readonly DependencyProperty SourceProperty =
-            DependencyProperty.RegisterAttached("Source", typeof(string),
-                typeof(DependencyObject), new PropertyMetadata(default(string)));
+            DependencyProperty.RegisterAttached("Source", typeof(string), typeof(Image),
+                new PropertyMetadata(default(string), OnSourceChanged));
 
         public static void SetSource(DependencyObject o, string value)
+            => o.SetValue(SourceProperty, value);
+
+        public static string GetSource(DependencyObject o)
+            => (string)o.GetValue(SourceProperty);
+
+        private static void OnSourceChanged(DependencyObject o,
+                                            DependencyPropertyChangedEventArgs e)
         {
             if (o is Controls.Image image)
             {
                 var di = new DrawingImage();
-                SetSource(di, value);
+                SetSource(di, e.NewValue as string);
                 image.Source = di;
             }
             else if (o is DrawingImage di)
             {
                 var dg = new DrawingGroup();
                 using (var dc = dg.Open())
-                    RenderText(dc, value, Brushes.Black, out var width, out var height);
+                    RenderText(dc, e.NewValue as string, Brushes.Black, out var width, out var height);
                 di.Drawing = dg;
-                di.SetValue(SourceProperty, value);
             }
         }
-
-        public static string GetSource(DependencyObject o)
-            => (string)o.GetValue(SourceProperty);
 
         internal static void RenderText(DrawingContext dc, string text, Brush brush,
                                         out double width, out double height)
