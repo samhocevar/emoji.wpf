@@ -35,17 +35,17 @@ namespace Emoji.Wpf
             if (o is VirtualizingPanel || o is ItemsControl)
             {
                 var val = (bool)e.NewValue;
-                var t = typeof(Window).Assembly.GetType("System.Windows.Controls.ScrollUnit");
-                var f = typeof(VirtualizingPanel).GetField("ScrollUnitProperty",
-                            BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
-                if (t != null && f?.GetValue(null) is DependencyProperty dp)
+                var enum_type = typeof(Window).Assembly.GetType("System.Windows.Controls.ScrollUnit");
+                var field_flags = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;
+                var field = typeof(VirtualizingPanel).GetField("ScrollUnitProperty", field_flags);
+                if (enum_type != null && field?.GetValue(null) is DependencyProperty dp)
                 {
-                    o.SetValue(dp, Enum.Parse(t, val ? "Pixel" : "Item"));
+                    o.SetValue(dp, Enum.Parse(enum_type, val ? "Pixel" : "Item"));
                 }
                 else if (o is VirtualizingPanel)
                 {
-                    var prop = o.GetType().GetProperty("IsPixelBased",
-                                    BindingFlags.NonPublic | BindingFlags.Instance);
+                    var prop_flags = BindingFlags.NonPublic | BindingFlags.Instance;
+                    var prop = o.GetType().GetProperty("IsPixelBased", prop_flags);
                     prop?.SetValue(o, val, null);
                 }
             }
