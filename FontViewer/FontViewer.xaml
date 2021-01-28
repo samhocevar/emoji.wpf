@@ -18,7 +18,7 @@
             <DataTemplate>
                 <StackPanel Orientation="Vertical" Margin="4"
                             ToolTipService.ShowDuration="60000" ToolTipService.InitialShowDelay="0">
-                    <emoji:TextBlock FontSize="24" Text="{Binding UnicodeText}"/>
+                    <Image emoji:Image.Source="{Binding UnicodeText}"/>
                     <StackPanel.Style>
                         <Style TargetType="{x:Type StackPanel}">
                             <Style.Triggers>
