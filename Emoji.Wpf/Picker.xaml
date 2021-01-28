@@ -17,7 +17,7 @@
                       BorderThickness="1" Height="Auto" Padding="0" Margin="1"
                       ScrollViewer.VerticalScrollBarVisibility="Auto"
                       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                      MaxWidth="320">
+                      MaxWidth="280"> <!-- 6 columns -->
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel/>
@@ -113,7 +113,7 @@
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="{x:Type ListViewItem}">
-                                                <ContentPresenter />
+                                                <ContentPresenter/>
                                             </ControlTemplate>
                                         </Setter.Value>
                                     </Setter>

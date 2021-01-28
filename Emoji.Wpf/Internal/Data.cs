@@ -205,7 +205,11 @@ namespace Emoji.Wpf
                     // emoji. If so, append to that emoji. Otherwise, add to current subgroup.
                     // FIXME: does not work properly because variations can appear before the generic emoji
                     if (has_modifier && LookupByName.TryGetValue(name.Split(':')[0], out var parent_emoji))
+                    {
+                        if (parent_emoji.VariationList.Count == 0)
+                            parent_emoji.VariationList.Add(parent_emoji);
                         parent_emoji.VariationList.Add(emoji);
+                    }
                     else
                         current_subgroup.EmojiList.Add(emoji);
                 }
