@@ -33,9 +33,9 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Button Background="Transparent" BorderBrush="Transparent"
-                                Margin="0" Padding="2" Click="OnEmojiPicked"
+                                Margin="0" Click="OnEmojiPicked"
                                 Width="40" Height="40" ToolTip="{Binding Path=Name}">
-                            <emoji:TextBlock MinWidth="16" MinHeight="16" FontSize="18" Text="{Binding Path=Text}"/>
+                            <Image Height="24" emoji:Image.Source="{Binding Path=Text}"/>
                         </Button>
                     </DataTemplate>
                 </ListView.ItemTemplate>
@@ -47,9 +47,9 @@
                           x:Name="VariationButton" Background="Transparent" BorderBrush="Transparent"
                           Click="OnEmojiPicked" Focusable="False" ToolTip="{Binding Path=Name}"
                           IsHitTestVisible="{Binding ElementName=VariationPopup, Path=IsOpen, Mode=OneWay, Converter={emoji:BoolInverter}}">
-                <Grid Width="32" Height="32">
-                    <emoji:TextBlock MinWidth="16" MinHeight="16" FontSize="18" Text="{Binding Path=Text}"
-                                     VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                <Grid>
+                    <Image Height="24" Margin="4" emoji:Image.Source="{Binding Path=Text}"
+                           VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     <Polygon Visibility="{Binding HasVariations, Converter={StaticResource BoolToVis}}"
                              Width="6" Height="6" VerticalAlignment="Bottom" HorizontalAlignment="Right"
                              Stretch="Fill" Points="0,1 1,1 1,0" Fill="Black"/>
@@ -65,7 +65,7 @@
 
     <ToggleButton x:Name="Button_INTERNAL"
                   IsHitTestVisible="{Binding IsOpen, ElementName=Popup_INTERNAL, Mode=OneWay, Converter={emoji:BoolInverter}}">
-        <emoji:TextBlock x:Name="TextBlock" Text="{Binding ElementName=StackPanel_INTERNAL, Mode=OneWay, Path=Selection, UpdateSourceTrigger=PropertyChanged}"/>
+        <Image x:Name="Image" emoji:Image.Source="{Binding ElementName=StackPanel_INTERNAL, Mode=OneWay, Path=Selection, UpdateSourceTrigger=PropertyChanged}"/>
     </ToggleButton>
 
     <Popup IsOpen="{Binding IsChecked, ElementName=Button_INTERNAL, Mode=TwoWay}"
@@ -76,14 +76,14 @@
         <TabControl ItemsSource="{Binding EmojiGroups, ElementName=StackPanel_INTERNAL}" Padding="0">
             <TabControl.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                        <emoji:TextBlock FontSize="18" Text="{Binding Icon}">
-                            <emoji:TextBlock.ToolTip>
+                    <Grid>
+                        <Image Height="24" emoji:Image.Source="{Binding Icon}">
+                            <Image.ToolTip>
                                 <TextBlock Text="{Binding Name}"/>
-                            </emoji:TextBlock.ToolTip>
-                        </emoji:TextBlock>
+                            </Image.ToolTip>
+                        </Image>
                         <!--<TextBlock Text="{Binding Name}"/>-->
-                    </StackPanel>
+                    </Grid>
                 </DataTemplate>
             </TabControl.ItemTemplate>
             <TabControl.ContentTemplate>

@@ -42,17 +42,19 @@ namespace Emoji.Wpf
 
         public IList<EmojiData.Group> EmojiGroups => EmojiData.AllGroups;
 
+        // Backwards compatibility for when the backend was a TextBlock.
         public double FontSize
         {
-            get => TextBlock.FontSize;
-            set => TextBlock.FontSize = value;
+            get => Image.Height * 0.75;
+            set => Image.Height = value / 0.75;
         }
 
         public event PropertyChangedEventHandler SelectionChanged;
 
         public event EmojiPickedEventHandler Picked;
 
-        private static void OnSelectionPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
+        private static void OnSelectionPropertyChanged(DependencyObject source,
+                                                       DependencyPropertyChangedEventArgs e)
         {
             (source as Picker)?.OnSelectionChanged(e.NewValue as string);
         }
@@ -66,8 +68,8 @@ namespace Emoji.Wpf
         private void OnSelectionChanged(string s)
         {
             var is_disabled = string.IsNullOrEmpty(s);
-            TextBlock.Text = is_disabled ? "???" : s;
-            TextBlock.Opacity = is_disabled ? 0.3 : 1.0;
+            Image.SetValue(Wpf.Image.SourceProperty, is_disabled ? "???" : s);
+            Image.Opacity = is_disabled ? 0.3 : 1.0;
             SelectionChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Selection)));
         }
 
@@ -86,7 +88,8 @@ namespace Emoji.Wpf
         }
 
         public static readonly DependencyProperty SelectionProperty = DependencyProperty.Register(
-            nameof(Selection), typeof(string), typeof(Picker), new FrameworkPropertyMetadata("☺", OnSelectionPropertyChanged));
+            nameof(Selection), typeof(string), typeof(Picker),
+                new FrameworkPropertyMetadata("☺", OnSelectionPropertyChanged));
 
         private void OnPopupKeyDown(object sender, KeyEventArgs e)
         {
