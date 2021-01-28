@@ -66,6 +66,9 @@ useful and robust library if given enough care. Any help appreciated!
 
 ### Version changelog
 
+ - v0.2.4 (2021/01/28):
+   - new `emoji:Image.Source` dependency property for `Image` and `DrawingImage` objects, allowing
+     to easily render emoji as icons.
  - v0.2.3 (2021/01/27):
    - the rendering pipeline now exclusively uses vector objects
    - subpixel glyph positioning
