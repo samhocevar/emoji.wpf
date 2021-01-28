@@ -38,8 +38,8 @@ namespace Emoji.Wpf
                 using (var dc = dg.Open())
                     RenderText(dc, value, Brushes.Black, out var width, out var height);
                 di.Drawing = dg;
-                di.SetValue(SourceProperty, value);
             }
+            o.SetValue(SourceProperty, value);
         }
 
         public static string GetSource(DependencyObject o)
