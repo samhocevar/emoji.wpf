@@ -88,6 +88,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Image.cs" />
     <Compile Include="Internal\Behaviors.cs" />
     <Compile Include="Internal\CompressedResource.cs" />
     <Compile Include="Internal\Data.cs" />

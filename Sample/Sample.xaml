@@ -6,29 +6,31 @@
         xmlns:clr="clr-namespace:System;assembly=mscorlib"
         xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
         mc:Ignorable="d"
-        Title="Emoji.Wpf Sample" Width="620" Height="400">
+        Title="Emoji.Wpf Sample" Width="640" Height="400">
 
     <Window.Resources>
-        <clr:String x:Key="SampleText">Hello! 😁🎀🐨🍊👨‍👦👨🏻‍👩🏿‍👧🏽‍👦🏽‍‍🐱‍🐉</clr:String>
+        <clr:String x:Key="SampleText">Hello! 😁🎀🍊👨‍👦👨🏻‍👩🏿‍👧🏽‍👦🏽‍‍🐱‍🐉</clr:String>
         <clr:String x:Key="PickerEmoji">🍣</clr:String>
         <clr:String x:Key="FontSizeEmoji">🍷🐉</clr:String>
         <clr:String x:Key="EnabledButtonText">💾 Enabled</clr:String>
         <clr:String x:Key="DisabledButtonText">💾 Disabled</clr:String>
         <clr:String x:Key="QualifiedEmoji">▶︎ ▶ ▶️</clr:String>
         <clr:String x:Key="EditableText" xml:space="preserve">I💖emoji! Edit me, or use the picker😄&#x0a;🐍🏍️📞🍰☘️🖋️💩</clr:String>
+        <clr:String x:Key="StringImageSource">👩‍💻</clr:String>
+        <DrawingImage x:Key="DrawingImageSource" emoji:Image.Source="🏇"/>
     </Window.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="5*" />
+            <RowDefinition Height="4*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="4*" />
-                <ColumnDefinition Width="3*" />
+                <ColumnDefinition Width="4*" />
             </Grid.ColumnDefinitions>
             <GroupBox Grid.Column="0" Header="wpf:TextBlock vs. emoji:TextBlock" Margin="4">
                 <StackPanel Orientation="Vertical">
@@ -62,21 +64,11 @@
                     </StackPanel>
                 </StackPanel>
             </GroupBox>
-            <GroupBox Grid.Column="1" Header="Font Size" Margin="4">
-                <emoji:RichTextBox IsReadOnly="True" BorderThickness="0">
-                    <FlowDocument>
-                        <Paragraph>
-                            <!-- The weird XAML formatting avoids implicit spaces in the document -->
-                            <Run FontSize="6" Text="{StaticResource FontSizeEmoji}"/><Run
-                                 FontSize="8" Text="{StaticResource FontSizeEmoji}"/><Run
-                                 FontSize="12" Text="{StaticResource FontSizeEmoji}"/><Run
-                                 FontSize="16" Text="{StaticResource FontSizeEmoji}"/><Run
-                                 FontSize="24" Text="{StaticResource FontSizeEmoji}"/><LineBreak
-                          /><Run FontSize="32" Text="{StaticResource FontSizeEmoji}"/><Run
-                                 FontSize="64" Text="{StaticResource FontSizeEmoji}"/>
-                        </Paragraph>
-                    </FlowDocument>
-                </emoji:RichTextBox>
+            <GroupBox Grid.Column="1" Header="wpf:ImageSource" Margin="4">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="{StaticResource DrawingImageSource}"/>
+                    <Image emoji:Image.Source="{StaticResource StringImageSource}"/>
+                </StackPanel>
             </GroupBox>
         </Grid>
 
@@ -124,6 +116,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <GroupBox Grid.Column="0" Header="Emoji for Icon Buttons" Margin="4">
                 <StackPanel Orientation="Horizontal">
@@ -142,6 +135,20 @@
                     <TextBlock Text="{StaticResource QualifiedEmoji}"/>
                     <emoji:TextBlock Text="{StaticResource QualifiedEmoji}"/>
                 </StackPanel>
+            </GroupBox>
+            <GroupBox Grid.Column="2" Header="Font Size" Margin="4">
+                <emoji:RichTextBox IsReadOnly="True" BorderThickness="0">
+                    <FlowDocument>
+                        <Paragraph>
+                            <!-- The weird XAML formatting avoids implicit spaces in the document -->
+                            <Run FontSize="6" Text="{StaticResource FontSizeEmoji}"/><Run
+                                 FontSize="8" Text="{StaticResource FontSizeEmoji}"/><Run
+                                 FontSize="12" Text="{StaticResource FontSizeEmoji}"/><Run
+                                 FontSize="16" Text="{StaticResource FontSizeEmoji}"/><Run
+                                 FontSize="24" Text="{StaticResource FontSizeEmoji}"/>
+                        </Paragraph>
+                    </FlowDocument>
+                </emoji:RichTextBox>
             </GroupBox>
         </Grid>
 
