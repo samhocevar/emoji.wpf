@@ -66,6 +66,8 @@ useful and robust library if given enough care. Any help appreciated!
 
 ### Version changelog
 
+ - v0.2.5 (2021/01/29):
+   - minor adjustments in `emoji:Picker`
  - v0.2.4 (2021/01/28):
    - new `emoji:Image.Source` dependency property for `Image` and `DrawingImage` objects, allowing
      to easily render emoji as icons.
