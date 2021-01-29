@@ -229,13 +229,13 @@ namespace Emoji.Wpf
 
         private static IEnumerable<string> EmojiDescriptionLines()
         {
-            using (var sr = new CompressedResourceStream("emoji-test.txt.gz"))
+            using (var sr = new GZipResourceStream("emoji-test.txt.gz"))
             {
                 foreach (var line in sr.ReadToEnd().Split('\r', '\n'))
                 {
                     yield return line;
 
-                    // Append these extra Microsoft emojis after 😾 E2.0 pouting cat
+                    // Append these extra Microsoft emoji after 😾 E2.0 pouting cat
                     if (line.StartsWith("1F63E  "))
                     {
                         yield return "1F431 200D 1F3CD ; fully-qualified # 🐱\u200d🏍 stunt cat";

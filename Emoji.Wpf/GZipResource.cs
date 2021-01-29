@@ -16,10 +16,12 @@ using System.Reflection;
 
 namespace Emoji.Wpf
 {
-    internal class CompressedResourceStream : StreamReader
+    public class GZipResourceStream : StreamReader
     {
-        internal CompressedResourceStream(string name)
-          : base(new GZipStream(Assembly.GetExecutingAssembly().GetManifestResourceStream(name), CompressionMode.Decompress))
+        public GZipResourceStream(string name)
+          : base(new GZipStream(Assembly.GetExecutingAssembly()
+                                        .GetManifestResourceStream(name),
+                                CompressionMode.Decompress))
         {
         }
 
@@ -34,8 +36,8 @@ namespace Emoji.Wpf
             {
                 if (disposing)
                 {
-                    gzip_stream.Dispose();
-                    resource_stream.Dispose();
+                    gzip_stream?.Dispose();
+                    resource_stream?.Dispose();
                 }
 
                 m_disposed = true;
@@ -45,4 +47,3 @@ namespace Emoji.Wpf
         private bool m_disposed = false;
     }
 }
-
