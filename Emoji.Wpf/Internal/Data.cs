@@ -72,7 +72,7 @@ namespace Emoji.Wpf
         public class Group
         {
             public string Name { get; set; }
-            public string Icon => SubGroups[0].EmojiList[0].Text;
+            public string Icon => SubGroups.FirstOrDefault()?.EmojiList.FirstOrDefault()?.Text;
 
             public IList<SubGroup> SubGroups { get; } = new List<SubGroup>();
 
@@ -111,8 +111,8 @@ namespace Emoji.Wpf
             var match_group = new Regex(@"^# group: (.*)");
             var match_subgroup = new Regex(@"^# subgroup: (.*)");
             var match_sequence = new Regex(@"^([0-9a-fA-F ]+[0-9a-fA-F]).*; *([-a-z]*) *# [^ ]* (E[0-9.]* )?(.*)");
-            var match_skin_tone = new Regex($"({string.Join("|", SkinToneComponents.ToArray())})");
-            var match_hair_style = new Regex($"({string.Join("|", HairStyleComponents.ToArray())})");
+            var match_skin_tone = new Regex($"({string.Join("|", SkinToneComponents)})");
+            var match_hair_style = new Regex($"({string.Join("|", HairStyleComponents)})");
 
             var adult = "(👨|👩)(🏻|🏼|🏽|🏾|🏿)?";
             var child = "(👦|👧|👶)(🏻|🏼|🏽|🏾|🏿)?";
@@ -204,7 +204,7 @@ namespace Emoji.Wpf
                     // Get the left part of the name and check whether we’re a variation of an existing
                     // emoji. If so, append to that emoji. Otherwise, add to current subgroup.
                     // FIXME: does not work properly because variations can appear before the generic emoji
-                    if (has_modifier && LookupByName.TryGetValue(name.Split(':')[0], out var parent_emoji))
+                    if (name.Contains(":") && LookupByName.TryGetValue(name.Split(':')[0], out var parent_emoji))
                     {
                         if (parent_emoji.VariationList.Count == 0)
                             parent_emoji.VariationList.Add(parent_emoji);
@@ -215,8 +215,8 @@ namespace Emoji.Wpf
                 }
             }
 
-            // Remove empty groups, for instance the Components
-            list.RemoveAll(g => g.EmojiCount == 0);
+            // Remove the Component group. Not sure we want to have the skin tones in the picker.
+            list.RemoveAll(g => g.Name == "Component");
 
             AllGroups = list;
 
