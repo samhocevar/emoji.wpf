@@ -18,9 +18,8 @@ namespace Emoji.Wpf
 {
     public class GZipResourceStream : StreamReader
     {
-        public GZipResourceStream(string name)
-          : base(new GZipStream(Assembly.GetExecutingAssembly()
-                                        .GetManifestResourceStream(name),
+        public GZipResourceStream(string name, Assembly assembly = null)
+          : base(new GZipStream((assembly ?? Assembly.GetCallingAssembly()).GetManifestResourceStream(name),
                                 CompressionMode.Decompress))
         {
         }
