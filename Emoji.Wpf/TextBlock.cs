@@ -95,7 +95,7 @@ namespace Emoji.Wpf
             foreach (Match m in regex.Matches(text))
             {
                 Inlines.Add(text.Substring(pos, m.Index - pos));
-                Inlines.Add(new EmojiInline()
+                Inlines.Add(new EmojiInline
                 {
                     FontSize = FontSize,
                     Foreground = ColorBlend ? Foreground : Brushes.Black,

@@ -65,7 +65,7 @@ namespace Emoji.Wpf
             internal double width, height;
         };
 
-        private Dictionary<string, CacheItem> m_cache = new Dictionary<string, CacheItem>();
+        private readonly Dictionary<string, CacheItem> m_cache = new Dictionary<string, CacheItem>();
 
         private void Rebuild()
         {

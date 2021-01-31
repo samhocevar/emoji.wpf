@@ -40,9 +40,12 @@ namespace Emoji.Wpf
 
         // FIXME: should we lazy load this? If the user calls Load() later, then
         // this first Load() call will have been for nothing.
-        static EmojiData() => Load(null);
+        static EmojiData() => Load();
 
-        public static void Load(string font_name = null)
+        public static void Load()
+            => Load(null);
+
+        public static void Load(string font_name)
         {
             Typeface = new EmojiTypeface(font_name);
             ParseEmojiList();
@@ -89,7 +92,7 @@ namespace Emoji.Wpf
         }
 
         // FIXME: this could be read directly from emoji-test.txt.gz
-        private static List<string> SkinToneComponents = new List<string>()
+        private static List<string> SkinToneComponents = new List<string>
         {
             "🏻", // light skin tone
             "🏼", // medium-light skin tone
@@ -98,7 +101,7 @@ namespace Emoji.Wpf
             "🏿", // dark skin tone
         };
 
-        private static List<string> HairStyleComponents = new List<string>()
+        private static List<string> HairStyleComponents = new List<string>
         {
             "🦰", // red hair
             "🦱", // curly hair
@@ -129,7 +132,7 @@ namespace Emoji.Wpf
                 var m = match_group.Match(line);
                 if (m.Success)
                 {
-                    current_group = new Group() { Name = m.Groups[1].ToString() };
+                    current_group = new Group { Name = m.Groups[1].ToString() };
                     list.Add(current_group);
                     continue;
                 }
@@ -137,7 +140,7 @@ namespace Emoji.Wpf
                 m = match_subgroup.Match(line);
                 if (m.Success)
                 {
-                    current_subgroup = new SubGroup() { Name = m.Groups[1].ToString(), Group = current_group };
+                    current_subgroup = new SubGroup { Name = m.Groups[1].ToString(), Group = current_group };
                     current_group.SubGroups.Add(current_subgroup);
                     continue;
                 }
@@ -191,7 +194,7 @@ namespace Emoji.Wpf
                             continue;
                     }
 
-                    var emoji = new Emoji()
+                    var emoji = new Emoji
                     {
                         Name = name,
                         Text = text,

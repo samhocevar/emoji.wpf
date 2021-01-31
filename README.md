@@ -22,7 +22,6 @@
 
  - `Emoji.Wpf.TextBlock`: an emoji-aware version of `System.Windows.Controls.TextBlock`.
  - `Emoji.Wpf.RichTextBox`: an emoji-aware version of `System.Windows.Controls.RichTextBox`.
-
  - `Emoji.Wpf.Picker`: an emoji picker
 
 ### Available dependency properties

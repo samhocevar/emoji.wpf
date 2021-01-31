@@ -59,10 +59,11 @@ namespace Emoji.Wpf
         /// <summary>
         /// A cache of GlyphPlanSequence objects, indexed by source strings. Should
         /// remain pretty lightweight because they are small objects.
+        /// FIXME: measure how many cache hits we actually benefit from
         /// </summary>
-        private IDictionary<string, EmojiGlyphPlanList> m_cache = new Dictionary<string, EmojiGlyphPlanList>();
+        private readonly IDictionary<string, EmojiGlyphPlanList> m_cache = new Dictionary<string, EmojiGlyphPlanList>();
 
-        private IList<ColorTypeface> m_fonts = new List<ColorTypeface>();
+        private readonly IList<ColorTypeface> m_fonts = new List<ColorTypeface>();
     }
 
     internal class ColorTypeface
@@ -81,7 +82,7 @@ namespace Emoji.Wpf
             }
 
             // Create a reusable layout for glyphs
-            m_layout = new GlyphLayout()
+            m_layout = new GlyphLayout
             {
                 Typeface = m_openfont,
                 EnableBuiltinMathItalicCorrection = false, // not needed
@@ -193,8 +194,8 @@ namespace Emoji.Wpf
                     ushort sub_gid = m_openfont.COLRTable.GlyphLayers[i];
                     // We do not need to provide advances since we only render one glyph.
                     GlyphRun r = new GlyphRun(m_gtf, 0, false, size,
-                                              new ushort[] { sub_gid },
-                                              origin, new double[] { 0 },
+                                              new[] { sub_gid },
+                                              origin, new[] { 0.0 },
                                               null, null, null, // FIXME: check what this is?
                                               null, null, null);
                     int cid = m_openfont.CPALTable.Palettes[palette] + m_openfont.COLRTable.GlyphPalettes[i];
@@ -208,7 +209,7 @@ namespace Emoji.Wpf
                     }
                     Brush b = new SolidColorBrush(Color.FromArgb(A, R, G, B));
 
-                    ret.Add(new Path()
+                    ret.Add(new Path
                     {
                         Stroke = null,
                         Fill = b,
@@ -219,11 +220,11 @@ namespace Emoji.Wpf
             else
             {
                 GlyphRun r = new GlyphRun(m_gtf, 0, false, size,
-                                          new ushort[] { gid },
-                                          origin, new double[] { 0 },
+                                          new[] { gid },
+                                          origin, new[] { 0.0 },
                                           null, null, null,
                                           null, null, null);
-                ret.Add(new Path()
+                ret.Add(new Path
                 {
                     Stroke = null,
                     Fill = fallback_brush,

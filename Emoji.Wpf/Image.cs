@@ -78,7 +78,6 @@ namespace Emoji.Wpf
             // Render our image
             if (glyphplansequence.Count > 0 && width > 0 && height > 0)
             {
-                var visual = new DrawingVisual();
                 double startx = 0;
                 double starty = font.Baseline;
                 bool zwj_hack = false;
