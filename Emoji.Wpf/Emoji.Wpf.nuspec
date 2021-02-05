@@ -15,7 +15,7 @@
     <copyright>Copyright © 2017—2021 Sam Hocevar</copyright>
     <tags>Emoji Unicode WPF XAML</tags>
     <dependencies>
-      <group targetFramework=".NETFramework4.0"/>
+      <dependency id="System.ValueTuple"/>
     </dependencies>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="PresentationCore"/>
