@@ -31,8 +31,11 @@ namespace Emoji.Wpf
         public EmojiTypeface(string font_name = null)
             => m_fonts.Add(new ColorTypeface(font_name));
 
+        public double Height
+            => (double)m_fonts.FirstOrDefault()?.Height;
+
         public double Baseline
-            => m_fonts[0].Baseline;
+            => (double)m_fonts.FirstOrDefault()?.Baseline;
 
         public bool CanRender(string s)
             => m_fonts[0].CanRender(s);
@@ -57,7 +60,7 @@ namespace Emoji.Wpf
             => m_fonts[0].MakePaths(gid, origin, size, fallback_brush);
 
         /// <summary>
-        /// A cache of GlyphPlanSequence objects, indexed by source strings. Should
+        /// A cache of GlyphPlanList objects, indexed by source strings. Should
         /// remain pretty lightweight because they are small objects.
         /// FIXME: measure how many cache hits we actually benefit from
         /// </summary>
@@ -154,6 +157,8 @@ namespace Emoji.Wpf
                     var glyphs = m_layout.GetUnscaledGlyphPlanIter().ToList();
                     for (int i = 1; i < glyphs.Count - 1; ++i)
                     {
+                        // If the glyph plan contains a zero-width joiner, we adjust its
+                        // advance position to so the two joined glyphs are superimposed.
                         if (glyphs[i].glyphIndex == ZwjGlyph)
                         {
                             glyphs[i] = new UnscaledGlyphPlan(
@@ -173,8 +178,6 @@ namespace Emoji.Wpf
         public double GetScale(double point_size)
             => m_openfont.CalculateScaleToPixelFromPointSize((float)point_size);
 
-        public IDictionary<ushort, double> AdvanceWidths => m_gtf.AdvanceWidths;
-        public IDictionary<ushort, double> AdvanceHeights => m_gtf.AdvanceHeights;
         public double Height => m_gtf.Height;
         public double Baseline => m_gtf.Baseline;
         public ushort ZwjGlyph { get; private set; }

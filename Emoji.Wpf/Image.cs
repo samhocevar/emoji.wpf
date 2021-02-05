@@ -10,6 +10,7 @@
 //  See http://www.wtfpl.net/ for more details.
 //
 
+using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using Typography.TextLayout;
@@ -53,21 +54,12 @@ namespace Emoji.Wpf
         {
             var font = EmojiData.Typeface;
             var glyphplanlist = font.MakeGlyphPlanList(text);
-            var glyphplansequence = new GlyphPlanSequence(glyphplanlist);
 
-#if false
-            // Check whether the Emoji font knows about all codepoints;
-            // otherwise, set Invalid to true.
-            bool invalid = false;
-            for (int i = 0; i < glyphplanlist.Count; ++i)
-                if (glyphplanlist[i].glyphIndex == 0)
-                    invalid = true;
-#endif
-
-            // FIXME: I am not sure why the math below works
-            var scale = font.GetScale(1.0) * 0.75;
-            width = glyphplansequence.CalculateWidth() * scale;
-            height = 1.0 / 0.75;
+            // FIXME: height is computed using the Windows typeface object
+            // and width using Typography.Openfont. Try to use only one.
+            var scale = font.GetScale(0.75); // 1px = 0.75pt
+            width = glyphplanlist.Sum(x => x.AdvanceX) * scale;
+            height = font.Height;
 
             // Clip to the render area, and draw a transparent rectangle to avoid
             // automatic resizing. See https://stackoverflow.com/a/8824459/111461
@@ -76,43 +68,40 @@ namespace Emoji.Wpf
             dc.DrawRectangle(Brushes.Transparent, null, area);
 
             // Render our image
-            if (glyphplansequence.Count > 0 && width > 0 && height > 0)
+            double startx = 0;
+            double starty = font.Baseline;
+            bool zwj_hack = false;
+
+            for (int i = 0; i < glyphplanlist.Count; ++i)
             {
-                double startx = 0;
-                double starty = font.Baseline;
-                bool zwj_hack = false;
+                var g = glyphplanlist[i];
+                var size = 1.0;
+                var xpos = startx + g.OffsetX * scale;
+                var ypos = starty + g.OffsetY * scale;
 
-                for (int i = 0; i < glyphplansequence.Count; ++i)
+                if (EmojiData.RenderingFallbackHack)
                 {
-                    var g = glyphplansequence[i];
-                    var size = 1.0;
-                    var xpos = startx + g.OffsetX * scale;
-                    var ypos = starty + g.OffsetY * scale;
-
-                    if (EmojiData.RenderingFallbackHack)
-                    {
-                        if (zwj_hack)
-                        {
-                            zwj_hack = false;
-                            xpos += size * 0.25;
-                            size *= 0.75;
-                        }
-                        else if (i + 1 < glyphplansequence.Count && glyphplansequence[i + 1].glyphIndex == font.ZwjGlyph)
-                        {
-                            zwj_hack = true;
-                            ypos -= size * 0.25;
-                            size *= 0.75;
-                        }
-                    }
-
-                    foreach (var p in font.MakePaths(g.glyphIndex, new Point(xpos, ypos), size, brush))
-                        dc.DrawGeometry(p.Fill, null, p.Data);
-
                     if (zwj_hack)
-                        ++i;
-                    else
-                        startx += g.AdvanceX * scale;
+                    {
+                        zwj_hack = false;
+                        xpos += size * 0.25;
+                        size *= 0.75;
+                    }
+                    else if (i + 1 < glyphplanlist.Count && glyphplanlist[i + 1].glyphIndex == font.ZwjGlyph)
+                    {
+                        zwj_hack = true;
+                        ypos -= size * 0.25;
+                        size *= 0.75;
+                    }
                 }
+
+                foreach (var p in font.MakePaths(g.glyphIndex, new Point(xpos, ypos), size, brush))
+                    dc.DrawGeometry(p.Fill, null, p.Data);
+
+                if (zwj_hack)
+                    ++i;
+                else
+                    startx += g.AdvanceX * scale;
             }
         }
     }
