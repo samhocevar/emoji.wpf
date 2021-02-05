@@ -56,9 +56,12 @@ namespace Emoji.Wpf
             var glyphplanlist = font.MakeGlyphPlanList(text);
 
             // FIXME: height is computed using the Windows typeface object
-            // and width using Typography.Openfont. Try to use only one.
+            // and width using Typography.OpenFont. Try to use only one.
             var scale = font.GetScale(0.75); // 1px = 0.75pt
-            width = glyphplanlist.Sum(x => x.AdvanceX) * scale;
+            width = glyphplanlist.WithPreviousAndNext()
+                                 .Where(t => t.Current.glyphIndex != font.ZwjGlyph
+                                              && t.Next.glyphIndex != font.ZwjGlyph)
+                                 .Sum(t => t.Current.AdvanceX) * scale;
             height = font.Height;
 
             // Clip to the render area, and draw a transparent rectangle to avoid
@@ -68,40 +71,43 @@ namespace Emoji.Wpf
             dc.DrawRectangle(Brushes.Transparent, null, area);
 
             // Render our image
-            double startx = 0;
-            double starty = font.Baseline;
-            bool zwj_hack = false;
+            int startx = 0;
 
-            for (int i = 0; i < glyphplanlist.Count; ++i)
+            foreach (var t in glyphplanlist.WithPreviousAndNext())
             {
-                var g = glyphplanlist[i];
-                var size = 1.0;
-                var xpos = startx + g.OffsetX * scale;
-                var ypos = starty + g.OffsetY * scale;
+                var g = t.Current;
+                var xpos = (startx + g.OffsetX) * scale;
+                var ypos = font.Baseline + g.OffsetY * scale;
+                double ds = 1.0;
+
+                if (g.glyphIndex == font.ZwjGlyph)
+                    continue;
 
                 if (EmojiData.RenderingFallbackHack)
                 {
-                    if (zwj_hack)
+                    if (t.Next.glyphIndex == font.ZwjGlyph)
                     {
-                        zwj_hack = false;
-                        xpos += size * 0.25;
-                        size *= 0.75;
+                        ds = 0.75;
+                        ypos -= 0.25 / ds;
                     }
-                    else if (i + 1 < glyphplanlist.Count && glyphplanlist[i + 1].glyphIndex == font.ZwjGlyph)
+                    else if (t.Previous.glyphIndex == font.ZwjGlyph)
                     {
-                        zwj_hack = true;
-                        ypos -= size * 0.25;
-                        size *= 0.75;
+                        ds = 0.75;
+                        xpos += 0.25 / ds;
                     }
                 }
 
-                foreach (var p in font.MakePaths(g.glyphIndex, new Point(xpos, ypos), size, brush))
+                dc.PushTransform(new MatrixTransform(ds, 0, 0, ds, xpos, ypos));
+
+                foreach (var p in font.MakePaths(g.glyphIndex, brush))
                     dc.DrawGeometry(p.Fill, null, p.Data);
 
-                if (zwj_hack)
-                    ++i;
-                else
-                    startx += g.AdvanceX * scale;
+                dc.Pop();
+
+                if (EmojiData.RenderingFallbackHack && t.Next.glyphIndex == font.ZwjGlyph)
+                    continue;
+
+                startx += g.AdvanceX;
             }
         }
     }

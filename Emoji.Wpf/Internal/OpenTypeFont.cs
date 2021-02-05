@@ -56,8 +56,8 @@ namespace Emoji.Wpf
             return ret;
         }
 
-        internal List<Path> MakePaths(ushort gid, Point origin, double size, Brush fallback_brush)
-            => m_fonts[0].MakePaths(gid, origin, size, fallback_brush);
+        internal List<Path> MakePaths(ushort gid, Brush fallback_brush)
+            => m_fonts[0].MakePaths(gid, fallback_brush);
 
         /// <summary>
         /// A cache of GlyphPlanList objects, indexed by source strings. Should
@@ -153,25 +153,7 @@ namespace Emoji.Wpf
             {
                 m_layout.EnableGpos = use_gpos;
                 m_layout.Layout(s.ToCharArray(), 0, s.Length);
-                var glyphs = m_layout.GetUnscaledGlyphPlanIter().ToList();
-                if (EmojiData.RenderingFallbackHack)
-                {
-                    for (int i = 1; i < glyphs.Count - 1; ++i)
-                    {
-                        // If the glyph plan contains a zero-width joiner, we adjust its
-                        // advance position so that the two joined glyphs are superimposed.
-                        if (glyphs[i].glyphIndex == ZwjGlyph)
-                        {
-                            glyphs[i] = new UnscaledGlyphPlan(
-                                glyphs[i].input_cp_offset,
-                                glyphs[i].glyphIndex,
-                                (short)-glyphs[i - 1].AdvanceX,
-                                glyphs[i].OffsetX,
-                                glyphs[i].OffsetY);
-                        }
-                    }
-                }
-                return glyphs;
+                return m_layout.GetUnscaledGlyphPlanIter().ToList();
             }
         }
 
@@ -182,7 +164,7 @@ namespace Emoji.Wpf
         public double Baseline => m_gtf.Baseline;
         public ushort ZwjGlyph { get; private set; }
 
-        public List<Path> MakePaths(ushort gid, Point origin, double size, Brush fallback_brush)
+        public List<Path> MakePaths(ushort gid, Brush fallback_brush)
         {
             var ret = new List<Path>();
 
@@ -195,48 +177,41 @@ namespace Emoji.Wpf
                 for (int i = start; i < stop; ++i)
                 {
                     ushort sub_gid = m_openfont.COLRTable.GlyphLayers[i];
-                    // We do not need to provide advances since we only render one glyph.
-                    GlyphRun r = new GlyphRun(m_gtf, 0, false, size,
-                                              new[] { sub_gid },
-                                              origin, new[] { 0.0 },
-                                              null, null, null, // FIXME: check what this is?
-                                              null, null, null);
                     int cid = m_openfont.CPALTable.Palettes[palette] + m_openfont.COLRTable.GlyphPalettes[i];
-                    byte R, G, B, A;
-                    m_openfont.CPALTable.GetColor(cid, out R, out G, out B, out A);
-                    if (fallback_brush is SolidColorBrush brush)
+                    m_openfont.CPALTable.GetColor(cid, out var r, out var g, out var b, out var a);
+                    if (fallback_brush is SolidColorBrush tint_brush)
                     {
-                        R = (byte)(R + (255 - R) * brush.Color.R / 255);
-                        G = (byte)(G + (255 - G) * brush.Color.G / 255);
-                        B = (byte)(B + (255 - B) * brush.Color.B / 255);
+                        r = (byte)(r + (255 - r) * tint_brush.Color.R / 255);
+                        g = (byte)(g + (255 - g) * tint_brush.Color.G / 255);
+                        b = (byte)(b + (255 - b) * tint_brush.Color.B / 255);
                     }
-                    Brush b = new SolidColorBrush(Color.FromArgb(A, R, G, B));
+                    Brush blended_brush = new SolidColorBrush(Color.FromArgb(a, r, g, b));
 
                     ret.Add(new Path
                     {
                         Stroke = null,
-                        Fill = b,
-                        Data = r.BuildGeometry()
+                        Fill = blended_brush,
+                        Data = MakeGlyphRun(sub_gid).BuildGeometry(),
                     });
                 }
             }
             else
             {
-                GlyphRun r = new GlyphRun(m_gtf, 0, false, size,
-                                          new[] { gid },
-                                          origin, new[] { 0.0 },
-                                          null, null, null,
-                                          null, null, null);
                 ret.Add(new Path
                 {
                     Stroke = null,
                     Fill = fallback_brush,
-                    Data = r.BuildGeometry()
+                    Data = MakeGlyphRun(gid).BuildGeometry(),
                 });
             }
 
             return ret;
         }
+
+        private GlyphRun MakeGlyphRun(ushort gid)
+            // We do not need to provide advances since we only render one glyph.
+            => new GlyphRun(m_gtf, 0, false, 1.0, new[] { gid }, new Point(), new[] { 0.0 },
+                            null, null, null, /* FIXME: check what this is? */ null, null, null);
 
         protected GlyphTypeface m_gtf;
         protected Typography.OpenFont.Typeface m_openfont;
