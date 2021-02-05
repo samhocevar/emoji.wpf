@@ -76,6 +76,23 @@ namespace Emoji.Wpf
         }
 
         /// <summary>
+        /// Convert a sequence into a context-aware sequence
+        /// </summary>
+        public static IEnumerable<(T Previous, T Current, T Next)> WithPreviousAndNext<T>(this IEnumerable<T> elements)
+        {
+            var queue = new Queue<T>(2);
+            queue.Enqueue(default(T));
+            foreach (var e in elements)
+            {
+                if (queue.Count > 1)
+                    yield return (queue.Dequeue(), queue.Peek(), e);
+                queue.Enqueue(e);
+            }
+            if (queue.Count > 1)
+                yield return (queue.Dequeue(), queue.Peek(), default(T));
+        }
+
+        /// <summary>
         /// Convert a sequence into a hashset
         /// </summary>
         internal static HashSet<T> ToHashSet<T>(this IEnumerable<T> elements,
