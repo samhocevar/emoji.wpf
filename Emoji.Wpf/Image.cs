@@ -58,10 +58,14 @@ namespace Emoji.Wpf
             // FIXME: height is computed using the Windows typeface object
             // and width using Typography.OpenFont. Try to use only one.
             var scale = font.GetScale(0.75); // 1px = 0.75pt
-            width = glyphplanlist.WithPreviousAndNext()
-                                 .Where(t => t.Current.glyphIndex != font.ZwjGlyph
-                                              && t.Next.glyphIndex != font.ZwjGlyph)
-                                 .Sum(t => t.Current.AdvanceX) * scale;
+            width = glyphplanlist.Where(g => g.glyphIndex != font.ZwjGlyph)
+                                 .Sum(g => g.AdvanceX) * scale;
+            if (EmojiData.RenderingFallbackHack)
+            {
+                width -= glyphplanlist.WithPreviousAndNext()
+                                      .Where(t => t.Next.glyphIndex == font.ZwjGlyph)
+                                      .Sum(t => t.Current.AdvanceX) * scale;
+            }
             height = font.Height;
 
             // Clip to the render area, and draw a transparent rectangle to avoid
