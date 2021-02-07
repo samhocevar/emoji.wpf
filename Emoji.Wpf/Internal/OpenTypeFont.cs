@@ -56,8 +56,8 @@ namespace Emoji.Wpf
             return ret;
         }
 
-        internal List<Path> MakePaths(ushort gid, Brush fallback_brush)
-            => m_fonts[0].MakePaths(gid, fallback_brush);
+        internal IEnumerable<Drawing> DrawGlyph(ushort gid, Brush fallback_brush)
+            => m_fonts[0].DrawGlyph(gid, fallback_brush);
 
         /// <summary>
         /// A cache of GlyphPlanList objects, indexed by source strings. Should
@@ -164,10 +164,8 @@ namespace Emoji.Wpf
         public double Baseline => m_gtf.Baseline;
         public ushort ZwjGlyph { get; private set; }
 
-        public List<Path> MakePaths(ushort gid, Brush fallback_brush)
+        public IEnumerable<Drawing> DrawGlyph(ushort gid, Brush fallback_brush)
         {
-            var ret = new List<Path>();
-
             if (m_openfont.COLRTable != null && m_openfont.CPALTable != null
                  && m_openfont.COLRTable.LayerIndices.TryGetValue(gid, out var layer_index))
             {
@@ -186,32 +184,22 @@ namespace Emoji.Wpf
                         b = (byte)(b + (255 - b) * tint_brush.Color.B / 255);
                     }
                     Brush blended_brush = new SolidColorBrush(Color.FromArgb(a, r, g, b));
-
-                    ret.Add(new Path
-                    {
-                        Stroke = null,
-                        Fill = blended_brush,
-                        Data = MakeGlyphRun(sub_gid).BuildGeometry(),
-                    });
+                    yield return MakeGlyphRunDrawing(blended_brush, sub_gid);
                 }
             }
             else
             {
-                ret.Add(new Path
-                {
-                    Stroke = null,
-                    Fill = fallback_brush,
-                    Data = MakeGlyphRun(gid).BuildGeometry(),
-                });
+                yield return MakeGlyphRunDrawing(fallback_brush, gid);
             }
-
-            return ret;
         }
 
-        private GlyphRun MakeGlyphRun(ushort gid)
+        private GlyphRunDrawing MakeGlyphRunDrawing(Brush brush, ushort gid)
+        {
             // We do not need to provide advances since we only render one glyph.
-            => new GlyphRun(m_gtf, 0, false, 1.0, new[] { gid }, new Point(), new[] { 0.0 },
-                            null, null, null, /* FIXME: check what this is? */ null, null, null);
+            var gr = new GlyphRun(m_gtf, 0, false, 1.0, new[] { gid }, new Point(), new[] { 0.0 },
+                                  null, null, null, /* FIXME: check what this is? */ null, null, null);
+            return new GlyphRunDrawing(brush, gr);
+        }
 
         protected GlyphTypeface m_gtf;
         protected Typography.OpenFont.Typeface m_openfont;

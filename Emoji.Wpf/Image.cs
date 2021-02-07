@@ -13,7 +13,6 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
-using Typography.TextLayout;
 
 using Controls = System.Windows.Controls;
 
@@ -102,10 +101,8 @@ namespace Emoji.Wpf
                 }
 
                 dc.PushTransform(new MatrixTransform(ds, 0, 0, ds, xpos, ypos));
-
-                foreach (var p in font.MakePaths(g.glyphIndex, brush))
-                    dc.DrawGeometry(p.Fill, null, p.Data);
-
+                foreach (var drawing in font.DrawGlyph(g.glyphIndex, brush))
+                    dc.DrawDrawing(drawing);
                 dc.Pop();
 
                 if (EmojiData.RenderingFallbackHack && t.Next.glyphIndex == font.ZwjGlyph)
