@@ -56,7 +56,7 @@ namespace Emoji.Wpf
             return ret;
         }
 
-        internal IEnumerable<Drawing> DrawGlyph(ushort gid, Brush fallback_brush)
+        internal IEnumerable<(GlyphRun, Brush)> DrawGlyph(ushort gid, Brush fallback_brush)
             => m_fonts[0].DrawGlyph(gid, fallback_brush);
 
         /// <summary>
@@ -164,7 +164,7 @@ namespace Emoji.Wpf
         public double Baseline => m_gtf.Baseline;
         public ushort ZwjGlyph { get; private set; }
 
-        public IEnumerable<Drawing> DrawGlyph(ushort gid, Brush fallback_brush)
+        public IEnumerable<(GlyphRun, Brush)> DrawGlyph(ushort gid, Brush fallback_brush)
         {
             if (m_openfont.COLRTable != null && m_openfont.CPALTable != null
                  && m_openfont.COLRTable.LayerIndices.TryGetValue(gid, out var layer_index))
@@ -184,22 +184,19 @@ namespace Emoji.Wpf
                         b = (byte)(b + (255 - b) * tint_brush.Color.B / 255);
                     }
                     Brush blended_brush = new SolidColorBrush(Color.FromArgb(a, r, g, b));
-                    yield return MakeGlyphRunDrawing(blended_brush, sub_gid);
+                    yield return (MakeGlyphRun(sub_gid), blended_brush);
                 }
             }
             else
             {
-                yield return MakeGlyphRunDrawing(fallback_brush, gid);
+                yield return (MakeGlyphRun(gid), fallback_brush);
             }
         }
 
-        private GlyphRunDrawing MakeGlyphRunDrawing(Brush brush, ushort gid)
-        {
+        private GlyphRun MakeGlyphRun(ushort gid)
             // We do not need to provide advances since we only render one glyph.
-            var gr = new GlyphRun(m_gtf, 0, false, 1.0, new[] { gid }, new Point(), new[] { 0.0 },
-                                  null, null, null, /* FIXME: check what this is? */ null, null, null);
-            return new GlyphRunDrawing(brush, gr);
-        }
+            => new GlyphRun(m_gtf, 0, false, 1.0, new[] { gid }, new Point(), new[] { 0.0 },
+                            null, null, null, /* FIXME: check what this is? */ null, null, null);
 
         protected GlyphTypeface m_gtf;
         protected Typography.OpenFont.Typeface m_openfont;

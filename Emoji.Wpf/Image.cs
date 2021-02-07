@@ -101,8 +101,13 @@ namespace Emoji.Wpf
                 }
 
                 dc.PushTransform(new MatrixTransform(ds, 0, 0, ds, xpos, ypos));
-                foreach (var drawing in font.DrawGlyph(g.glyphIndex, brush))
-                    dc.DrawDrawing(drawing);
+                foreach ((var gr, var br) in font.DrawGlyph(g.glyphIndex, brush))
+                {
+                    if (EmojiData.SubPixelRendering)
+                        dc.DrawGlyphRun(br, gr);
+                    else
+                        dc.DrawGeometry(br, null, gr.BuildGeometry());
+                }
                 dc.Pop();
 
                 if (EmojiData.RenderingFallbackHack && t.Next.glyphIndex == font.ZwjGlyph)

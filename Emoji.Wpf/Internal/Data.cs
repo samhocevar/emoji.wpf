@@ -38,6 +38,8 @@ namespace Emoji.Wpf
 
         public static bool RenderingFallbackHack { get; } = true;
 
+        public static bool SubPixelRendering { get; set; } = true;
+
         // FIXME: should we lazy load this? If the user calls Load() later, then
         // this first Load() call will have been for nothing.
         static EmojiData() => Load();
