@@ -10,7 +10,8 @@
    code required.
  - **Colour emoji**! 😨 💩 🍰 ✈️ ✏️ 📞 ☘️
  - **Multiracial family emoji**! 👩🏿‍👩🏻‍👦🏽 👨🏻‍👩🏿‍👧🏽‍👦🏽 👩🏻‍👶🏽
- - **Full vector emoji**! Render at huge sizes without quality loss. Render at small sizes with subpixel antialiasing.
+ - **Full vector emoji**! Render at huge sizes without quality loss.
+ - Optional support for subpixel antialiasing.
  - **Lightweight**; does not embed a font or emoji images; just uses the system font.
  - Works with **old .NET versions** such as .NET Framework 4.0.
  - Can work on **Windows 7 or Windows 8** by installing the Segoe UI Emoji font in
@@ -66,7 +67,7 @@ useful and robust library if given enough care. Any help appreciated!
 ### Version changelog
 
  - next release:
-   - subpixel glyph rendering
+   - optional subpixel glyph rendering
  - v0.2.5 (2021/01/29):
    - minor adjustments in `emoji:Picker`
  - v0.2.4 (2021/01/28):
