@@ -1,26 +1,58 @@
 #!/bin/bash
 
-set -x
-
 # Required for this tool:
 # - inkscape
-# - rsvg-convert (pacman -S mingw-w64-x86_64-librsvg)
+# - bc (packman -S bc)
 
-PATH="$PATH:/c/Program Files/Inkscape/bin"
+calc() {
+  echo "scale=10; $*" | bc
+}
 
-for x in us gb fr sk sv; do
-    SRC="Emoji.Wpf/CountryFlags/svg/${x}.svg"
-    DST="${x}_mod.svg"
-    #read -r x y w h <<< $(cat "$SRC" | sed -ne 's/.*viewBox="\([^"]*\)".*/\1/p')
-    "/c/Program Files/Inkscape/bin/inkscape.exe" --query-all "$SRC" 
-    #echo "$x $y $w $h"
-    #w2=23.068
-    #w2=23068
-    #h2="$(echo 23.5284 '*' $h / $w '*' 1000 | bc | sed 's/[.].*//')"
-    "/c/Program Files/Inkscape/bin/inkscape.exe" "$SRC" \
-          --batch-process --export-filename="$DST" --actions='select-all;
-                     SelectionUnGroup;SelectionUnGroup;SelectionUnGroup;SelectionUnGroup;SelectionUnGroup;
-                     ObjectToPath;StrokeToPath;
-                     SelectionGroup'
+mkdir -p flags/tmp
+
+SRCDIR="Emoji.Wpf/CountryFlags/svg"
+PATH="/c/Program Files/Inkscape/bin:$PATH"
+
+for x in us $(cd "$SRCDIR" && ls *.svg | sed 's/[.]svg//'); do
+#for x in sk fr gb de be us; do
+    SRC="$SRCDIR/${x}.svg"
+    TMP="flags/tmp/${x}.svg"
+    DST="flags/${x}.svg"
+
+    echo "Processing: $SRC"
+
+    # Ensure all shapes have a fill and stroke defined, or we will get artifacts
+    # when bending the final path.
+    sed -e 's,<svg[^>]*>,&<g fill="none" stroke="none">,; s,</svg>,</g>&,' < "$SRC" > "$TMP"
+
+    # Query viewbox using sed, it’s a lot faster than inkscape
+    read -r x y w h <<< $(cat "$TMP" | sed -ne 's/.*viewBox="\([^"]*\)".*/\1/p')
+    echo "  original box $x $y $w $h"
+    wscale="$(calc "230.68 / $w")"
+
+    "/c/Program Files/Inkscape/bin/inkscape.exe" "$TMP" \
+          --batch-process --actions="select-clear;
+                     EditSelectAll; SelectionUnGroup; EditDeselect;
+                     EditSelectAll; SelectionUnGroup; EditDeselect;
+                     EditSelectAll; SelectionUnGroup; EditDeselect;
+                     EditSelectAll; SelectionUnGroup; EditDeselect;
+                     EditSelectAll; SelectionUnGroup; EditDeselect;
+                     EditSelectAll; SelectionUnGroup; EditDeselect;
+                     transform-translate: -${x},-${y};
+                     transform-scale: $(calc "$wscale * $w - $w");
+                     FitCanvasToSelection;
+                     SelectionGroup;
+" \
+          --export-filename="$DST" 2>/dev/null
+
+    read -r x y w h <<< $(cat "$DST" | sed -ne 's/.*viewBox="\([^"]*\)".*/\1/p')
+    echo "  new box $x $y $w $h"
 done
 
+cat >/dev/null << EOF
+                     EditSelectAll; ObjectToPath;
+EditCopy;
+file-open: flag-simple2.svg;
+NextWindow;
+EditPaste;
+EOF
