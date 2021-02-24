@@ -10,5 +10,7 @@ bin/
 *.opendb
 *.sdf
 *.VC.db
+# Temporary files
+gitversion.json
 # NuGet cruft
 *.nupkg
