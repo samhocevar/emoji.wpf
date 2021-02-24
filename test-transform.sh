@@ -13,8 +13,8 @@ mkdir -p flags/tmp
 SRCDIR="Emoji.Wpf/CountryFlags/svg"
 PATH="/c/Program Files/Inkscape/bin:$PATH"
 
-for x in us $(cd "$SRCDIR" && ls *.svg | sed 's/[.]svg//'); do
-#for x in sk fr gb de be us; do
+#for x in us $(cd "$SRCDIR" && ls *.svg | sed 's/[.]svg//'); do
+for x in ba sk fr gb de be us; do
     SRC="$SRCDIR/${x}.svg"
     TMP="flags/tmp/${x}.svg"
     DST="flags/${x}.svg"
@@ -32,12 +32,7 @@ for x in us $(cd "$SRCDIR" && ls *.svg | sed 's/[.]svg//'); do
 
     "/c/Program Files/Inkscape/bin/inkscape.exe" "$TMP" \
           --batch-process --actions="select-clear;
-                     EditSelectAll; SelectionUnGroup; EditDeselect;
-                     EditSelectAll; SelectionUnGroup; EditDeselect;
-                     EditSelectAll; SelectionUnGroup; EditDeselect;
-                     EditSelectAll; SelectionUnGroup; EditDeselect;
-                     EditSelectAll; SelectionUnGroup; EditDeselect;
-                     EditSelectAll; SelectionUnGroup; EditDeselect;
+                     EditSelectAll; EditUnlinkCloneRecursive;
                      transform-translate: -${x},-${y};
                      transform-scale: $(calc "$wscale * $w - $w");
                      FitCanvasToSelection;

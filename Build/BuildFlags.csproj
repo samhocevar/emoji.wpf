@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A1AD34BF-A47B-42D2-B9DB-DF382B1D8F0C}</ProjectGuid>
+    <ProjectGuid>{D8525700-C6E8-4FB0-A842-A0895023985C}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>Tiny</RootNamespace>
-    <AssemblyName>Tiny</AssemblyName>
+    <RootNamespace>BuildFlags</RootNamespace>
+    <AssemblyName>BuildFlags</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -62,19 +62,11 @@
       <HintPath>..\packages\SharpVectors.1.7.1\lib\net40\SharpVectors.Runtime.Wpf.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Xaml" />
     <Reference Include="System.XML" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Tiny.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Compile Include="Tiny.xaml.cs">
-      <DependentUpon>Tiny.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="BuildFlags.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Emoji.Wpf\Emoji.Wpf.csproj">
@@ -91,7 +83,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <PackageReference Include="SharpVectors">
+      <Version>1.7.1</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
