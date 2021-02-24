@@ -22,7 +22,7 @@
   <Product>Emoji.Wpf</Product>
   <Copyright>Copyright © 2017—2021 Sam Hocevar</Copyright>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net40;net45;netcoreapp3.1;net50-windows7</TargetFrameworks>
+    <TargetFrameworks>net40;netcoreapp3.1;net50-windows</TargetFrameworks>
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
   <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
   <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
@@ -35,7 +35,7 @@
   <Target Name="CompressResources" BeforeTargets="BeforeBuild" Inputs="UnicodeEmoji\emoji-test.txt" Outputs="$(OutputPath)\emoji-test.txt.gz">
     <GZipTask InputFile="UnicodeEmoji\emoji-test.txt" OutputFile="$(OutputPath)\emoji-test.txt.gz" />
   </Target>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net40' or '$(TargetFramework)' == 'net45'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
