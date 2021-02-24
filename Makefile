@@ -12,7 +12,7 @@ all:
 	$(MSBUILD) Emoji.Wpf.sln -t:clean -p:configuration=$(CONFIG)
 	$(MSBUILD) Emoji.Wpf.sln -t:build -p:configuration=$(CONFIG)
 	# Disable warning 5128 until https://github.com/NuGet/Home/issues/8713 is fixed
-	nuget pack Emoji.Wpf/Emoji.Wpf.csproj -Properties Configuration=Release -Properties NoWarn=NU5128
+	dotnet pack --no-build -c Release Emoji.Wpf/Emoji.Wpf.csproj
 
 clean:
 	$(DEVENV) Emoji.Wpf.sln //clean $(CONFIG)
