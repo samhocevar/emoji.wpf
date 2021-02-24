@@ -1,8 +1,7 @@
 # Requirements:
-#  - Visual Studio (ensure devenv.exe is in %PATH%)
-#  - NuGet (ensure nuget.exe is in %PATH%)
+#  - MSBuild (found through vswhere.exe)
+#  - dotnet (ensure dotnet.exe is in %PATH%)
 
-#VERSION = $(shell sed -ne 's/.*<ApplicationVersion>\([^<]*\).*/\1/p' build.config)
 CONFIG = Release
 
 VSWHERE = "${ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
@@ -11,10 +10,9 @@ MSBUILD = "$(shell $(VSWHERE) -find msbuild | head -n 1)/Current/Bin/MSBuild.exe
 all:
 	$(MSBUILD) Emoji.Wpf.sln -t:clean -p:configuration=$(CONFIG)
 	$(MSBUILD) Emoji.Wpf.sln -t:build -p:configuration=$(CONFIG)
-	# Disable warning 5128 until https://github.com/NuGet/Home/issues/8713 is fixed
-	dotnet pack --no-build -c Release Emoji.Wpf/Emoji.Wpf.csproj
+	dotnet pack --no-build -c $(CONFIG) Emoji.Wpf/Emoji.Wpf.csproj
 
 clean:
-	$(DEVENV) Emoji.Wpf.sln //clean $(CONFIG)
+	$(MSBUILD) Emoji.Wpf.sln -t:clean -p:configuration=$(CONFIG)
 	rm -f *.nupkg
 
