@@ -17,31 +17,42 @@
     </Task>
   </UsingTask>
   <PropertyGroup>
-  <Title>Emoji.Wpf</Title>
-  <Description>Emoji rendering for WPF applications</Description>
-  <Product>Emoji.Wpf</Product>
-  <Copyright>Copyright © 2017—2021 Sam Hocevar</Copyright>
+    <Title>Emoji.Wpf</Title>
+    <Description>Emoji rendering for WPF applications</Description>
+    <Product>Emoji.Wpf</Product>
+    <Copyright>Copyright © 2017—2021 Sam Hocevar</Copyright>
     <OutputType>Library</OutputType>
     <TargetFrameworks>net40;netcoreapp3.1;net50-windows</TargetFrameworks>
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
-  <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
-  <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
     <UseWPF>true</UseWPF>
 
-  <!--Remove this section when https://github.com/nuget/home/issues/3891 is resolved -->
-  <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+    <!--Remove this section when https://github.com/nuget/home/issues/3891 is resolved -->
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
 
   </PropertyGroup>
-  <Target Name="CompressResources" BeforeTargets="BeforeBuild" Inputs="UnicodeEmoji\emoji-test.txt" Outputs="$(OutputPath)\emoji-test.txt.gz">
-    <GZipTask InputFile="UnicodeEmoji\emoji-test.txt" OutputFile="$(OutputPath)\emoji-test.txt.gz" />
+  <Target Name="CompressResources" BeforeTargets="BeforeBuild"
+          Inputs="UnicodeEmoji\emoji-test.txt"
+          Outputs="$(OutputPath)\emoji-test.txt.gz">
+    <GZipTask InputFile="UnicodeEmoji\emoji-test.txt"
+              OutputFile="$(OutputPath)\emoji-test.txt.gz" />
   </Target>
   <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="WinFonts\webdings.txt" />
-    <None Remove="WinFonts\wingdings.txt" />
-    <None Remove="$(OutputPath)\emoji-test.txt.gz" />
+    <Compile Remove="UnicodeCLDR\**" />
+    <Compile Remove="UnicodeEmoji\**" />
+    <EmbeddedResource Remove="UnicodeCLDR\**" />
+    <EmbeddedResource Remove="UnicodeEmoji\**" />
+    <None Remove="UnicodeCLDR\**" />
+    <None Remove="UnicodeEmoji\**" />
+    <Page Remove="UnicodeCLDR\**" />
+    <Page Remove="UnicodeEmoji\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="UnicodeEmoji\emoji-test.txt" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="WinFonts\webdings.txt" LogicalName="webdings.txt" />
@@ -62,7 +73,7 @@
   <!--Remove this section when https://github.com/nuget/home/issues/3891 is resolved -->
   <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="BuildOnlySettings;ResolveReferences">
     <ItemGroup>
-    <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')->WithMetadataValue('PrivateAssets', 'All'))" />
+    <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')-&gt;WithMetadataValue('PrivateAssets', 'All'))" />
     </ItemGroup>
   </Target>
 
