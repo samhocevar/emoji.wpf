@@ -45,31 +45,52 @@ function flattenShapes(svg_text) {
     let tmp = document.getElementById('tmp');
     tmp.innerHTML = svg_text;
     flatten(tmp.children[0], true, false, false, 4);
-    let ret = '' + tmp.InnerHTML;
+    let ret = svgToText(tmp.children[0]);
     tmp.innerHTML = '';
     return ret;
 }
 
-var _pre1 = document.createTextNode('');
-var _pre2 = document.createTextNode('');
-var _pre3 = document.createTextNode('');
 
-document.getElementById('pre1').appendChild(_pre1);
-document.getElementById('pre2').appendChild(_pre2);
-document.getElementById('pre3').appendChild(_pre3);
+function debugSvg(name, svg_text) {
+    let anchor = document.getElementById('anchor');
+
+    let div = document.createElement('div');
+    div.innerHTML = `<h4>${name}:</h4>`;
+    anchor.appendChild(div);
+
+    let canvas_holder = document.createElement('svg');
+    let canvas = SVG(canvas_holder);
+    canvas.svg(svg_text);
+    anchor.appendChild(canvas_holder);
+
+    let pre = document.createElement('pre');
+    let text_node = document.createTextNode(formatXml(svg_text));
+    pre.appendChild(text_node);
+    anchor.appendChild(pre);
+}
 
 function handleSvg(svg) {
+    let anchor = document.getElementById('anchor');
+    anchor.innerHTML = '';
+
+    // Load clicked SVG as text
     let text = svgToText(svg);
-    _pre1.replaceData(0, -1, text);
+
+    debugSvg('Original', text);
 
     text = flattenShapes(text);
-    _pre2.replaceData(0, -1, formatXml(text));
+    debugSvg('Flatten shapes', text);
 
     text = resolveClones(text);
-    _pre3.replaceData(0, -1, formatXml(text));
+    debugSvg('Resolve clones', text);
 
-    text = flattenShapes(text);
-    _pre3.replaceData(0, -1, formatXml(text));
+    //_pre2.replaceData(0, -1, formatXml(text));
+    //let canvas3 = SVG('#canvas3');
+    //canvas3.clear();
+    //canvas3.svg(text);
+
+    //text = flattenShapes(text);
+    //_pre3.replaceData(0, -1, formatXml(text));
 }
 
 svgs = document.getElementsByTagName('svg');

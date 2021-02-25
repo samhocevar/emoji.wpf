@@ -8,6 +8,9 @@ index.html: header.inc .allflags.inc footer.inc
 
 .allflags.inc:
 	echo '' > $@
-	for x in `cd $(SVGDIR) && ls | grep '^.r'`; do \
+	for x in `cd $(SVGDIR) && ls | grep '^.r' | grep ..`; do \
 		cat "$(SVGDIR)/$$x" | sed "s/^<svg /<svg id='$$x' width='30' /" >> $@; \
 	done
+
+clean:
+	rm -f index.html .allflags.inc
