@@ -11,7 +11,7 @@ index.html: header.inc .allflags.inc footer.inc
 .allflags.inc:
 	echo '' > $@
 	for x in $(SVGFILES); do \
-		cat "$(SVGDIR)/$$x" | sed "s/^<svg /<svg id='$$x' width='30' /" >> $@; \
+		cat "$(SVGDIR)/$$x" | sed "s/^<svg /<svg id='$$x' width='50' /" >> $@; \
 	done
 
 clean:

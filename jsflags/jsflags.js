@@ -9,7 +9,7 @@ function formatXml(xml) {
     xml.split(/>\s*</).forEach(function(node) {
         if (node.match( /^\/\w/ )) indent = indent.substring(tab.length); // decrease indent by one 'tab'
         ret += indent + '<' + node + '>\r\n';
-        if (node.match( /^<?\w[^>]*[^\/]$/ )) indent += tab;              // increase indent
+        if (node.match( /^<?\w([^>/]*|[^>]*[^/])$/ )) indent += tab;              // increase indent
     });
     ret = ret.replace( /(<[^\/>][^>]*[^\/>]>)\s*(<\/)/g, '$1$2');
     return ret.substring(1, ret.length - 3);
@@ -75,26 +75,24 @@ function flattenShapes(svg_text) {
 
 
 function debugSvg(name, svg_text) {
-    let anchor = document.getElementById('anchor');
-
     let div = document.createElement('div');
     div.innerHTML = `<h4>${name}:</h4>`;
-    anchor.appendChild(div);
+    _anchor.appendChild(div);
 
     let canvas_holder = document.createElement('svg');
     let canvas = SVG(canvas_holder);
     canvas.svg(svg_text);
-    anchor.appendChild(canvas_holder);
+    _anchor.appendChild(canvas_holder);
 
     let pre = document.createElement('pre');
     let text_node = document.createTextNode(formatXml(svg_text));
     pre.appendChild(text_node);
-    anchor.appendChild(pre);
+    _anchor.appendChild(pre);
 }
 
 function handleSvg(svg) {
-    let anchor = document.getElementById('anchor');
-    anchor.innerHTML = '';
+    _anchor = document.getElementById('anchor');
+    _anchor.innerHTML = '';
 
     // Load clicked SVG as text
     let text = svgToText(svg);
