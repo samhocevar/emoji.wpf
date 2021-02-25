@@ -16,25 +16,48 @@ function formatXml(xml) {
 }
 
 // Replace all <use> tags with their targets. Source: SVG.js document.
-function resolveClones(svg_text) {
+function substituteClones(svg_text) {
     let ids = {}
     let f = function(e) {
         if (e.type == 'use') {
             let tid = e.attr('xlink:href').replace('#','');
             let clone = ids[tid].clone();
-            for (let attr in e.attr())
-                if (attr != 'xlink:href')
-                    clone.attr(attr, e.attr(attr));
             clone.attr('id', null);
-            e.replace(clone);
-        } else if (e.node.id && e.type != 'svg') {
+            let g = _draw.group();
+            g.add(clone);
+            for (let attr in e.attr()) {
+                let val = e.attr(attr);
+                // See kr.svg: <use ... y="44"/>
+                if (attr == 'x')
+                    g.translate(val, 0);
+                else if (attr == 'y')
+                    g.translate(0, val);
+                else if (attr != 'xlink:href')
+                    g.attr(attr, val);
+            }
+            e.replace(g);
+        } else if (e.node.id && e.type != 'svg' && e.type != 'clipPath') {
             ids[e.node.id] = e;
             e.attr('id', null);
         }
         for (let e2 of e.children())
             f(e2, ids);
     }
-    let _draw = SVG('#canvas')
+    var _draw = SVG('#canvas')
+    _draw.clear();
+    _draw.svg(svg_text);
+    f(_draw);
+    return _draw.children()[0].svg();
+}
+
+function collapseGroups(svg_text) {
+    let f = function(e) {
+        for (let e2 of e.children())
+            f(e2);
+        if (e.type == 'g' && e.node.attributes.length == 0)
+            e.ungroup();
+    }
+    var _draw = SVG('#canvas')
     _draw.clear();
     _draw.svg(svg_text);
     f(_draw);
@@ -78,11 +101,14 @@ function handleSvg(svg) {
 
     debugSvg('Original', text);
 
+    text = substituteClones(text);
+    debugSvg('Substitute clones', text);
+
     text = flattenShapes(text);
     debugSvg('Flatten shapes', text);
 
-    text = resolveClones(text);
-    debugSvg('Resolve clones', text);
+    text = collapseGroups(text);
+    debugSvg('Collapse groups', text);
 
     //_pre2.replaceData(0, -1, formatXml(text));
     //let canvas3 = SVG('#canvas3');
