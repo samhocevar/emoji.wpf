@@ -44,8 +44,18 @@ function substituteClones(svg_text) {
             if (transform !== null)
                 g.transform(transform, true);
             e.replace(g);
-            if (g.node.attributes.length == 0)
+            if (e.node.id) {
+                // See sb.svg for a <use> node that itself has an id attr
+                g.node.id = e.node.id;
+                ids[g.node.id] = g;
+            }
+            if (g.node.attributes.length == 0) {
                 g.replace(clone);
+                if (g.node.id) {
+                    clone.node.id = g.node.id;
+                    ids[clone.node.id] = clone;
+                }
+            }
         } else if (e.node.id && e.type != 'svg' && e.type != 'clipPath') {
             ids[e.node.id] = e;
             e.attr('id', null);
