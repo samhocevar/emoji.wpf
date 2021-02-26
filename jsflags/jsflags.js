@@ -15,6 +15,16 @@ function formatXml(xml) {
     return ret.substring(1, ret.length - 3);
 }
 
+function applyToSvg(func, text) {
+    let canvas_holder = document.createElement('svg');
+    let canvas = SVG(canvas_holder);
+    canvas.svg(text);
+    func(canvas);
+    let ret = canvas.children()[0].svg();
+    canvas_holder.remove();
+    return ret;
+}
+
 // Replace all <use> tags with their targets.
 function substituteClones(svg_text) {
     let ids = {}
@@ -23,7 +33,7 @@ function substituteClones(svg_text) {
             let tid = e.attr('xlink:href').replace('#','');
             let clone = ids[tid].clone();
             clone.attr('id', null);
-            let g = _draw.group();
+            let g = e.root().group();
             g.add(clone);
             let x = 0, y = 0, transform = null;
             for (let attr in e.attr()) {
@@ -64,11 +74,7 @@ function substituteClones(svg_text) {
         for (let e2 of e.children())
             f(e2, ids);
     }
-    var _draw = SVG('#canvas')
-    _draw.clear();
-    _draw.svg(svg_text);
-    f(_draw);
-    return _draw.children()[0].svg();
+    return applyToSvg(f, svg_text);
 }
 
 function collapseGroups(svg_text) {
@@ -78,26 +84,22 @@ function collapseGroups(svg_text) {
         if (e.type == 'g' && e.node.attributes.length == 0)
             e.ungroup();
     }
-    var _draw = SVG('#canvas')
-    _draw.clear();
-    _draw.svg(svg_text);
-    f(_draw);
-    return _draw.children()[0].svg();
+    return applyToSvg(f, svg_text);
 }
 
 function flattenShapes(svg_text) {
-    let tmp = document.getElementById('tmp');
+    let tmp = document.createElement('div');
+    document.body.appendChild(tmp);
     tmp.innerHTML = svg_text;
     flatten(tmp.children[0], true, false, false, 4);
     let ret = svgToText(tmp.children[0]);
-    tmp.innerHTML = '';
+    tmp.remove();
     // Round all numbers to 4 digits
     ret = ret.replace(/[0-9]*[.][0-9]{4,}(e[-+]?[0-9]+)?/g, function(match, capture) {
         return (Math.round(match * 10000) / 10000).toString();
     });
     return ret;
 }
-
 
 function debugSvg(name, svg_text) {
     let div = document.createElement('div');
@@ -132,11 +134,6 @@ function handleSvg(svg) {
 
     text = collapseGroups(text);
     debugSvg('Collapse groups', text);
-
-    //_pre2.replaceData(0, -1, formatXml(text));
-    //let canvas3 = SVG('#canvas3');
-    //canvas3.clear();
-    //canvas3.svg(text);
 
     //text = flattenShapes(text);
     //_pre3.replaceData(0, -1, formatXml(text));
