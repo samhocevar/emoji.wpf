@@ -25,17 +25,27 @@ function substituteClones(svg_text) {
             clone.attr('id', null);
             let g = _draw.group();
             g.add(clone);
+            let x = 0, y = 0, transform = null;
             for (let attr in e.attr()) {
                 let val = e.attr(attr);
                 // See kr.svg: <use ... y="44"/>
                 if (attr == 'x')
-                    g.translate(val, 0);
+                    x = val;
                 else if (attr == 'y')
-                    g.translate(0, val);
+                    y = val;
+                // Best demonstrated in cw.svg
+                else if (attr == 'transform')
+                    transform = e.transform();
                 else if (attr != 'xlink:href')
                     g.attr(attr, val);
             }
+            if (x != 0 || y != 0)
+                g.transform({translateX: x, translateY: y})
+            if (transform !== null)
+                g.transform(transform, true);
             e.replace(g);
+            if (g.node.attributes.length == 0)
+                g.replace(clone);
         } else if (e.node.id && e.type != 'svg' && e.type != 'clipPath') {
             ids[e.node.id] = e;
             e.attr('id', null);
