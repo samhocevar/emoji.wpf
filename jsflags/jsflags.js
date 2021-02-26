@@ -15,7 +15,7 @@ function formatXml(xml) {
     return ret.substring(1, ret.length - 3);
 }
 
-// Replace all <use> tags with their targets. Source: SVG.js document.
+// Replace all <use> tags with their targets.
 function substituteClones(svg_text) {
     let ids = {}
     let f = function(e) {
@@ -49,6 +49,7 @@ function substituteClones(svg_text) {
                 g.node.id = e.node.id;
                 ids[g.node.id] = g;
             }
+            // If the resulting group has no attributes, collapse it immediately
             if (g.node.attributes.length == 0) {
                 g.replace(clone);
                 if (g.node.id) {
@@ -90,6 +91,10 @@ function flattenShapes(svg_text) {
     flatten(tmp.children[0], true, false, false, 4);
     let ret = svgToText(tmp.children[0]);
     tmp.innerHTML = '';
+    // Round all numbers to 4 digits
+    ret = ret.replace(/[0-9]*[.][0-9]{4,}(e[-+]?[0-9]+)?/g, function(match, capture) {
+        return (Math.round(match * 10000) / 10000).toString();
+    });
     return ret;
 }
 
