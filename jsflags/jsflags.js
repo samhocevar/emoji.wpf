@@ -25,6 +25,27 @@ function applyToSvg(func, text) {
     return ret;
 }
 
+function correctUngroup(g) {
+    for (let e of g.children())
+        g.before(e);
+    g.remove();
+}
+
+// Return true if the two elements are paths with the same attributes
+function sameAttributes(p1, p2) {
+    if (p1.type != 'path' || p2.type != 'path')
+         return false;
+    // List obtained by picking from the output of this script:
+    //   for x in ../Emoji.Wpf/CountryFlags/svg/*svg; do sed 's/<[^g][^>]*>//g' $x | tr ' "' '\n' \
+    //    | grep = | sort | uniq; done | sort | uniq -c | sort -n
+    attrs = ['stroke-linejoin', 'stroke-linecap', 'clip-path', 'stroke-width', 'stroke', 'fill'];
+    for (let name of attrs) {
+        if (p1.attr(name) != p2.attr(name))
+            return false;
+    }
+    return true;
+}
+
 // Replace all <use> tags with their targets.
 function substituteClones(svg_text) {
     let ids = {}
@@ -81,10 +102,52 @@ function collapseGroups(svg_text) {
     let f = function(e) {
         for (let e2 of e.children())
             f(e2);
-        if (e.type == 'g' && e.node.attributes.length == 0)
-            e.ungroup();
+        if (e.type == 'g' && e.node.attributes.length == 0) {
+            //e.ungroup();
+            correctUngroup(e);
+        }
     }
     return applyToSvg(f, svg_text);
+}
+
+function mergePaths(svg_text) {
+    let raph_tmp = document.createElement('div');
+    raph_tmp.id = 'raphael_canvas';
+    document.body.appendChild(raph_tmp);
+    let paper = Raphael('raphael_canvas', 250, 250);
+
+    let f = function(e) {
+        let prev = null;
+        let todelete = [];
+        for (let ch of e.children()) {
+            if (prev && sameAttributes(prev, ch)) {
+                let path1 = paper.path(prev.attr('d'));
+                let path2 = paper.path(ch.attr('d'));
+                console.info('merge!');
+                console.info(prev.attr('d'));
+                console.info(ch.attr('d'));
+                try {
+                    let merged = paper.union(path1, path2);
+                    console.info(merged);
+                    if (merged) {
+                        ch.attr('d', merged);
+                        todelete.push(prev);
+                    }
+                } catch (ex) {
+                    console.info('unable to merge: ' + ex);
+                }
+            } else {
+                f(ch);
+            }
+            prev = ch;
+        }
+        for (let ch of todelete)
+            ch.remove();
+    }
+
+    let ret = applyToSvg(f, svg_text);
+    raph_tmp.remove();
+    return ret;
 }
 
 function flattenShapes(svg_text) {
@@ -95,7 +158,7 @@ function flattenShapes(svg_text) {
     let ret = svgToText(tmp.children[0]);
     tmp.remove();
     // Round all numbers to 4 digits
-    ret = ret.replace(/[0-9]*[.][0-9]{4,}(e[-+]?[0-9]+)?/g, function(match, capture) {
+    ret = ret.replace(/[0-9]*[.]?[0-9]{4,}(e[-+]?[0-9]+)?/g, function(match, capture) {
         return (Math.round(match * 10000) / 10000).toString();
     });
     return ret;
@@ -123,7 +186,6 @@ function handleSvg(svg) {
 
     // Load clicked SVG as text
     let text = svgToText(svg);
-
     debugSvg('Original', text);
 
     text = substituteClones(text);
@@ -134,6 +196,9 @@ function handleSvg(svg) {
 
     text = collapseGroups(text);
     debugSvg('Collapse groups', text);
+
+    text = mergePaths(text);
+    debugSvg('Merge paths', text);
 
     //text = flattenShapes(text);
     //_pre3.replaceData(0, -1, formatXml(text));
