@@ -110,28 +110,44 @@ function collapseGroups(svg_text) {
     return applyToSvg(f, svg_text);
 }
 
+// Add implicit C node for three-point paths
+function fixPath(d) {
+    if (d.match(/C/g).length == 2) {
+        let begin = d.replace(/M([^,MC]*,[^,MC]*)[,MC].*/, '$1');
+        let end = d.replace(/.*,(.*,.*)/, '$1');
+        return d + 'C' + end + ',' + begin + ',' + begin;
+    }
+    return d;
+}
+
 function mergePaths(svg_text) {
     let raph_tmp = document.createElement('div');
     raph_tmp.id = 'raphael_canvas';
     document.body.appendChild(raph_tmp);
     let paper = Raphael('raphael_canvas', 250, 250);
 
+    let done = false;
     let f = function(e) {
         let prev = null;
         let todelete = [];
         for (let ch of e.children()) {
+            if (done)
+                break;
             if (prev && sameAttributes(prev, ch)) {
-                let path1 = paper.path(prev.attr('d'));
-                let path2 = paper.path(ch.attr('d'));
+                let d1 = fixPath(prev.attr('d'));
+                let path1 = paper.path(d1);
+                let d2 = fixPath(ch.attr('d'));
+                let path2 = paper.path(d2);
                 console.info('merge!');
-                console.info(prev.attr('d'));
-                console.info(ch.attr('d'));
+                console.info(d1);
+                console.info(d2);
                 try {
                     let merged = paper.union(path1, path2);
                     console.info(merged);
                     if (merged) {
                         ch.attr('d', merged);
                         todelete.push(prev);
+                        done = true;
                     }
                 } catch (ex) {
                     console.info('unable to merge: ' + ex);
