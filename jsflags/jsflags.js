@@ -1,6 +1,31 @@
+// Suggested in https://github.com/poilu/raphael-boolean/issues/3
+Raphael.isPointInsidePath = function (path, x, y) {
+    var bbox = Raphael.pathBBox(path);
+    return Raphael.isPointInsideBBox(bbox, x, y) &&
+       Raphael.pathIntersectionNumber(path, [["M", x, y], ["L", bbox.x2 + 10, bbox.y2 + 10]], 1) % 2 == 1;
+};
+
 function svgToText(svg) {
     var s = new XMLSerializer();
     return formatXml(s.serializeToString(svg));
+}
+
+// Add some randomness to path coordinates
+function wigglePath(d) {
+    // Wiggle all numbers
+    return d.replace(/([0-9]+[.]?[0-9]*|[.][0-9]+)(e[-+]?[0-9]+)?/g, function(match, capture) {
+        z = 1.0 + (Math.random() / 10);
+        return match * z;
+        //return (Math.round(match * z * 10000) / 10000).toString();
+    });
+}
+
+// Close three-point paths
+function fixPath(d) {
+    //d = wigglePath(d);
+    if (d.match(/C/g).length == 2)
+        return d + 'z';
+    return d;
 }
 
 function formatXml(xml) {
@@ -18,7 +43,7 @@ function formatXml(xml) {
 function applyToSvg(func, text) {
     let canvas_holder = document.createElement('svg');
     let canvas = SVG(canvas_holder);
-    canvas.svg(text);
+    canvas.svg(text.replace(/>\s*</, '><'));
     func(canvas);
     let ret = canvas.children()[0].svg();
     canvas_holder.remove();
@@ -110,55 +135,38 @@ function collapseGroups(svg_text) {
     return applyToSvg(f, svg_text);
 }
 
-// Add implicit C node for three-point paths
-function fixPath(d) {
-    if (d.match(/C/g).length == 2) {
-        let begin = d.replace(/M([^,MC]*,[^,MC]*)[,MC].*/, '$1');
-        let end = d.replace(/.*,(.*,.*)/, '$1');
-        return d + 'C' + end + ',' + begin + ',' + begin;
-    }
-    return d;
-}
-
 function mergePaths(svg_text) {
     let raph_tmp = document.createElement('div');
     raph_tmp.id = 'raphael_canvas';
     document.body.appendChild(raph_tmp);
     let paper = Raphael('raphael_canvas', 250, 250);
 
-    let done = false;
+    let early_exit = false;
     let f = function(e) {
-        let prev = null;
-        let todelete = [];
         for (let ch of e.children()) {
-            if (done)
-                break;
-            if (prev && sameAttributes(prev, ch)) {
-                let d1 = fixPath(prev.attr('d'));
-                let path1 = paper.path(d1);
-                let d2 = fixPath(ch.attr('d'));
-                let path2 = paper.path(d2);
-                console.info('merge!');
-                console.info(d1);
-                console.info(d2);
-                try {
-                    let merged = paper.union(path1, path2);
-                    console.info(merged);
-                    if (merged) {
-                        ch.attr('d', merged);
-                        todelete.push(prev);
-                        done = true;
-                    }
-                } catch (ex) {
-                    console.info('unable to merge: ' + ex);
-                }
-            } else {
-                f(ch);
-            }
-            prev = ch;
+            f(ch);
+            if (early_exit)
+                return;
         }
-        for (let ch of todelete)
-            ch.remove();
+        if (e.parent() && e.prev() && sameAttributes(e.prev(), e)) {
+            let d1 = fixPath(e.prev().attr('d'));
+            let path1 = paper.path(d1);
+            let d2 = fixPath(e.attr('d'));
+            let path2 = paper.path(d2);
+            console.info(`path1: ${d1}`);
+            console.info(`path2: ${d2}`);
+            try {
+                let merged = paper.union(path1, path2);
+                console.info(`→ merged: ${merged}`);
+                if (merged) {
+                    e.attr('d', merged);
+                    e.prev().remove();
+                    //early_exit = true;
+                }
+            } catch (ex) {
+                console.info('unable to merge: ' + ex);
+            }
+        }
     }
 
     let ret = applyToSvg(f, svg_text);
@@ -187,7 +195,7 @@ function debugSvg(name, svg_text) {
 
     let canvas_holder = document.createElement('svg');
     let canvas = SVG(canvas_holder);
-    canvas.svg(svg_text);
+    canvas.svg(svg_text.replace(/>\s*</, '><'));
     _anchor.appendChild(canvas_holder);
 
     let pre = document.createElement('pre');
@@ -213,8 +221,10 @@ function handleSvg(svg) {
     text = collapseGroups(text);
     debugSvg('Collapse groups', text);
 
+    //for (let i = 0; i < 10; ++i) {
     text = mergePaths(text);
     debugSvg('Merge paths', text);
+    //}
 
     //text = flattenShapes(text);
     //_pre3.replaceData(0, -1, formatXml(text));
