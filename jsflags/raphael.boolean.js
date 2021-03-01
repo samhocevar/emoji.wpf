@@ -206,8 +206,18 @@
 	 * @returns void
 	 */
 	var markSubpathEndings = function() {
-		var subPaths = 0, //store overall number of existing subpaths (for id generation)
+		var currentId, //keep track of the current path's id
+			markedPoints = [],
 			path;
+
+		//generate a unique id for unknown points
+		function findOrCreateId(x, y) {
+			var id = markedPoints[[x, y]];
+			if (id) {
+				return id;
+			}
+			return markedPoints[[x, y]] = "S" + markedPoints.length;
+		}
 
 		//iterate paths
 		for (var i = 0; i < arguments.length; i++) {
@@ -216,15 +226,16 @@
 			for (var j = 0; j < path.length; j++) {
 				//first segment of a path has always starting point of subpath
 				if (j === 0) {
-					path[j].startPoint = "S" + subPaths;
+					currentId = findOrCreateId(path[j][0], path[j][1]);
+					path[j].startPoint = currentId;
 				}
 
 				//if ending point of a segment is different from starting  point of next seg. mark both
 				if (j < path.length - 1) {
 					if (path[j][6] != path[j + 1][0] || path[j][7] != path[j + 1][1]) {
-						path[j].endPoint = "S" + subPaths;
-						subPaths++;
-						path[j + 1].startPoint = "S" + subPaths;
+						path[j].endPoint = currentId;
+						currentId = findOrCreateId(path[j + 1][0], path[j + 1][1]);
+						path[j + 1].startPoint = currentId;
 					}
 				}
 
@@ -232,8 +243,7 @@
 
 				//last segment of a path has always ending point of subpath
 				if (j == path.length - 1) {
-					path[j].endPoint = "S" + subPaths;
-					subPaths++;
+					path[j].endPoint = currentId;
 				}
 			}
 		}
@@ -669,7 +679,6 @@
 			var subPath = [];
 			var dirCheck = []; //starting position of subpaths marked for a direction check
 
-			newPath.push(subPath);
 			while (partsAdded < parts.length) {
 				//for difference operation prepare correction of path directions where necessary
 				if (type == "difference") {
@@ -679,22 +688,26 @@
 					}
 				}
 
-				subPath.push(...curPart);
+				subPath = subPath.concat(curPart);
 				partsAdded++;
 				endPointId = curPart[curPart.length - 1].endPoint;
 				curPart.added = true;
 				if (endPointId != firstStartPoint) { //path isn't closed yet
 					curPart = parts[startIndex[endPointId]]; //new part to add is the one that has current ending point as starting point
-				} else if (partsAdded < parts.length) { //add subpath to new path and find part that hasn't been added yet to start a new sub-path
-					subPath = [];
-					newPath.push(subPath);
+					if (curPart) {
+						continue;
+					}
+				}
 
-					for (var p = 1; p < parts.length; p++) {
-						if (!parts[p].added) {
-							curPart = parts[p];
-							firstStartPoint = parts[p][0].startPoint;
-							break;
-						}
+				//add subpath to new path and find part that hasn't been added yet to start a new sub-path
+				newPath.push(subPath);
+				subPath = [];
+
+				for (var p = 1; p < parts.length; p++) {
+					if (!parts[p].added) {
+						curPart = parts[p];
+						firstStartPoint = parts[p][0].startPoint;
+						break;
 					}
 				}
 			}
@@ -724,7 +737,7 @@
 		//flatten new path
 		var resultPath = [];
 		for (var i = 0; i < newPath.length; i++) {
-			resultPath.push(...newPath[i]);
+			resultPath = resultPath.concat(newPath[i]);
 		}
 
 		return resultPath;
