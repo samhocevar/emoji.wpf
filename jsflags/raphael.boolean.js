@@ -669,6 +669,7 @@
 			var subPath = [];
 			var dirCheck = []; //starting position of subpaths marked for a direction check
 
+			newPath.push(subPath);
 			while (partsAdded < parts.length) {
 				//for difference operation prepare correction of path directions where necessary
 				if (type == "difference") {
@@ -678,15 +679,15 @@
 					}
 				}
 
-				subPath = subPath.concat(curPart);
+				subPath.push(...curPart);
 				partsAdded++;
 				endPointId = curPart[curPart.length - 1].endPoint;
 				curPart.added = true;
 				if (endPointId != firstStartPoint) { //path isn't closed yet
 					curPart = parts[startIndex[endPointId]]; //new part to add is the one that has current ending point as starting point
-				} else { //add subpath to new path and find part that hasn't been added yet to start a new sub-path
-					newPath.push(subPath);
+				} else if (partsAdded < parts.length) { //add subpath to new path and find part that hasn't been added yet to start a new sub-path
 					subPath = [];
+					newPath.push(subPath);
 
 					for (var p = 1; p < parts.length; p++) {
 						if (!parts[p].added) {
@@ -723,7 +724,7 @@
 		//flatten new path
 		var resultPath = [];
 		for (var i = 0; i < newPath.length; i++) {
-			resultPath = resultPath.concat(newPath[i]);
+			resultPath.push(...newPath[i]);
 		}
 
 		return resultPath;
