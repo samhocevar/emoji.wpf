@@ -1,4 +1,4 @@
-// Suggested in https://github.com/poilu/raphael-boolean/issues/3
+﻿// Suggested in https://github.com/poilu/raphael-boolean/issues/3
 Raphael.isPointInsidePath = function (path, x, y) {
     var bbox = Raphael.pathBBox(path);
     return Raphael.isPointInsideBBox(bbox, x, y) &&
@@ -10,21 +10,31 @@ function svgToText(svg) {
     return formatXml(s.serializeToString(svg));
 }
 
+var match_num = /(?<=d="[^"]*)([0-9]+[.]?[0-9]*|[.][0-9]+)(e[-+]?[0-9]+)?/g;
+
 // Add some randomness to path coordinates
 function wigglePath(d) {
     // Wiggle all numbers
-    return d.replace(/([0-9]+[.]?[0-9]*|[.][0-9]+)(e[-+]?[0-9]+)?/g, function(match, capture) {
-        z = 1.0 + (Math.random() / 10);
-        return match * z;
+    return d.replace(match_num, function(match, capture) {
+        return match * 1.0 + Math.random() / 10000;
         //return (Math.round(match * z * 10000) / 10000).toString();
+    });
+}
+
+// Round path coordinates
+function roundPath(d, precision) {
+    return d.replace(match_num, function(match, capture) {
+        return Number.parseFloat(match).toFixed(precision);
     });
 }
 
 // Close three-point paths
 function fixPath(d) {
+    let start = d.replace(/M([^,C]*,[^,C]*).*/, '$1');
+    let end = d.replace(/.*C.*,([^C,]*,[^C,*])/, '$1');
+    if (start != end)
+        d += 'L' + start;
     //d = wigglePath(d);
-    if (d.match(/C/g).length == 2)
-        return d + 'z';
     return d;
 }
 
@@ -33,7 +43,7 @@ function formatXml(xml) {
     var tab = '  ';
     xml.split(/>\s*</).forEach(function(node) {
         if (node.match( /^\/\w/ )) indent = indent.substring(tab.length); // decrease indent by one 'tab'
-        ret += indent + '<' + node + '>\r\n';
+        ret += indent + '<' + node.replace(/([0-9])(C)/g, '$1 $2') + '>\r\n';
         if (node.match( /^<?\w([^>/]*|[^>]*[^/])$/ )) indent += tab;              // increase indent
     });
     ret = ret.replace( /(<[^\/>][^>]*[^\/>]>)\s*(<\/)/g, '$1$2');
@@ -43,7 +53,7 @@ function formatXml(xml) {
 function applyToSvg(func, text) {
     let canvas_holder = document.createElement('svg');
     let canvas = SVG(canvas_holder);
-    canvas.svg(text.replace(/>\s*</, '><'));
+    canvas.svg(text.replace(/>\s*</g, '><'));
     func(canvas);
     let ret = canvas.children()[0].svg();
     canvas_holder.remove();
@@ -150,28 +160,40 @@ function mergePaths(svg_text) {
         }
         if (e.parent() && e.prev() && sameAttributes(e.prev(), e)) {
             let d1 = fixPath(e.prev().attr('d'));
-            let path1 = paper.path(d1);
+//d1 = roundPath(d1, 1);
             let d2 = fixPath(e.attr('d'));
+//d2 = roundPath(d2, 1);
+
+//d1 = "M0,0 L-2,6 L2,2 z";
+//d2 = "M0,0 L2,6 L-2,2 z";
+
+//d1 = "M0,-6C0,-6,-1.8541,-0.2937,-1.8541,-0.2937C-1.8541,-0.2937,-1.8401694472472656,-0.28917354075557145,-1.623894420610723,-0.21889922278453153C-1.8955335264731583,0.7481421230640761,-1.9501,0.9424,-1.9501,0.9424C-1.9501,0.9424,-0.9504443536091689,0.6175815507849991,0,0.30875334367278273C0.9504443536091689,0.6175815507849991,1.9501,0.9424,1.9501,0.9424C1.9501,0.9424,1.8955335264731583,0.7481421230640761,1.623894420610723,-0.21889922278453153C1.8401694472472656,-0.28917354075557145,1.8541,-0.2937,1.8541,-0.2937C1.8541,-0.2937,0,-6,0,-6";
+//d2 = "M5.7063,-1.8541C5.7063,-1.8541,-0.2937,-1.8541,-0.2937,-1.8541C-0.2937,-1.8541,-0.2937,2.1459,-0.2937,2.1459z";
+
+            let path1 = paper.path(d1);
             let path2 = paper.path(d2);
+
             console.info(`path1: ${d1}`);
             console.info(`path2: ${d2}`);
-            try {
+//            try {
                 let merged = paper.union(path1, path2);
                 console.info(`→ merged: ${merged}`);
+console.info(`<svg width="100" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-15 -10 30 20" version="1.1" xmlns:svgjs="http://svgjs.com/svgjs" xmlns:svgjs="http://svgjs.com/svgjs"><path fill="#ffeeaa" d="M-20,-15C-20,-15,20,-15,20,-15C20,-15,20,15,20,15C20,15,-20,15,-20,15C-20,15,-20,-15,-20,-15"></path><path fill="#0F0" d="${d1}"/><path fill="#00F" d="${d2}"/><path fill="#0FF" d="${merged}"/></svg>`);
                 if (merged) {
                     e.attr('d', merged);
+e.attr('fill', '#0f0');
                     e.prev().remove();
-                    //early_exit = true;
+                    early_exit = true;
                 }
-            } catch (ex) {
-                console.info('unable to merge: ' + ex);
-            }
+//            } catch (ex) {
+//                console.info('unable to merge: ' + ex);
+//            }
         }
     }
 
     let ret = applyToSvg(f, svg_text);
     raph_tmp.remove();
-    return ret;
+    return roundPath(ret, 4);
 }
 
 function flattenShapes(svg_text) {
@@ -182,10 +204,7 @@ function flattenShapes(svg_text) {
     let ret = svgToText(tmp.children[0]);
     tmp.remove();
     // Round all numbers to 4 digits
-    ret = ret.replace(/[0-9]*[.]?[0-9]{4,}(e[-+]?[0-9]+)?/g, function(match, capture) {
-        return (Math.round(match * 10000) / 10000).toString();
-    });
-    return ret;
+    return roundPath(ret, 4);
 }
 
 function debugSvg(name, svg_text) {
@@ -195,7 +214,7 @@ function debugSvg(name, svg_text) {
 
     let canvas_holder = document.createElement('svg');
     let canvas = SVG(canvas_holder);
-    canvas.svg(svg_text.replace(/>\s*</, '><'));
+    canvas.svg(svg_text.replace(/>\s*</g, '><'));
     _anchor.appendChild(canvas_holder);
 
     let pre = document.createElement('pre');
@@ -221,10 +240,10 @@ function handleSvg(svg) {
     text = collapseGroups(text);
     debugSvg('Collapse groups', text);
 
-    //for (let i = 0; i < 10; ++i) {
+    for (let i = 0; i < 10; ++i) {
     text = mergePaths(text);
     debugSvg('Merge paths', text);
-    //}
+    }
 
     //text = flattenShapes(text);
     //_pre3.replaceData(0, -1, formatXml(text));
