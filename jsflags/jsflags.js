@@ -29,11 +29,11 @@ function roundPath(d, precision) {
 }
 
 // Close three-point paths
-function fixPath(d) {
+function closePath(d) {
     let start = d.replace(/M([^,C]*,[^,C]*).*/, '$1');
     let end = d.replace(/.*C.*,([^C,]*,[^C,*])/, '$1');
     if (start != end)
-        d += 'L' + start;
+        d += 'Z';//'L' + start;
     //d = wigglePath(d);
     return d;
 }
@@ -43,7 +43,7 @@ function formatXml(xml) {
     var tab = '  ';
     xml.split(/>\s*</).forEach(function(node) {
         if (node.match( /^\/\w/ )) indent = indent.substring(tab.length); // decrease indent by one 'tab'
-        ret += indent + '<' + node.replace(/([0-9])(C)/g, '$1 $2') + '>\r\n';
+        ret += indent + '<' + node.replace(/(?<=d="[^"]*)([0-9])(C)/g, '$1 $2') + '>\r\n';
         if (node.match( /^<?\w([^>/]*|[^>]*[^/])$/ )) indent += tab;              // increase indent
     });
     ret = ret.replace( /(<[^\/>][^>]*[^\/>]>)\s*(<\/)/g, '$1$2');
@@ -159,9 +159,9 @@ function mergePaths(svg_text) {
                 return;
         }
         if (e.parent() && e.prev() && sameAttributes(e.prev(), e)) {
-            let d1 = fixPath(e.prev().attr('d'));
+            let d1 = closePath(e.prev().attr('d'));
 //d1 = roundPath(d1, 1);
-            let d2 = fixPath(e.attr('d'));
+            let d2 = closePath(e.attr('d'));
 //d2 = roundPath(d2, 1);
 
 //d1 = "M0,0 L-2,6 L2,2 z";
@@ -181,7 +181,9 @@ function mergePaths(svg_text) {
 console.info(`<svg width="100" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-15 -10 30 20" version="1.1" xmlns:svgjs="http://svgjs.com/svgjs" xmlns:svgjs="http://svgjs.com/svgjs"><path fill="#ffeeaa" d="M-20,-15C-20,-15,20,-15,20,-15C20,-15,20,15,20,15C20,15,-20,15,-20,15C-20,15,-20,-15,-20,-15"></path><path fill="#0F0" d="${d1}"/><path fill="#00F" d="${d2}"/><path fill="#0FF" d="${merged}"/></svg>`);
                 if (merged) {
                     e.attr('d', merged);
-e.attr('fill', '#0f0');
+//e.attr('fill', '#0f0');
+e.attr('stroke-width', '0.1');
+e.attr('stroke', '#000');
                     e.prev().remove();
                     early_exit = true;
                 }
