@@ -11,8 +11,10 @@ index.html: header.inc .allflags.inc footer.inc
 .allflags.inc:
 	echo '' > $@
 	for x in $(SVGFILES); do \
+		if [ "$$x" = "np.svg" ]; then continue; fi; \
 		echo '<span margin="4">' >> $@; \
-		cat "$(SVGDIR)/$$x" | sed "s/^<svg /<svg id='$$x' margin='4' width='150' /" >> $@; \
+		cat "$(SVGDIR)/$$x" | sed "s/\(id=.\|url(#\|href=.#\)/&$$x./g" | \
+			sed "s/xmlns=/id='$$x' margin='4' width='150' &/" >> $@; \
 		echo '</span>' >> $@; \
 	done
 
