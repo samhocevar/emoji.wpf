@@ -85,17 +85,33 @@ function sameAttributes(p1, p2) {
 
 // Replace all <use> tags with their targets.
 function substituteClones(svg_text) {
-    let ids = {}
+    let ids = {};
+    let uses = [];
     let f = function(e) {
         if (e.type == 'use') {
-            let tid = e.attr('xlink:href').replace('#','');
+            // Keep for later (see gd.svg for a <use> node that appears before the id)
+            uses.push(e);
+        } else if (e.node.id && e.type != 'svg' && e.type != 'clipPath') {
+            ids[e.node.id] = e;
+            e.attr('id', null);
+        }
+        for (let e2 of e.children())
+            f(e2, ids);
+
+        while (uses.length) {
+            let u = uses.pop();
+            let tid = u.attr('xlink:href').replace('#','');
+            if (!(tid in ids)) {
+                uses.push(u);
+                break;
+            }
             let clone = ids[tid].clone();
             clone.attr('id', null);
-            let g = e.root().group();
+            let g = u.root().group();
             g.add(clone);
             let x = 0, y = 0, transform = null;
-            for (let attr in e.attr()) {
-                let val = e.attr(attr);
+            for (let attr in u.attr()) {
+                let val = u.attr(attr);
                 // See kr.svg: <use ... y="44"/>
                 if (attr == 'x')
                     x = val;
@@ -103,7 +119,7 @@ function substituteClones(svg_text) {
                     y = val;
                 // Best demonstrated in cw.svg
                 else if (attr == 'transform')
-                    transform = e.transform();
+                    transform = u.transform();
                 else if (attr != 'xlink:href')
                     g.attr(attr, val);
             }
@@ -111,10 +127,10 @@ function substituteClones(svg_text) {
                 g.transform({translateX: x, translateY: y})
             if (transform !== null)
                 g.transform(transform, true);
-            e.replace(g);
-            if (e.node.id) {
+            u.replace(g);
+            if (u.node.id) {
                 // See sb.svg for a <use> node that itself has an id attr
-                g.node.id = e.node.id;
+                g.node.id = u.node.id;
                 ids[g.node.id] = g;
             }
             // If the resulting group has no attributes, collapse it immediately
@@ -125,12 +141,7 @@ function substituteClones(svg_text) {
                     ids[clone.node.id] = clone;
                 }
             }
-        } else if (e.node.id && e.type != 'svg' && e.type != 'clipPath') {
-            ids[e.node.id] = e;
-            e.attr('id', null);
         }
-        for (let e2 of e.children())
-            f(e2, ids);
     }
     return applyToSvg(f, svg_text);
 }
