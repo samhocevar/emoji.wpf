@@ -1,8 +1,10 @@
-﻿// Suggested in https://github.com/poilu/raphael-boolean/issues/3
+﻿
+// More robust version, see https://github.com/poilu/raphael-boolean/issues/3
+// and https://github.com/DmitryBaranovskiy/raphael/issues/1130
 Raphael.isPointInsidePath = function (path, x, y) {
     var bbox = Raphael.pathBBox(path);
     return Raphael.isPointInsideBBox(bbox, x, y) &&
-       Raphael.pathIntersectionNumber(path, [["M", x, y], ["L", bbox.x2 + 10, bbox.y2 + 10]], 1) % 2 == 1;
+        Raphael.pathIntersectionNumber(path, [["M", x, y], ["l", bbox.width + 10, Math.random()]]) % 2 == 1;
 };
 
 function svgToText(svg) {
