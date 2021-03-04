@@ -6,7 +6,7 @@
         xmlns:clr="clr-namespace:System;assembly=mscorlib"
         xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
         mc:Ignorable="d"
-        Title="Emoji.Wpf Sample" Width="640" Height="400">
+        Title="Emoji.Wpf Sample" Width="640" Height="540">
 
     <Window.Resources>
         <clr:String x:Key="SampleText">Hello! 😁🎀🍊👨‍👦👨🏻‍👩🏿‍👧🏽‍👦🏽‍‍🐱‍🐉</clr:String>
@@ -23,6 +23,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="5*" />
+            <RowDefinition Height="4*" />
             <RowDefinition Height="4*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -113,6 +114,16 @@
         </Grid>
 
         <Grid Grid.Row="2">
+            <FlowDocumentScrollViewer>
+                <FlowDocument emoji:Behaviors.ColoredEmojis="true">
+                    <Paragraph>
+                        <Run Text="{StaticResource SampleText}" />
+                    </Paragraph>
+                </FlowDocument>
+            </FlowDocumentScrollViewer>
+        </Grid>
+
+        <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />

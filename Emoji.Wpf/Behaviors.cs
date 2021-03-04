@@ -14,6 +14,7 @@ using System;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 
 namespace Emoji.Wpf
 {
@@ -53,6 +54,35 @@ namespace Emoji.Wpf
                     prop?.SetValue(o, (bool)e.NewValue, null);
                 }
             }
+        }
+
+
+        public static bool GetColoredEmojis(DependencyObject obj)
+        {
+            return (bool)obj.GetValue(ColoredEmojisProperty);
+        }
+
+        public static void SetColoredEmojis(DependencyObject obj, bool value)
+        {
+            obj.SetValue(ColoredEmojisProperty, value);
+        }
+
+        // Using a DependencyProperty as the backing store for ColoredEmojis.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ColoredEmojisProperty =
+            DependencyProperty.RegisterAttached("ColoredEmojis", typeof(bool), typeof(Behaviors), new UIPropertyMetadata(false, OnChanged));
+
+        private static void OnChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (!(d is FlowDocument flowDocument) || (e.NewValue as bool?) != true)
+                return;
+
+            flowDocument.Loaded += FlowDocument_Loaded;
+        }
+
+        private static void FlowDocument_Loaded(object sender, RoutedEventArgs e)
+        {
+            FlowDocument flowDocument = (FlowDocument)sender;
+            flowDocument.ColorizeEmojis();
         }
     }
 }
