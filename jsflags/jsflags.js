@@ -230,6 +230,7 @@ function debugSvg(name, svg_text) {
     let canvas_holder = document.createElement('svg');
     let canvas = SVG(canvas_holder);
     canvas.svg(svg_text.replace(/>\s*</g, '><'));
+    canvas.children()[0].width(200);
     _anchor.appendChild(canvas_holder);
 
     let pre = document.createElement('pre');
@@ -238,12 +239,11 @@ function debugSvg(name, svg_text) {
     _anchor.appendChild(pre);
 }
 
-function handleSvg(svg) {
+function handleSvg(text) {
     _anchor = document.getElementById('anchor');
     _anchor.innerHTML = '';
 
     // Load clicked SVG as text
-    let text = svgToText(svg);
     debugSvg('Original', text);
 
     text = substituteClones(text);
@@ -264,12 +264,19 @@ function handleSvg(svg) {
     //_pre3.replaceData(0, -1, formatXml(text));
 }
 
-svgs = document.getElementsByTagName('svg');
-for (var i = 0; i < svgs.length; ++i) {
-    svgs[i].addEventListener("click", function(e) {
-        var svg = e.target;
-        while (svg.tagName != 'svg')
-            svg = svg.parentElement;
-        handleSvg(svg);
+let bar = document.getElementById('menubar');
+for (const [id, data] of Object.entries(flags)) {
+    let img = document.createElement('img');
+    img.src = `../Emoji.Wpf/CountryFlags/png100px/${id.replace('svg','png')}`;
+    img.width = 30;
+    img.style.margin = '3px';
+    img.id = id;
+    img.title = id;
+    img.addEventListener("click", function(e) {
+        handleSvg(data);
     });
+    let span = document.createElement('span');
+    span.style.padding = 5;
+    span.appendChild(img);
+    bar.appendChild(span);
 }
