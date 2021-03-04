@@ -14,6 +14,11 @@ function svgToText(svg) {
 
 var match_num = /(?<=d="[^"]*)([0-9]+[.]?[0-9]*|[.][0-9]+)(e[-+]?[0-9]+)?/g;
 
+// List obtained by picking from the output of this script:
+//   for x in ../Emoji.Wpf/CountryFlags/svg/*svg; do sed 's/<[^g][^>]*>//g' $x | tr ' "' '\n' \
+//    | grep = | sort | uniq; done | sort | uniq -c | sort -n
+var important_attrs = ['stroke-linejoin', 'stroke-linecap', 'clip-path', 'stroke-width', 'stroke', 'fill'];
+
 // Add some randomness to path coordinates
 function wigglePath(d) {
     // Wiggle all numbers
@@ -26,17 +31,16 @@ function wigglePath(d) {
 // Round path coordinates
 function roundPath(d, precision) {
     return d.replace(match_num, function(match, capture) {
-        return Number.parseFloat(match).toFixed(precision);
+        return Number.parseFloat(match).toFixed(precision) * 1.0;
     });
 }
 
 // Close three-point paths
 function closePath(d) {
-    let start = d.replace(/M([^,C]*,[^,C]*).*/, '$1');
-    let end = d.replace(/.*C.*,([^C,]*,[^C,*])/, '$1');
+    let start = d.replace(/M *([^,C ]*, *[^,C ]*).*/, '$1');
+    let end = d.replace(/.*C.*,([^C, ]*, *[^C, ]*)/, '$1');
     if (start != end)
-        d += 'Z';//'L' + start;
-    //d = wigglePath(d);
+        d += 'Z';
     return d;
 }
 
@@ -72,11 +76,7 @@ function correctUngroup(g) {
 function sameAttributes(p1, p2) {
     if (p1.type != 'path' || p2.type != 'path')
          return false;
-    // List obtained by picking from the output of this script:
-    //   for x in ../Emoji.Wpf/CountryFlags/svg/*svg; do sed 's/<[^g][^>]*>//g' $x | tr ' "' '\n' \
-    //    | grep = | sort | uniq; done | sort | uniq -c | sort -n
-    attrs = ['stroke-linejoin', 'stroke-linecap', 'clip-path', 'stroke-width', 'stroke', 'fill'];
-    for (let name of attrs) {
+    for (let name of important_attrs) {
         if (p1.attr(name) != p2.attr(name))
             return false;
     }
