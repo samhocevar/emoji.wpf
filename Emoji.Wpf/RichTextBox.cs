@@ -153,71 +153,7 @@ namespace Emoji.Wpf
             // Prevent our operation from polluting the undo buffer
             BeginChange();
 
-            TextPointer cur = Document.ContentStart;
-            while (cur.CompareTo(Document.ContentEnd) < 0)
-            {
-                TextPointer next = cur.GetNextInsertionPosition(LogicalDirection.Forward);
-                if (next == null)
-                    break;
-
-                string replace_text = null;
-                var replace_range = new TextRange(cur, next);
-                if (EmojiData.MatchOne.IsMatch(replace_range.Text))
-                {
-                    // We found an emoji, but it’s possible that GetNextInsertionPosition
-                    // did not pick enough characters and the emoji sequence is actually
-                    // longer. To avoid this, we look up to 50 characters ahead and retry
-                    // the match.
-                    var lookup = next.GetNextContextPosition(LogicalDirection.Forward);
-                    if (cur.GetOffsetToPosition(lookup) > 50)
-                        lookup = cur.GetPositionAtOffset(50, LogicalDirection.Forward);
-                    var match = EmojiData.MatchOne.Match(new TextRange(cur, lookup).Text);
-                    while (match.Length > replace_range.Text.Length)
-                    {
-                        next = next.GetNextInsertionPosition(LogicalDirection.Forward);
-                        if (next == null)
-                            break;
-                        replace_range = new TextRange(cur, next);
-                    }
-
-                    replace_text = match.Value;
-                }
-                else if (ColonSyntax && replace_range.Text == ":")
-                {
-                    var end = next.GetNextContextPosition(LogicalDirection.Forward);
-                    var match = ColonSyntaxRegex.Match(new TextRange(cur, end).Text);
-                    if (match.Success && EmojiData.LookupByName.TryGetValue(match.Groups[1].Value.Replace("-", " "), out var emoji))
-                    {
-                        replace_text = emoji.Text;
-                        next = cur.GetPositionAtCharOffset(match.Value.Length);
-                        replace_range = new TextRange(cur, next);
-                    }
-                }
-
-                if (replace_text != null)
-                {
-                    // Preserve caret position in case of replacement
-                    bool caret_was_next = cur.CompareTo(CaretPosition) < 0 && next.CompareTo(CaretPosition) >= 0;
-
-                    var font_size = replace_range.GetPropertyValue(TextElement.FontSizeProperty);
-                    var foreground = replace_range.GetPropertyValue(TextElement.ForegroundProperty);
-
-                    // Delete the Unicode characters and insert our emoji inline instead.
-                    replace_range.Text = "";
-                    Inline inline = new EmojiInline(cur)
-                    {
-                        FontSize = (double)(font_size ?? FontSize),
-                        Foreground = ColorBlend ? (Brush)(foreground ?? Foreground) : Brushes.Black,
-                        Text = replace_text,
-                    };
-
-                    next = inline.ContentEnd;
-                    if (caret_was_next)
-                        CaretPosition = next;
-                }
-
-                cur = next;
-            }
+            CaretPosition = Document.ColorizeEmojis(new EmojiOptions { ColonSyntax = ColonSyntax, ColorBlend = ColorBlend }, CaretPosition);
 
             EndChange();
 
@@ -276,8 +212,6 @@ namespace Emoji.Wpf
              DependencyProperty.Register(nameof(ColonSyntax), typeof(bool), typeof(RichTextBox),
                  new PropertyMetadata(false));
 
-        private static readonly Regex ColonSyntaxRegex = new Regex("^:([-a-z]+):");
-
         public bool ColorBlend
         {
             get => (bool)GetValue(ColorBlendProperty);
@@ -296,7 +230,7 @@ namespace Emoji.Wpf
                     if (p.GetPointerContext(LogicalDirection.Forward) == TextPointerContext.ElementStart)
                         if (p.GetAdjacentElement(LogicalDirection.Forward) is EmojiInline emoji)
                             yield return emoji;
-             }
+            }
         }
 
 #if DEBUG
