@@ -276,6 +276,8 @@ for (const [id, data] of Object.entries(flags)) {
     });
     let span = document.createElement('span');
     span.style.padding = 5;
+    if (data.indexOf('clip-path=') >= 0)
+        span.innerHTML = '*';
     span.appendChild(img);
     bar.appendChild(span);
 }
