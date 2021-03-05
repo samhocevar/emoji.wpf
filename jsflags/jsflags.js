@@ -173,37 +173,37 @@ function mergePaths(svg_text) {
         }
         if (e.parent() && e.prev() && sameAttributes(e.prev(), e)) {
             let d1 = closePath(e.prev().attr('d'));
-//d1 = roundPath(d1, 1);
             let d2 = closePath(e.attr('d'));
-//d2 = roundPath(d2, 1);
-
-//d1 = "M0,0 L-2,6 L2,2 z";
-//d2 = "M0,0 L2,6 L-2,2 z";
-
-//d1 = "M0,-6C0,-6,-1.8541,-0.2937,-1.8541,-0.2937C-1.8541,-0.2937,-1.8401694472472656,-0.28917354075557145,-1.623894420610723,-0.21889922278453153C-1.8955335264731583,0.7481421230640761,-1.9501,0.9424,-1.9501,0.9424C-1.9501,0.9424,-0.9504443536091689,0.6175815507849991,0,0.30875334367278273C0.9504443536091689,0.6175815507849991,1.9501,0.9424,1.9501,0.9424C1.9501,0.9424,1.8955335264731583,0.7481421230640761,1.623894420610723,-0.21889922278453153C1.8401694472472656,-0.28917354075557145,1.8541,-0.2937,1.8541,-0.2937C1.8541,-0.2937,0,-6,0,-6";
-//d2 = "M5.7063,-1.8541C5.7063,-1.8541,-0.2937,-1.8541,-0.2937,-1.8541C-0.2937,-1.8541,-0.2937,2.1459,-0.2937,2.1459z";
-
             let path1 = paper.path(d1);
             let path2 = paper.path(d2);
 
-            console.info(`path1: ${d1}`);
-            console.info(`path2: ${d2}`);
-//            try {
-                let merged = paper.union(path1, path2);
-                console.info(`→ merged: ${merged}`);
-console.info(`<svg width="100" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-15 -10 30 20" version="1.1" xmlns:svgjs="http://svgjs.com/svgjs" xmlns:svgjs="http://svgjs.com/svgjs"><path fill="#ffeeaa" d="M-20,-15C-20,-15,20,-15,20,-15C20,-15,20,15,20,15C20,15,-20,15,-20,15C-20,15,-20,-15,-20,-15"></path><path fill="#0F0" d="${d1}"/><path fill="#00F" d="${d2}"/><path fill="#0FF" d="${merged}"/></svg>`);
-                if (merged) {
-                    e.attr('d', merged);
-//e.attr('fill', '#0f0');
-e.attr('stroke-width', '0.1');
-e.attr('stroke', '#000');
-                    e.prev().remove();
-                    early_exit = true;
-                }
-//            } catch (ex) {
-//                console.info('unable to merge: ' + ex);
-//            }
+            let merged = paper.union(path1, path2);
+            if (merged) {
+                e.attr('d', merged);
+                //e.attr('stroke-width', Raphael.pathBBox(merged).width / 50);
+                //e.attr('stroke', '#000');
+                e.prev().remove();
+                //early_exit = true;
+            }
         }
+    }
+
+    let ret = applyToSvg(f, svg_text);
+    raph_tmp.remove();
+    return roundPath(ret, 4);
+}
+
+function clipPaths(svg_text) {
+    let raph_tmp = document.createElement('div');
+    raph_tmp.id = 'raphael_canvas';
+    document.body.appendChild(raph_tmp);
+    let paper = Raphael('raphael_canvas', 250, 250);
+
+    let f = function(e) {
+        for (let ch of e.children()) {
+            f(ch);
+        }
+        // TODO: clip paths
     }
 
     let ret = applyToSvg(f, svg_text);
@@ -239,12 +239,13 @@ function debugSvg(name, svg_text) {
     _anchor.appendChild(pre);
 }
 
-function handleSvg(text) {
+function handleSvg(id) {
     _anchor = document.getElementById('anchor');
     _anchor.innerHTML = '';
 
     // Load clicked SVG as text
-    debugSvg('Original', text);
+    text = flags[id];
+    debugSvg(`Original (${id})`, text);
 
     text = substituteClones(text);
     debugSvg('Substitute clones', text);
@@ -255,13 +256,11 @@ function handleSvg(text) {
     text = collapseGroups(text);
     debugSvg('Collapse groups', text);
 
-    for (let i = 0; i < 10; ++i) {
     text = mergePaths(text);
     debugSvg('Merge paths', text);
-    }
 
-    //text = flattenShapes(text);
-    //_pre3.replaceData(0, -1, formatXml(text));
+    text = clipPaths(text);
+    debugSvg('Clip paths', text);
 }
 
 let bar = document.getElementById('menubar');
@@ -273,7 +272,7 @@ for (const [id, data] of Object.entries(flags)) {
     img.id = id;
     img.title = id;
     img.addEventListener("click", function(e) {
-        handleSvg(data);
+        handleSvg(id);
     });
     let span = document.createElement('span');
     span.style.padding = 5;
