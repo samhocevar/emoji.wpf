@@ -44,6 +44,11 @@ namespace Emoji.Wpf
             private set => base.Child = value;
         }
 
+        protected bool ShouldSerializeChild() => false;
+
+        /// <summary>
+        /// The Text property may contain an emoji sequence or a colon-delimited name.
+        /// </summary>
         public string Text
         {
             get => (string)GetValue(TextProperty);
@@ -57,7 +62,7 @@ namespace Emoji.Wpf
         protected override bool ShouldSerializeProperty(DependencyProperty dp)
             => dp.Name == nameof(Text) && base.ShouldSerializeProperty(dp);
 
-        protected bool ShouldSerializeChild() => false;
+        private string UnicodeSequence;
 
         private struct CacheItem
         {
@@ -65,7 +70,7 @@ namespace Emoji.Wpf
             internal double width, height;
         };
 
-        private readonly Dictionary<string, CacheItem> m_cache = new Dictionary<string, CacheItem>();
+        private static readonly Dictionary<string, CacheItem> m_cache = new Dictionary<string, CacheItem>();
 
         private void Rebuild()
         {
@@ -73,22 +78,22 @@ namespace Emoji.Wpf
             if (Child == null)
                 return;
 
-            if (string.IsNullOrEmpty(Text))
+            if (string.IsNullOrEmpty(UnicodeSequence))
             {
                 Child.Source = null;
                 return;
             }
 
-            if (Foreground != Brushes.Black || !m_cache.TryGetValue(Text, out var item))
+            if (Foreground != Brushes.Black || !m_cache.TryGetValue(UnicodeSequence, out var item))
             {
                 var dg = new DrawingGroup();
                 using (var dc = dg.Open())
-                    Image.RenderText(dc, Text, Foreground, out item.width, out item.height);
+                    Image.RenderText(dc, UnicodeSequence, Foreground, out item.width, out item.height);
                 item.di = new DrawingImage(dg);
                 item.di.Freeze();
 
                 if (Foreground == Brushes.Black)
-                    m_cache[Text] = item;
+                    m_cache[UnicodeSequence] = item;
             }
 
             Child.Source = item.di;
@@ -99,6 +104,16 @@ namespace Emoji.Wpf
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
             base.OnPropertyChanged(e);
+
+            if (e.Property == TextProperty)
+            {
+                if (string.IsNullOrEmpty(Text))
+                    UnicodeSequence = null;
+                else if (EmojiData.LookupByName.TryGetValue(Text.Trim(':').Replace("-", " "), out var emoji))
+                    UnicodeSequence = emoji.Text;
+                else
+                    UnicodeSequence = Text;
+            }
 
             // FIXME: split this into several code paths
             if (e.Property == FontSizeProperty || e.Property == TextProperty
