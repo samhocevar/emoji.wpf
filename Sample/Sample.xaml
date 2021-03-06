@@ -115,7 +115,7 @@
 
         <Grid Grid.Row="2">
             <FlowDocumentScrollViewer>
-                <FlowDocument emoji:Behaviors.ColoredEmojis="true">
+                <FlowDocument emoji:Behaviors.EmojiRendering="true">
                     <Paragraph>
                         <Run Text="{StaticResource SampleText}" />
                     </Paragraph>

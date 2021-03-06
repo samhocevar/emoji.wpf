@@ -2,6 +2,7 @@
 //  Emoji.Wpf — Emoji support for WPF
 //
 //  Copyright © 2017—2021 Sam Hocevar <sam@hocevar.net>
+//                   2021 Victor Irzak <victor.irzak@zomp.com>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -56,33 +57,30 @@ namespace Emoji.Wpf
             }
         }
 
+        /// <summary>
+        /// Using a DependencyProperty as the backing store for EmojiRendering.
+        /// This enables animation, styling, binding, etc...
+        /// </summary>
+        public static readonly DependencyProperty EmojiRenderingProperty =
+            DependencyProperty.RegisterAttached("EmojiRendering", typeof(bool), typeof(Behaviors),
+                                                new UIPropertyMetadata(false, EmojiRenderingChanged));
 
-        public static bool GetColoredEmojis(DependencyObject obj)
+        public static bool GetEmojiRendering(DependencyObject o)
+            => (bool)o.GetValue(EmojiRenderingProperty);
+
+        public static void SetEmojiRendering(DependencyObject o, bool value)
+            => o.SetValue(EmojiRenderingProperty, value);
+
+        private static void EmojiRenderingChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            return (bool)obj.GetValue(ColoredEmojisProperty);
-        }
-
-        public static void SetColoredEmojis(DependencyObject obj, bool value)
-        {
-            obj.SetValue(ColoredEmojisProperty, value);
-        }
-
-        // Using a DependencyProperty as the backing store for ColoredEmojis.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty ColoredEmojisProperty =
-            DependencyProperty.RegisterAttached("ColoredEmojis", typeof(bool), typeof(Behaviors), new UIPropertyMetadata(false, OnChanged));
-
-        private static void OnChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (!(d is FlowDocument flowDocument) || (e.NewValue as bool?) != true)
-                return;
-
-            flowDocument.Loaded += FlowDocument_Loaded;
+            if (d is FlowDocument doc && (bool)e.NewValue)
+                doc.Loaded += FlowDocument_Loaded;
         }
 
         private static void FlowDocument_Loaded(object sender, RoutedEventArgs e)
         {
-            FlowDocument flowDocument = (FlowDocument)sender;
-            flowDocument.ColorizeEmojis();
+            if (sender is FlowDocument doc)
+                doc.ColorizeEmojis();
         }
     }
 }
