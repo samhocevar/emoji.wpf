@@ -153,7 +153,12 @@ namespace Emoji.Wpf
             // Prevent our operation from polluting the undo buffer
             BeginChange();
 
-            CaretPosition = Document.ColorizeEmojis(new EmojiOptions { ColonSyntax = ColonSyntax, ColorBlend = ColorBlend }, CaretPosition);
+            var options = new EmojiOptions
+            {
+                ColonSyntax = ColonSyntax,
+                ColorBlend = ColorBlend,
+            };
+            CaretPosition = Document.ColorizeEmojis(options, CaretPosition);
 
             EndChange();
 

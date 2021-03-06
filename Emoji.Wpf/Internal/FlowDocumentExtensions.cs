@@ -2,6 +2,7 @@
 //  Emoji.Wpf — Emoji support for WPF
 //
 //  Copyright © 2017—2021 Sam Hocevar <sam@hocevar.net>
+//                   2021 Victor Irzak <victor.irzak@zomp.com>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -18,34 +19,30 @@ using System.Windows.Media;
 
 namespace Emoji.Wpf
 {
-    public class EmojiOptions
+    internal class EmojiOptions
     {
         public bool ColonSyntax { get; set; }
         public bool ColorBlend { get; set; }
     }
 
-    public static class FlowDocumentExtensions
+    internal static class FlowDocumentExtensions
     {
         private static readonly Regex ColonSyntaxRegex = new Regex("^:([-a-z]+):");
 
-        static public void ColorizeEmojis(this FlowDocument document)
-        {
-            ColorizeEmojis(document, new EmojiOptions());
-        }
+        internal static void ColorizeEmojis(this FlowDocument document)
+            => ColorizeEmojis(document, new EmojiOptions {});
 
-        static public void ColorizeEmojis(this FlowDocument document, EmojiOptions emojiOptions)
-        {
-            var dummy = document.ContentStart;
-            ColorizeEmojis(document, emojiOptions, dummy);
-        }
-        static public TextPointer ColorizeEmojis(this FlowDocument document, TextPointer caretPosition)
-            => ColorizeEmojis(document, new EmojiOptions(), caretPosition);
+        internal static void ColorizeEmojis(this FlowDocument document, TextPointer caret)
+            => ColorizeEmojis(document, new EmojiOptions {}, caret);
 
-        static public TextPointer ColorizeEmojis(this FlowDocument document, EmojiOptions emojiOptions, TextPointer caretPosition)
+        internal static void ColorizeEmojis(this FlowDocument document, EmojiOptions options)
+            => ColorizeEmojis(document, options, document.ContentStart);
+
+        internal static TextPointer ColorizeEmojis(this FlowDocument document, EmojiOptions options,
+                                                   TextPointer caret)
         {
-            // options
-            var ColonSyntax = emojiOptions.ColonSyntax;
-            var ColorBlend = emojiOptions.ColorBlend;
+            var colon_syntax = options.ColonSyntax;
+            var color_blend = options.ColorBlend;
 
             TextPointer cur = document.ContentStart;
             while (cur.CompareTo(document.ContentEnd) < 0)
@@ -76,7 +73,7 @@ namespace Emoji.Wpf
 
                     replace_text = match.Value;
                 }
-                else if (ColonSyntax && replace_range.Text == ":")
+                else if (colon_syntax && replace_range.Text == ":")
                 {
                     var end = next.GetNextContextPosition(LogicalDirection.Forward);
                     var match = ColonSyntaxRegex.Match(new TextRange(cur, end).Text);
@@ -91,7 +88,7 @@ namespace Emoji.Wpf
                 if (replace_text != null)
                 {
                     // Preserve caret position in case of replacement
-                    bool caret_was_next = cur.CompareTo(caretPosition) < 0 && next.CompareTo(caretPosition) >= 0;
+                    bool caret_was_next = cur.CompareTo(caret) < 0 && next.CompareTo(caret) >= 0;
 
                     var font_size = replace_range.GetPropertyValue(TextElement.FontSizeProperty);
                     var foreground = replace_range.GetPropertyValue(TextElement.ForegroundProperty);
@@ -101,19 +98,19 @@ namespace Emoji.Wpf
                     Inline inline = new EmojiInline(cur)
                     {
                         FontSize = (double)(font_size ?? document.FontSize),
-                        Foreground = ColorBlend ? (Brush)(foreground ?? document.Foreground) : Brushes.Black,
+                        Foreground = color_blend ? (Brush)(foreground ?? document.Foreground) : Brushes.Black,
                         Text = replace_text,
                     };
 
                     next = inline.ContentEnd;
                     if (caret_was_next)
-                        caretPosition = next;
+                        caret = next;
                 }
 
                 cur = next;
             }
 
-            return caretPosition;
+            return caret;
         }
     }
 }
