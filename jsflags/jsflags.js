@@ -7,6 +7,11 @@ Raphael.isPointInsidePath = function (path, x, y) {
         Raphael.pathIntersectionNumber(path, [["M", x, y], ["l", bbox.width + 10, Math.random()]]) % 2 == 1;
 };
 
+// Convert a Raphael path to a string
+var pathToString = function(array) {
+    return array.join(',').replace(/,?([achlmqrstvxz]),?/gi, '$1');
+};
+
 function svgToText(svg) {
     var s = new XMLSerializer();
     return formatXml(s.serializeToString(svg));
@@ -146,6 +151,24 @@ function substituteClones(svg_text) {
     return applyToSvg(f, svg_text);
 }
 
+function removeGrid(svg_text) {
+    let viewbox = null;
+    let f = function(e) {
+        if (e.node.id == 'grid') {
+            e.remove();
+            return;
+        } else if (e.node.id == 'line') {
+            if (e.x() && e.width()) {
+                //e.root().attr('viewBox', `${e.x()} ${e.y()} ${e.width()} ${e.height()}`);
+            }
+        }
+
+        for (let e2 of e.children())
+            f(e2);
+    }
+    return applyToSvg(f, svg_text);
+}
+
 function collapseGroups(svg_text) {
     let f = function(e) {
         for (let e2 of e.children())
@@ -221,19 +244,66 @@ function clipPaths(svg_text) {
         if (e.type == 'path' && clips.length) {
             let d1 = closePath(e.attr('d'));
             let path1 = paper.path(d1);
-console.info('path1 ' + d1);
             for (let c of clips) {
                 let d2 = closePath(c);
                 let path2 = paper.path(d2);
-console.info(' x path2 ' + d2);
                 let merged = paper.intersection(path1, path2);
-console.info(' → merged ' + merged);
                 e.attr('d', merged);
                 path2.remove();
             }
             path1.remove();
         }
         e.attr('clip-path', null);
+    }
+
+    let ret = applyToSvg(f, svg_text);
+    raph_tmp.remove();
+    return roundPath(ret, 4);
+}
+
+function warp(x, y) {
+    return [x, y - 4 * Math.sin((x - 5) * 6.28319 / 60)];
+}
+
+function waveEffect(svg_text) {
+    let raph_tmp = document.createElement('div');
+    raph_tmp.id = 'raphael_canvas';
+    document.body.appendChild(raph_tmp);
+    let paper = Raphael('raphael_canvas', 250, 250);
+
+    let cids = {}
+    let f = function(e, clips=[]) {
+        for (let ch of e.children()) {
+            f(ch, clips);
+        }
+        if (e.type == 'path') {
+            let path = paper.path(e.attr('d'));
+            let segments = path.attr('path');
+            let new_segments = [];
+            let prev_point = null;
+            for (let s of segments)  {
+                if (s[0] == 'M') {
+                    prev_point = [s[1], s[2]];
+                    new_segments.push(['M', ...warp(s[1], s[2])]);
+                } else {
+                    let warped_points = [];
+                    for (let i = 0; i <= 50; ++i) {
+                        let p = Raphael.findDotsAtSegment(prev_point[0], prev_point[1], s[1], s[2], s[3], s[4], s[5], s[6], i / 50);
+                        warped_points.push(warp(p.x, p.y));
+                    }
+                    prev_point = [s[5], s[6]];
+                    warped_data = fitCurve(warped_points, 0.1);
+                    for (let w of warped_data) {
+                        new_segments.push(['C', w[1][0], w[1][1],
+                                                w[2][0], w[2][1],
+                                                w[3][0], w[3][1]]);
+                    }
+                }
+            }
+            let d2 = pathToString(new_segments);
+            e.attr('d', d2);
+            path.remove();
+        }
     }
 
     let ret = applyToSvg(f, svg_text);
@@ -261,7 +331,8 @@ function debugSvg(name, svg_text) {
     let canvas = SVG(canvas_holder);
     canvas.svg(svg_text.replace(/>\s*</g, '><'));
     canvas.children()[0].width(200);
-    _anchor.appendChild(canvas_holder);
+    canvas_holder.style.margin = '5px';
+    _crumbs.appendChild(canvas_holder);
 
     let pre = document.createElement('pre');
     let text_node = document.createTextNode(formatXml(svg_text));
@@ -272,13 +343,21 @@ function debugSvg(name, svg_text) {
 function handleSvg(id) {
     _anchor = document.getElementById('anchor');
     _anchor.innerHTML = '';
+    _crumbs = document.getElementById('crumbs');
+    _crumbs.innerHTML = '';
+
+    img = createFlagImage(id);
+    img.width = 200;
+    img.style.margin = '5px';
+    _crumbs.appendChild(img);
 
     // Load clicked SVG as text
-    text = flags[id];
-    debugSvg(`Original (${id})`, text);
+    text = flags[fids[id]];
+    text = removeGrid(text);
+    debugSvg(`Original: ${id} (${fids[id].toLowerCase()})`, text);
 
-    text = substituteClones(text);
-    debugSvg('Substitute clones', text);
+//    text = substituteClones(text);
+//    debugSvg('Substitute clones', text);
 
     text = flattenShapes(text);
     debugSvg('Flatten shapes', text);
@@ -286,25 +365,37 @@ function handleSvg(id) {
     text = collapseGroups(text);
     debugSvg('Collapse groups', text);
 
-for (var i = 0; i < 10; ++i) {
-    text = mergePaths(text);
-    debugSvg('Merge paths', text);
+//for (var i = 0; i < 10; ++i) {
+//    text = mergePaths(text);
+//    debugSvg('Merge paths', text);
+//}
+
+//    text = clipPaths(text);
+//    debugSvg('Clip paths', text);
+
+    text = waveEffect(text);
+    debugSvg('Wave effect', text);
 }
 
-    text = clipPaths(text);
-    debugSvg('Clip paths', text);
+function createFlagImage(id) {
+    let img = document.createElement('img');
+    img.src = `../Emoji.Wpf/CountryFlags/png100px/${id}.png`;
+    img.title = id;
+    return img;
 }
 
 let bar = document.getElementById('menubar');
+let fids = {}
 for (const [id, data] of Object.entries(flags)) {
-    let img = document.createElement('img');
-    img.src = `../Emoji.Wpf/CountryFlags/png100px/${id.replace('svg','png')}`;
+    let newid = String.fromCharCode('0x' + id.substring(0,5) - 0x1f1e6 + 97)
+              + String.fromCharCode('0x' + id.substring(6,11) - 0x1f1e6 + 97);
+    fids[newid] = id;
+    img = createFlagImage(newid);
     img.width = 30;
+    img.id = newid;
     img.style.margin = '3px';
-    img.id = id;
-    img.title = id;
     img.addEventListener("click", function(e) {
-        handleSvg(id);
+        handleSvg(newid);
     });
     let span = document.createElement('span');
     span.style.padding = 5;
