@@ -17,7 +17,7 @@ var match_num = /(?<=d="[^"]*)([0-9]+[.]?[0-9]*|[.][0-9]+)(e[-+]?[0-9]+)?/g;
 // List obtained by picking from the output of this script:
 //   for x in ../Emoji.Wpf/CountryFlags/svg/*svg; do sed 's/<[^g][^>]*>//g' $x | tr ' "' '\n' \
 //    | grep = | sort | uniq; done | sort | uniq -c | sort -n
-var important_attrs = ['stroke-linejoin', 'stroke-linecap', 'clip-path', 'stroke-width', 'stroke', 'fill'];
+var important_attrs = ['stroke-linejoin', 'stroke-linecap', 'clip-path', 'stroke-width', 'stroke', 'fill', 'style'];
 
 // Add some randomness to path coordinates
 function wigglePath(d) {
@@ -183,8 +183,10 @@ function mergePaths(svg_text) {
                 //e.attr('stroke-width', Raphael.pathBBox(merged).width / 50);
                 //e.attr('stroke', '#000');
                 e.prev().remove();
-                //early_exit = true;
+                early_exit = true;
             }
+            path1.remove();
+            path2.remove();
         }
     }
 
@@ -199,11 +201,39 @@ function clipPaths(svg_text) {
     document.body.appendChild(raph_tmp);
     let paper = Raphael('raphael_canvas', 250, 250);
 
-    let f = function(e) {
-        for (let ch of e.children()) {
-            f(ch);
+    let cids = {}
+    let f = function(e, clips=[]) {
+        // Remember clip paths
+        if (e.type == 'clipPath') {
+            // FIXME: what if there are several paths?
+            cids[e.node.id] = e.children()[0].attr('d');
+            e.remove();
         }
-        // TODO: clip paths
+        if (e.attr('clip-path')) {
+            let cid = e.attr('clip-path').replace(/url\(#(.*)\)/,'$1');
+            if (cid in cids) {
+                clips = clips.concat([cids[cid]]);
+            }
+        }
+        for (let ch of e.children()) {
+            f(ch, clips);
+        }
+        if (e.type == 'path' && clips.length) {
+            let d1 = closePath(e.attr('d'));
+            let path1 = paper.path(d1);
+console.info('path1 ' + d1);
+            for (let c of clips) {
+                let d2 = closePath(c);
+                let path2 = paper.path(d2);
+console.info(' x path2 ' + d2);
+                let merged = paper.intersection(path1, path2);
+console.info(' → merged ' + merged);
+                e.attr('d', merged);
+                path2.remove();
+            }
+            path1.remove();
+        }
+        e.attr('clip-path', null);
     }
 
     let ret = applyToSvg(f, svg_text);
@@ -256,8 +286,10 @@ function handleSvg(id) {
     text = collapseGroups(text);
     debugSvg('Collapse groups', text);
 
+for (var i = 0; i < 10; ++i) {
     text = mergePaths(text);
     debugSvg('Merge paths', text);
+}
 
     text = clipPaths(text);
     debugSvg('Clip paths', text);
