@@ -151,6 +151,51 @@ function substituteClones(svg_text) {
     return applyToSvg(f, svg_text);
 }
 
+// FIXME: this is incomplete
+function replaceShapes(svg_text) {
+    let f = function(e) {
+        if (e.type == 'rect') {
+            let p = e.root().path();
+            let x = e.x(), y = e.y(), w = e.width(), h = e.height();
+            let d = `M${x},${y} h${w} v${h} h-${w} v-${h}`;
+            // Hack: if there is no fill, make sure the shape has nice corners
+            // by adding an extra segment
+            // This is required for mv.svg
+            if (e.fill() == 'none')
+                d += `h${w}`; // extra round
+            p.attr('d', d);
+            for (let a in e.attr())
+                p.attr(a, e.attr(a));
+            e.replace(p);
+        } else if (e.type == 'polygon') {
+            let p = e.root().path();
+            let points = e.attr('points').split(/\s+/);
+            let d = '';
+            let oldx = 0, oldy = 0;
+            for (let i = 0; i < points.length; i += 2) {
+                let x = points[i], y = points[i+1];
+                if (d == '')
+                    d += `M${x},${y} `;
+                else
+                    d += `C${oldx},${oldy},${x},${y},${x},${y} `;
+                oldx = x;
+                oldy = y;
+            }
+            // This is required for ch.svg
+            if (e.fill() == 'none' || e.fill() == e.stroke())
+                d += `L${points[2]},${points[3]}`; // extra round
+            p.attr('d', d);
+            for (let a in e.attr())
+                p.attr(a, e.attr(a));
+            e.replace(p);
+        }
+
+        for (let e2 of e.children())
+            f(e2);
+    }
+    return applyToSvg(f, svg_text);
+}
+
 function removeGrid(svg_text) {
     let viewbox = null;
     let f = function(e) {
@@ -359,6 +404,7 @@ function handleSvg(id) {
 //    text = substituteClones(text);
 //    debugSvg('Substitute clones', text);
 
+    text = replaceShapes(text);
     text = flattenShapes(text);
     debugSvg('Flatten shapes', text);
 
