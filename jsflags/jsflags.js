@@ -12,11 +12,6 @@ var pathToString = function(array) {
     return array.join(',').replace(/,?([achlmqrstvxz]),?/gi, '$1');
 };
 
-function svgToText(svg) {
-    var s = new XMLSerializer();
-    return formatXml(s.serializeToString(svg));
-}
-
 var match_num = /(?<=d="[^"]*)([0-9]+[.]?[0-9]*|[.][0-9]+)(e[-+]?[0-9]+)?/g;
 
 // List obtained by picking from the output of this script:
@@ -24,20 +19,11 @@ var match_num = /(?<=d="[^"]*)([0-9]+[.]?[0-9]*|[.][0-9]+)(e[-+]?[0-9]+)?/g;
 //    | grep = | sort | uniq; done | sort | uniq -c | sort -n
 var important_attrs = ['stroke-linejoin', 'stroke-linecap', 'clip-path', 'stroke-width', 'stroke', 'fill', 'style'];
 
-// Add some randomness to path coordinates
-function wigglePath(d) {
-    // Wiggle all numbers
-    return d.replace(match_num, function(match, capture) {
-        return match * 1.0 + Math.random() / 10000;
-        //return (Math.round(match * z * 10000) / 10000).toString();
-    });
-}
-
 // Round path coordinates
 function roundPath(d, precision) {
-    return d.replace(match_num, function(match, capture) {
-        return Number.parseFloat(match).toFixed(precision) * 1.0;
-    });
+    //return d.replace(match_num, function(match, capture) {
+    //    return Number.parseFloat(match).toFixed(precision) * 1.0;
+    //});
 }
 
 // Close three-point paths
@@ -55,20 +41,25 @@ function formatXml(xml) {
     xml.split(/>\s*</).forEach(function(node) {
         if (node.match( /^\/\w/ )) indent = indent.substring(tab.length); // decrease indent by one 'tab'
         ret += indent + '<' + node.replace(/(?<=d="[^"]*)([0-9])(C)/g, '$1 $2') + '>\r\n';
-        if (node.match( /^<?\w([^>/]*|[^>]*[^/])$/ )) indent += tab;              // increase indent
+        if (node.match( /^<?\w([^>/]*|[^>]*[^/])$/ )) indent += tab; // increase indent
     });
     ret = ret.replace( /(<[^\/>][^>]*[^\/>]>)\s*(<\/)/g, '$1$2');
     return ret.substring(1, ret.length - 3);
 }
 
-function applyToSvg(func, text) {
+// Load SVG as text
+function loadSvg(text) {
     let canvas_holder = document.createElement('svg');
     let canvas = SVG(canvas_holder);
     canvas.svg(text.replace(/>\s*</g, '><'));
-    func(canvas);
-    let ret = canvas.children()[0].svg();
-    canvas_holder.remove();
+    let ret = canvas.children()[0];
+    ret._canvas_holder = canvas_holder;
     return ret;
+}
+
+// Unload SVG
+function unloadSvg(svg) {
+    svg._canvas_holder.remove();
 }
 
 function correctUngroup(g) {
@@ -89,10 +80,10 @@ function sameAttributes(p1, p2) {
 }
 
 // Replace all <use> tags with their targets.
-function substituteClones(svg_text) {
+function substituteClones(svg) {
     let ids = {};
     let uses = [];
-    let f = function(e) {
+    let apply = function(e) {
         if (e.type == 'use') {
             // Keep for later (see gd.svg for a <use> node that appears before the id)
             uses.push(e);
@@ -101,7 +92,7 @@ function substituteClones(svg_text) {
             e.attr('id', null);
         }
         for (let e2 of e.children())
-            f(e2, ids);
+            apply(e2, ids);
 
         while (uses.length) {
             let u = uses.pop();
@@ -148,13 +139,13 @@ function substituteClones(svg_text) {
             }
         }
     }
-    return applyToSvg(f, svg_text);
+    apply(svg);
 }
 
 // Work around some weird issues with flatten.js.
 // Can be seen in mv.svg and ch.svg; also je.svg
-function replaceShapes(svg_text) {
-    let f = function(e) {
+function replaceShapes(svg) {
+    let apply = function(e) {
         if (e.type == 'rect') {
             let p = e.root().path();
             let x = e.x(), y = e.y(), w = e.width(), h = e.height();
@@ -193,14 +184,14 @@ function replaceShapes(svg_text) {
         }
 
         for (let e2 of e.children())
-            f(e2);
+            apply(e2);
     }
-    return applyToSvg(f, svg_text);
+    apply(svg);
 }
 
-function removeGrid(svg_text) {
+function removeGrid(svg) {
     let viewbox = null;
-    let f = function(e) {
+    let apply = function(e) {
         if (e.node.id == 'grid') {
             e.remove();
             return;
@@ -211,33 +202,33 @@ function removeGrid(svg_text) {
         }
 
         for (let e2 of e.children())
-            f(e2);
+            apply(e2);
     }
-    return applyToSvg(f, svg_text);
+    apply(svg);
 }
 
-function collapseGroups(svg_text) {
-    let f = function(e) {
+function collapseGroups(svg) {
+    let apply = function(e) {
         for (let e2 of e.children())
-            f(e2);
+            apply(e2);
         if (e.type == 'g' && e.node.attributes.length == 0) {
             //e.ungroup();
             correctUngroup(e);
         }
     }
-    return applyToSvg(f, svg_text);
+    apply(svg);
 }
 
-function mergePaths(svg_text) {
+function mergePaths(svg) {
     let raph_tmp = document.createElement('div');
     raph_tmp.id = 'raphael_canvas';
     document.body.appendChild(raph_tmp);
     let paper = Raphael('raphael_canvas', 250, 250);
 
     let early_exit = false;
-    let f = function(e) {
+    let apply = function(e) {
         for (let ch of e.children()) {
-            f(ch);
+            apply(ch);
             if (early_exit)
                 return;
         }
@@ -260,19 +251,19 @@ function mergePaths(svg_text) {
         }
     }
 
-    let ret = applyToSvg(f, svg_text);
+    apply(svg);
     raph_tmp.remove();
-    return roundPath(ret, 4);
+    roundPath(svg, 4);
 }
 
-function clipPaths(svg_text) {
+function clipPaths(svg) {
     let raph_tmp = document.createElement('div');
     raph_tmp.id = 'raphael_canvas';
     document.body.appendChild(raph_tmp);
     let paper = Raphael('raphael_canvas', 250, 250);
 
     let cids = {}
-    let f = function(e, clips=[]) {
+    let apply = function(e, clips=[]) {
         // Remember clip paths
         if (e.type == 'clipPath') {
             // FIXME: what if there are several paths?
@@ -286,7 +277,7 @@ function clipPaths(svg_text) {
             }
         }
         for (let ch of e.children()) {
-            f(ch, clips);
+            apply(ch, clips);
         }
         if (e.type == 'path' && clips.length) {
             let d1 = closePath(e.attr('d'));
@@ -303,9 +294,9 @@ function clipPaths(svg_text) {
         e.attr('clip-path', null);
     }
 
-    let ret = applyToSvg(f, svg_text);
+    apply(svg);
     raph_tmp.remove();
-    return roundPath(ret, 4);
+    roundPath(svg, 4);
 }
 
 function lerp(a, b, t) {
@@ -323,7 +314,7 @@ function warp(x, y) {
     return [x2, y2 + 11 * Math.sin(dx * 6.28319)];
 }
 
-function waveEffect(svg_text) {
+function waveEffect(svg) {
     let raph_tmp = document.createElement('div');
     raph_tmp.id = 'raphael_canvas';
     document.body.appendChild(raph_tmp);
@@ -331,13 +322,13 @@ function waveEffect(svg_text) {
 
     let cids = {}
     let scale = 1.0;
-    let f = function(e, clips=[]) {
+    let apply = function(e, clips=[]) {
         if (e.type == 'svg') {
             scale = 320 / e.viewbox().w;
             e.attr('viewBox', '0 0 320 320');
         }
         for (let ch of e.children()) {
-            f(ch, clips);
+            apply(ch, clips);
         }
         if (e.type == 'path') {
             let path = paper.path(e.attr('d'));
@@ -371,21 +362,19 @@ function waveEffect(svg_text) {
             path.remove();
         }
     }
-
-    let ret = applyToSvg(f, svg_text);
+    apply(svg);
     raph_tmp.remove();
-    return roundPath(ret, 4);
 }
 
-function addFlag(svg_text) {
+function addFlag(svg) {
     let viewbox = null;
-    let f = function(e) {
+    let apply = function(e) {
         if (e.type == 'svg') {
             e.attr('viewBox', '0 0 320 320');
         }
 
         for (let e2 of e.children())
-            f(e2);
+            apply(e2);
 
         if (e.type == 'path') {
             if ((e.attr()['fill'] && (e.fill() == '#000' || e.fill() == '#000000'))
@@ -408,42 +397,46 @@ function addFlag(svg_text) {
             p1.fill('#cccccc');
         }
     }
-    return applyToSvg(f, svg_text);
+    apply(svg);
 }
 
-function flattenShapes(svg_text) {
-    let tmp = document.createElement('div');
-    document.body.appendChild(tmp);
-    tmp.innerHTML = svg_text;
-    flatten(tmp.children[0], true, false, false, 4);
-    let ret = svgToText(tmp.children[0]);
-    tmp.remove();
-    // Round all numbers to 4 digits
-    return roundPath(ret, 4);
+function flattenShapes(svg) {
+    // We need to temporarily load the SVG in the DOM for flatten.js to
+    // work propertly. Then we move its children back in the original SVG.
+    let tmp_div = document.createElement('div');
+    document.body.appendChild(tmp_div);
+    tmp_div.innerHTML = svg.svg();
+    for (let e of svg.children())
+        e.remove()
+    flatten(tmp_div.children[0], true, false, false, 4);
+    tmp_div.remove();
+    while (tmp_div.children[0].children.length)
+        svg.add(tmp_div.children[0].children[0]);
+    roundPath(svg, 4); // Round all numbers to 4 digits
 }
 
-function debugSvg(name, svg_text) {
+function debugSvg(name, svg) {
     let div = document.createElement('div');
     div.innerHTML = `<h4>${name}:</h4>`;
     _anchor.appendChild(div);
 
     let canvas_holder = document.createElement('svg');
     let canvas = SVG(canvas_holder);
-    canvas.svg(svg_text.replace(/>\s*</g, '><'));
+    canvas.svg(svg.svg().replace(/>\s*</g, '><'));
     canvas.children()[0].width(200);
     canvas_holder.style.margin = '5px';
     _crumbs.appendChild(canvas_holder);
 
     let pre = document.createElement('pre');
-    let text_node = document.createTextNode(formatXml(svg_text));
+    let text_node = document.createTextNode(formatXml(svg.svg()));
     pre.appendChild(text_node);
     _anchor.appendChild(pre);
 }
 
-function handleSvg(id) {
+function handleSvg(id, debug) {
     _anchor = document.getElementById('anchor');
-    _anchor.innerHTML = '';
     _crumbs = document.getElementById('crumbs');
+    _anchor.innerHTML = '';
     _crumbs.innerHTML = '';
 
     img = createFlagImage(id, 200);
@@ -451,15 +444,16 @@ function handleSvg(id) {
     _crumbs.appendChild(img);
 
     // Load clicked SVG as text
-    text = flags[fids[id]];
-    debugSvg(`Original: ${id} (${fids[id].toLowerCase()})`, text);
+    svg = loadSvg(flags[fids[id]]);
+    if (debug)
+        debugSvg(`Original: ${id} (${fids[id].toLowerCase()})`, svg);
 
-//    text = substituteClones(text);
+    //substituteClones(svg);
 
-    text = removeGrid(text);
-    text = replaceShapes(text);
-    text = flattenShapes(text);
-    text = collapseGroups(text);
+    removeGrid(svg);
+    replaceShapes(svg);
+    flattenShapes(svg);
+    collapseGroups(svg);
 
 //for (var i = 0; i < 10; ++i) {
 //    text = mergePaths(text);
@@ -469,11 +463,15 @@ function handleSvg(id) {
 //    text = clipPaths(text);
 //    debugSvg('Clip paths', text);
 
-    text = waveEffect(text);
-    debugSvg('Wave effect', text);
+    waveEffect(svg);
+    if (debug)
+        debugSvg('Wave effect', svg);
 
-    text = addFlag(text);
-    debugSvg('Add flag', text);
+    addFlag(svg);
+    if (debug)
+        debugSvg('Add flag', svg);
+
+    unloadSvg(svg);
 }
 
 function createFlagImage(id, size) {
@@ -494,7 +492,7 @@ for (const [id, data] of Object.entries(flags)) {
     img.id = newid;
     img.style.margin = '3px';
     img.addEventListener("click", function(e) {
-        handleSvg(newid);
+        handleSvg(newid, true);
     });
     let span = document.createElement('span');
     span.style.padding = 5;
