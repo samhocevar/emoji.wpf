@@ -12,19 +12,10 @@ var pathToString = function(array) {
     return array.join(',').replace(/,?([achlmqrstvxz]),?/gi, '$1');
 };
 
-var match_num = /(?<=d="[^"]*)([0-9]+[.]?[0-9]*|[.][0-9]+)(e[-+]?[0-9]+)?/g;
-
 // List obtained by picking from the output of this script:
 //   for x in ../Emoji.Wpf/CountryFlags/svg/*svg; do sed 's/<[^g][^>]*>//g' $x | tr ' "' '\n' \
 //    | grep = | sort | uniq; done | sort | uniq -c | sort -n
 var important_attrs = ['stroke-linejoin', 'stroke-linecap', 'clip-path', 'stroke-width', 'stroke', 'fill', 'style'];
-
-// Round path coordinates
-function roundPath(d, precision) {
-    //return d.replace(match_num, function(match, capture) {
-    //    return Number.parseFloat(match).toFixed(precision) * 1.0;
-    //});
-}
 
 // Close three-point paths
 function closePath(d) {
@@ -77,6 +68,23 @@ function sameAttributes(p1, p2) {
             return false;
     }
     return true;
+}
+
+function simplifyPaths(svg, precision) {
+    const match_num = /([0-9]+[.]?[0-9]*|[.][0-9]+)(e[-+]?[0-9]+)?/g;
+    const apply = function(e) {
+        if (e.type == 'path') {
+            let d = e.attr('d');
+            d = d.replace(match_num, function(match, capture) {
+                return Number.parseFloat(match).toFixed(precision) * 1.0;
+            });
+            e.attr('d', d);
+        } else {
+            for (let c of e.children())
+                apply(c);
+        }
+    }
+    apply(svg);
 }
 
 // Replace all <use> tags with their targets.
@@ -253,7 +261,6 @@ function mergePaths(svg) {
 
     apply(svg);
     raph_tmp.remove();
-    roundPath(svg, 4);
 }
 
 function clipPaths(svg) {
@@ -296,7 +303,6 @@ function clipPaths(svg) {
 
     apply(svg);
     raph_tmp.remove();
-    roundPath(svg, 4);
 }
 
 function lerp(a, b, t) {
@@ -346,7 +352,7 @@ function waveEffect(svg) {
                         warped_points.push(warp(p.x, p.y));
                     }
                     prev_point = [s[5], s[6]];
-                    warped_data = fitCurve(warped_points, 0.1);
+                    warped_data = fitCurve(warped_points, 1);
                     for (let w of warped_data) {
                         new_segments.push(['C', w[1][0], w[1][1],
                                                 w[2][0], w[2][1],
@@ -412,7 +418,6 @@ function flattenShapes(svg) {
     tmp_div.remove();
     while (tmp_div.children[0].children.length)
         svg.add(tmp_div.children[0].children[0]);
-    roundPath(svg, 4); // Round all numbers to 4 digits
 }
 
 function debugSvg(name, svg) {
@@ -460,14 +465,15 @@ function handleSvg(id, debug) {
 //    debugSvg('Merge paths', text);
 //}
 
-//    text = clipPaths(text);
-//    debugSvg('Clip paths', text);
+    //clipPaths(svg);
+    //debugSvg('Clip paths', text);
 
     waveEffect(svg);
     if (debug)
         debugSvg('Wave effect', svg);
 
     addFlag(svg);
+    simplifyPaths(svg, 2);
     if (debug)
         debugSvg('Add flag', svg);
 
