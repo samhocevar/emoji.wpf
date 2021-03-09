@@ -43,13 +43,36 @@ namespace Emoji.Wpf
             {
                 var dg = new DrawingGroup();
                 using (var dc = dg.Open())
-                    RenderText(dc, e.NewValue as string, Brushes.Black, out var width, out var height);
+                    RenderEmoji(dc, e.NewValue as string, Brushes.Black, out var width, out var height);
                 di.Drawing = dg;
             }
         }
 
-        internal static void RenderText(DrawingContext dc, string text, Brush brush,
-                                        out double width, out double height)
+        private static FlagData m_flag_data = new FlagData();
+
+        internal static void RenderEmoji(DrawingContext dc, string text, Brush brush,
+                                         out double width, out double height)
+        {
+            if (text.Length >= 4 && (int)text[0] == 0xd83c && (int)text[2] == 0xd83c
+                 && ((int)text[1] & 0xffe0) == 0xdde0 && ((int)text[3] & 0xffe0) == 0xdde0)
+            {
+                char c1 = (char)((int)text[1] - 0xdde6 + (int)'a');
+                char c2 = (char)((int)text[3] - 0xdde6 + (int)'a');
+                if (m_flag_data[new string(new char[] { c1, c2 })] is Controls.Canvas canvas)
+                {
+                    width = 1.0;
+                    height = 0.8;
+                    var b = new VisualBrush(canvas);
+                    dc.DrawRectangle(b, null, new Rect(0, 0, width, height));
+                    return;
+                }
+            }
+
+            RenderText(dc, text, brush, out width, out height);
+        }
+
+        private static void RenderText(DrawingContext dc, string text, Brush brush,
+                                       out double width, out double height)
         {
             var font = EmojiData.Typeface;
             var glyphplanlist = font.MakeGlyphPlanList(text);

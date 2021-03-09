@@ -88,7 +88,7 @@ namespace Emoji.Wpf
             {
                 var dg = new DrawingGroup();
                 using (var dc = dg.Open())
-                    Image.RenderText(dc, UnicodeSequence, Foreground, out item.width, out item.height);
+                    Image.RenderEmoji(dc, UnicodeSequence, Foreground, out item.width, out item.height);
                 item.di = new DrawingImage(dg);
                 item.di.Freeze();
 
