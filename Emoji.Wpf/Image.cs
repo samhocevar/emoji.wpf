@@ -59,7 +59,7 @@ namespace Emoji.Wpf
             var scale = font.GetScale(0.75); // 1px = 0.75pt
             width = glyphplanlist.Where(g => g.glyphIndex != font.ZwjGlyph)
                                  .Sum(g => g.AdvanceX) * scale;
-            if (EmojiData.RenderingFallbackHack)
+            if (EmojiData.EnableZwjRenderingFallback)
             {
                 width -= glyphplanlist.WithPreviousAndNext()
                                       .Where(t => t.Next.glyphIndex == font.ZwjGlyph)
@@ -86,7 +86,7 @@ namespace Emoji.Wpf
                 if (g.glyphIndex == font.ZwjGlyph)
                     continue;
 
-                if (EmojiData.RenderingFallbackHack)
+                if (EmojiData.EnableZwjRenderingFallback)
                 {
                     if (t.Next.glyphIndex == font.ZwjGlyph)
                     {
@@ -103,14 +103,14 @@ namespace Emoji.Wpf
                 dc.PushTransform(new MatrixTransform(ds, 0, 0, ds, xpos, ypos));
                 foreach ((var gr, var br) in font.DrawGlyph(g.glyphIndex, brush))
                 {
-                    if (EmojiData.SubPixelRendering)
+                    if (EmojiData.EnableSubPixelRendering)
                         dc.DrawGlyphRun(br, gr);
                     else
                         dc.DrawGeometry(br, null, gr.BuildGeometry());
                 }
                 dc.Pop();
 
-                if (EmojiData.RenderingFallbackHack && t.Next.glyphIndex == font.ZwjGlyph)
+                if (EmojiData.EnableZwjRenderingFallback && t.Next.glyphIndex == font.ZwjGlyph)
                     continue;
 
                 startx += g.AdvanceX;

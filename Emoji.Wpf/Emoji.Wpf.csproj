@@ -1,7 +1,28 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"
-          Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <Title>Emoji.Wpf</Title>
+    <Product>Emoji.Wpf</Product>
+    <Authors>Sam Hocevar</Authors>
+    <Copyright>Copyright © 2017—2021 Sam Hocevar</Copyright>
+    <Description>Emoji rendering for WPF applications</Description>
+    <PackageLicenseExpression>WTFPL</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/samhocevar/emoji.wpf</PackageProjectUrl>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageTags>Emoji Unicode WPF XAML</PackageTags>
+    <OutputType>Library</OutputType>
+    <TargetFrameworks>net40;netcoreapp3.1</TargetFrameworks>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <UseWPF>true</UseWPF>
+    <DefaultItemExcludes>
+        $(DefaultItemExcludes);gitversion.json;*.swp;
+        UnicodeCLDR\**;UnicodeEmoji\**
+    </DefaultItemExcludes>
+
+    <!--Remove this section when https://github.com/nuget/home/issues/3891 is resolved -->
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+  </PropertyGroup>
   <UsingTask TaskName="GZipTask" TaskFactory="CodeTaskFactory"
              AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
     <ParameterGroup>
@@ -20,35 +41,6 @@
       ]]></Code>
     </Task>
   </UsingTask>
-  <PropertyGroup>
-    <Configuration Condition="'$(Configuration)'==''">Release</Configuration>
-    <Platform Condition="'$(Platform)'==''">AnyCPU</Platform>
-    <ProjectGuid>{6A9C0AD6-14F7-451A-A0D4-38987A275F0D}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Emoji.Wpf</RootNamespace>
-    <AssemblyName>Emoji.Wpf</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
   <Target Name="CompressResources" BeforeTargets="BeforeBuild"
           Inputs="UnicodeEmoji\emoji-test.txt"
           Outputs="$(OutputPath)\emoji-test.txt.gz">
@@ -56,76 +48,31 @@
               OutputFile="$(OutputPath)\emoji-test.txt.gz" />
   </Target>
   <ItemGroup>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="System" />
-    <Reference Include="System.Xaml" />
-    <Reference Include="WindowsBase" />
+    <None Include="..\Resources\icon.png" Pack="true" PackagePath="" />
+    <None Include="UnicodeEmoji\emoji-test.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Item Include="UnicodeEmoji\emoji-test.txt" />
+    <EmbeddedResource Include="WinFonts\webdings.txt" LogicalName="webdings.txt" />
+    <EmbeddedResource Include="WinFonts\wingdings.txt" LogicalName="wingdings.txt" />
+    <EmbeddedResource Include="$(OutputPath)\emoji-test.txt.gz" LogicalName="emoji-test.txt.gz" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(OutputPath)\emoji-test.txt.gz">
-      <Visible>false</Visible>
-      <LogicalName>emoji-test.txt.gz</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="WinFonts\webdings.txt">
-      <LogicalName>webdings.txt</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="WinFonts\wingdings.txt">
-      <LogicalName>wingdings.txt</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="Picker.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="TextBox.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Behaviors.cs" />
-    <Compile Include="GZipResource.cs" />
-    <Compile Include="Image.cs" />
-    <Compile Include="Internal\Data.cs" />
-    <Compile Include="Internal\EmojiInline.cs" />
-    <Compile Include="Internal\Extensions.cs" />
-    <Compile Include="IEmojiControl.cs" />
-    <Compile Include="Internal\OpenTypeFont.cs" />
-    <Compile Include="Picker.xaml.cs">
-      <DependentUpon>Picker.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RichTextBox.cs" />
-    <Compile Include="TextBlock.cs" />
-    <Compile Include="TextBox.xaml.cs">
-      <DependentUpon>TextBox.xaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Typography\Build\N20\Typography.GlyphLayout\Typography.GlyphLayout.csproj">
-      <Project>{c6807d05-09be-4313-9f8b-bd2d51c55819}</Project>
-      <Name>Typography.GlyphLayout</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Typography\Build\N20\Typography.OpenFont\Typography.OpenFont.csproj">
-      <Project>{f7d71e61-9342-4dd7-9afd-69045f2ec98b}</Project>
-      <Name>Typography.OpenFont</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="GitVersion.MsBuild">
-      <Version>5.6.4</Version>
+    <PackageReference Include="GitVersion.MsBuild" Version="5.6.6" PrivateAssets="all">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="System.ValueTuple">
-      <Version>4.5.0</Version>
-    </PackageReference>
+    <PackageReference Include="System.ValueTuple" Version="4.5.0"
+                      Condition="'$(TargetFramework)' == 'net40'"/>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\Typography\Build\N20\Typography.GlyphLayout\Typography.GlyphLayout.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Typography\Build\N20\Typography.OpenFont\Typography.OpenFont.csproj" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!--Remove this section when https://github.com/nuget/home/issues/3891 is resolved -->
+  <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="BuildOnlySettings;ResolveReferences">
+    <ItemGroup>
+    <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')-&gt;WithMetadataValue('PrivateAssets', 'All'))" />
+    </ItemGroup>
+  </Target>
+
 </Project>
