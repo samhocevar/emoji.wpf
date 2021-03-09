@@ -40,7 +40,7 @@ function formatXml(xml) {
 
 function svgToXaml(svg, id) {
     let text = formatXml(svg.findOne('g').svg());
-    return text.replace(/<(\/?)g\b/g, '<$1Border')
+    return text.replace(/<(\/?)g\b/g, '<$1Canvas')
                .replace(/<(\/?)path\b/g, '<$1Path')
                .replace(/\bstroke=/g, 'Stroke=')
                .replace(/\bstroke-width=/g, 'StrokeThickness=')
@@ -49,6 +49,9 @@ function svgToXaml(svg, id) {
                .replace(/\bstroke-miterlimit=/g, 'StrokeMiterLimit=')
                .replace(/\bfill=/g, 'Fill=')
                .replace(/\bd=/g, 'Data=')
+               .replace(/ *\bfill-rule="[^"]*"/g, '')
+               .replace(/(?<!<Path.*)\bid="[^"]*"/g, `x:Key="${id}"`)
+               .replace(/(?<=<Path.*)\bid="[^"]*" */g, '')
                .replace(/\bid="[^"]*"/g, `x:Key="${id}"`)
                .replace(/"none"/g, '"{x:Null}"');
 }
