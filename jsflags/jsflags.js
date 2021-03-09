@@ -38,6 +38,21 @@ function formatXml(xml) {
     return ret.substring(1, ret.length - 3);
 }
 
+function svgToXaml(svg) {
+    let text = formatXml(svg.children()[0].svg());
+    return text.replace(/<(\/?)g\b/g, '<$1Canvas')
+               .replace(/<(\/?)path\b/g, '<$1Path')
+               .replace(/\bstroke=/g, 'Stroke=')
+               .replace(/\bstroke-width=/g, 'StrokeThickness=')
+               .replace(/\bstroke-linecap="round"/g, 'StrokeStartLineCap="Round" StrokeEndLineCap="Round"')
+               .replace(/\bstroke-linejoin="round"/g, 'StrokeLineJoin="Round"')
+               .replace(/\bstroke-miterlimit=/g, 'StrokeMiterLimit=')
+               .replace(/\bfill=/g, 'Fill=')
+               .replace(/\bd=/g, 'Data=')
+               .replace(/\bid=/g, 'x:Key=')
+               .replace(/"none"/g, '"{x:Null}"');
+}
+
 // Load SVG as text
 function loadSvg(text) {
     let canvas_holder = document.createElement('svg');
@@ -74,11 +89,15 @@ function simplifyPaths(svg, precision) {
     const match_num = /([0-9]+[.]?[0-9]*|[.][0-9]+)(e[-+]?[0-9]+)?/g;
     const apply = function(e) {
         if (e.type == 'path') {
-            let d = e.attr('d');
-            d = d.replace(match_num, function(match, capture) {
-                return Number.parseFloat(match).toFixed(precision) * 1.0;
-            });
-            e.attr('d', d);
+            for (let a of ['d', 'stroke-width']) {
+                if (e.attr()[a]) {
+                    let s = e.attr(a).toString();
+                    s = s.replace(match_num, function(match, capture) {
+                        return Number.parseFloat(match).toFixed(precision) * 1.0;
+                    });
+                    e.attr(a, s);
+                }
+            }
         } else {
             for (let c of e.children())
                 apply(c);
@@ -476,6 +495,11 @@ function handleSvg(id, debug) {
     simplifyPaths(svg, 2);
     if (debug)
         debugSvg('Add flag', svg);
+
+    let pre = document.createElement('pre');
+    let text_node = document.createTextNode(svgToXaml(svg));
+    pre.appendChild(text_node);
+    _anchor.appendChild(pre);
 
     unloadSvg(svg);
 }
