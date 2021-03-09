@@ -39,21 +39,38 @@ function formatXml(xml) {
 }
 
 function svgToXaml(svg, id) {
-    let text = formatXml(svg.findOne('g').svg());
-    return text.replace(/<(\/?)g\b/g, '<$1Canvas')
-               .replace(/<(\/?)path\b/g, '<$1Path')
-               .replace(/\bstroke=/g, 'Stroke=')
-               .replace(/\bstroke-width=/g, 'StrokeThickness=')
-               .replace(/\bstroke-linecap="round"/g, 'StrokeStartLineCap="Round" StrokeEndLineCap="Round"')
-               .replace(/\bstroke-linejoin="round"/g, 'StrokeLineJoin="Round"')
-               .replace(/\bstroke-miterlimit=/g, 'StrokeMiterLimit=')
-               .replace(/\bfill=/g, 'Fill=')
-               .replace(/\bd=/g, 'Data=')
-               .replace(/ *\bfill-rule="[^"]*"/g, '')
-               .replace(/(?<!<Path.*)\bid="[^"]*"/g, `x:Key="${id}"`)
-               .replace(/(?<=<Path.*)\bid="[^"]*" */g, '')
-               .replace(/\bid="[^"]*"/g, `x:Key="${id}"`)
-               .replace(/"none"/g, '"{x:Null}"');
+    let g = svg.findOne('g');
+    let ret = `<DrawingGroup x:Key="${id}">\n`;
+    for (let p of g.children()) {
+        ret += `    <GeometryDrawing Geometry="`;
+        if (!p.attr()['fill-rule'] || p.attr('fill-rule') != 'evenodd')
+            ret += 'F1 ';
+        ret += `${p.attr('d')}"`;
+        if (p.attr()['fill'] && p.attr('fill') != 'none')
+            ret += ` Brush="${p.attr('fill')}"`;
+        if (p.attr()['stroke']) {
+            ret += '>\n';
+            ret += '        <GeometryDrawing.Pen>\n';
+            ret += '            <Pen';
+            if (p.attr()['stroke'])
+                ret += ` Brush="${p.attr('stroke')}"`;
+            if (p.attr()['stroke-width'])
+                ret += ` Thickness="${p.attr('stroke-width')}"`;
+            if (p.attr()['stroke-linecap'])
+                ret += ` StartLineCap="Round" EndLineCap="Round"`;
+            if (p.attr()['stroke-linejoin'])
+                ret += ` LineJoin="Round"`;
+            if (p.attr()['stroke-miterlimit'])
+                ret += ` MiterLimit="${p.attr('stroke-miterlimit')}"`;
+            ret += '/>\n';
+            ret += '        </GeometryDrawing.Pen>\n';
+            ret += '    </GeometryDrawing>\n';
+        } else {
+            ret += '/>\n';
+        }
+    }
+    ret += '</DrawingGroup>\n';
+    return ret;
 }
 
 // Load SVG as text
