@@ -38,9 +38,9 @@ function formatXml(xml) {
     return ret.substring(1, ret.length - 3);
 }
 
-function svgToXaml(svg) {
-    let text = formatXml(svg.children()[0].svg());
-    return text.replace(/<(\/?)g\b/g, '<$1Canvas')
+function svgToXaml(svg, id) {
+    let text = formatXml(svg.findOne('g').svg());
+    return text.replace(/<(\/?)g\b/g, '<$1Border')
                .replace(/<(\/?)path\b/g, '<$1Path')
                .replace(/\bstroke=/g, 'Stroke=')
                .replace(/\bstroke-width=/g, 'StrokeThickness=')
@@ -49,7 +49,7 @@ function svgToXaml(svg) {
                .replace(/\bstroke-miterlimit=/g, 'StrokeMiterLimit=')
                .replace(/\bfill=/g, 'Fill=')
                .replace(/\bd=/g, 'Data=')
-               .replace(/\bid=/g, 'x:Key=')
+               .replace(/\bid="[^"]*"/g, `x:Key="${id}"`)
                .replace(/"none"/g, '"{x:Null}"');
 }
 
@@ -235,15 +235,29 @@ function removeGrid(svg) {
 }
 
 function collapseGroups(svg) {
-    let apply = function(e) {
+    let apply = function(e, la) {
+        if (e.type == 'g') {
+            la = { ...la };
+            for (let [a, val] of Object.entries(e.attr())) {
+                if (a != 'id') {
+                    la[a] = val;
+                    e.attr(a, null);
+                }
+            }
+        } else if (e.type == 'path') {
+            for (const [a, val] of Object.entries(la)) {
+                if (!e.attr()[a])
+                    e.attr(a, val);
+            }
+        }
         for (let e2 of e.children())
-            apply(e2);
+            apply(e2, la);
         if (e.type == 'g' && e.node.attributes.length == 0) {
             //e.ungroup();
             correctUngroup(e);
         }
     }
-    apply(svg);
+    apply(svg, {});
 }
 
 function mergePaths(svg) {
@@ -458,14 +472,16 @@ function debugSvg(name, svg) {
 }
 
 function handleSvg(id, debug) {
-    _anchor = document.getElementById('anchor');
-    _crumbs = document.getElementById('crumbs');
-    _anchor.innerHTML = '';
-    _crumbs.innerHTML = '';
+    if (debug) {
+        _anchor = document.getElementById('anchor');
+        _anchor.innerHTML = '';
+        _crumbs = document.getElementById('crumbs');
+        _crumbs.innerHTML = '';
 
-    img = createFlagImage(id, 200);
-    img.style.margin = '5px';
-    _crumbs.appendChild(img);
+        img = createFlagImage(id, 200);
+        img.style.margin = '5px';
+        _crumbs.appendChild(img);
+    }
 
     // Load clicked SVG as text
     svg = loadSvg(flags[fids[id]]);
@@ -496,12 +512,16 @@ function handleSvg(id, debug) {
     if (debug)
         debugSvg('Add flag', svg);
 
-    let pre = document.createElement('pre');
-    let text_node = document.createTextNode(svgToXaml(svg));
-    pre.appendChild(text_node);
-    _anchor.appendChild(pre);
+    if (debug) {
+        let pre = document.createElement('pre');
+        let text_node = document.createTextNode(svgToXaml(svg, id));
+        pre.appendChild(text_node);
+        _anchor.appendChild(pre);
+    }
 
     unloadSvg(svg);
+
+    return svgToXaml(svg, id);
 }
 
 function createFlagImage(id, size) {
@@ -512,11 +532,28 @@ function createFlagImage(id, size) {
     return img;
 }
 
+function doAll() {
+    _anchor = document.getElementById('anchor');
+    _anchor.innerHTML = '';
+    let pre = document.createElement('pre');
+    _anchor.appendChild(pre);
+
+    for (const [newid, id] of Object.entries(fids)) {
+        if (newid == 'np')
+            continue;
+        let text_node = document.createTextNode(handleSvg(newid, false) + '\n');
+        pre.appendChild(text_node);
+    }
+}
+
 let bar = document.getElementById('menubar');
 let fids = {}
 for (const [id, data] of Object.entries(flags)) {
-    let newid = String.fromCharCode('0x' + id.substring(0,5) - 0x1f1e6 + 97)
+    let newid = id.replace('.svg', '');
+    if (id.substring(0,3).toLowerCase() == '1f1') {
+        newid = String.fromCharCode('0x' + id.substring(0,5) - 0x1f1e6 + 97)
               + String.fromCharCode('0x' + id.substring(6,11) - 0x1f1e6 + 97);
+    }
     fids[newid] = id;
     img = createFlagImage(newid, 30);
     img.id = newid;
