@@ -30,8 +30,7 @@ namespace Emoji.Wpf
         public static string GetSource(DependencyObject o)
             => (string)o.GetValue(SourceProperty);
 
-        private static void OnSourceChanged(DependencyObject o,
-                                            DependencyPropertyChangedEventArgs e)
+        private static void OnSourceChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
         {
             if (o is Controls.Image image)
             {
@@ -41,34 +40,31 @@ namespace Emoji.Wpf
             }
             else if (o is DrawingImage di)
             {
-                var dg = new DrawingGroup();
-                using (var dc = dg.Open())
-                    RenderEmoji(dc, e.NewValue as string, Brushes.Black, out var width, out var height);
-                di.Drawing = dg;
+                di.Drawing = RenderEmoji(e.NewValue as string, Brushes.Black, out var width, out var height);
             }
         }
 
         private static FlagData m_flag_data = new FlagData();
 
-        internal static void RenderEmoji(DrawingContext dc, string text, Brush brush,
-                                         out double width, out double height)
+        internal static DrawingGroup RenderEmoji(string text, Brush brush, out double width, out double height)
         {
-            if (text.Length >= 4 && (int)text[0] == 0xd83c && (int)text[2] == 0xd83c
-                 && ((int)text[1] & 0xffe0) == 0xdde0 && ((int)text[3] & 0xffe0) == 0xdde0)
+            if (text.Length >= 4 && text[0] == 0xd83c && text[2] == 0xd83c
+                 && (text[1] & 0xffe0) == 0xdde0 && (text[3] & 0xffe0) == 0xdde0)
             {
-                char c1 = (char)((int)text[1] - 0xdde6 + (int)'a');
-                char c2 = (char)((int)text[3] - 0xdde6 + (int)'a');
-                if (m_flag_data[new string(new char[] { c1, c2 })] is Controls.Canvas canvas)
+                char c1 = (char)(text[1] - 0xdde6 + 'a');
+                char c2 = (char)(text[3] - 0xdde6 + 'a');
+                if (m_flag_data[new string(new char[] { c1, c2 })] is DrawingGroup rdg)
                 {
                     width = 1.0;
                     height = 0.8;
-                    var b = new VisualBrush(canvas);
-                    dc.DrawRectangle(b, null, new Rect(0, 0, width, height));
-                    return;
+                    return rdg;
                 }
             }
 
-            RenderText(dc, text, brush, out width, out height);
+            var dg = new DrawingGroup();
+            using (var dc = dg.Open())
+                RenderText(dc, text, brush, out width, out height);
+            return dg;
         }
 
         private static void RenderText(DrawingContext dc, string text, Brush brush,
