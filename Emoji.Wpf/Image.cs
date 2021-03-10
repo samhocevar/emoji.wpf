@@ -55,9 +55,22 @@ namespace Emoji.Wpf
                 char c2 = (char)(text[3] - 0xdde6 + 'a');
                 if (m_flag_data[new string(new char[] { c1, c2 })] is DrawingGroup rdg)
                 {
-                    width = 1.0;
-                    height = 0.8;
-                    return rdg;
+                    var ret = new DrawingGroup();
+                    using (var dc = ret.Append())
+                    {
+                        dc.DrawRectangle(Brushes.Transparent, null, new Rect(-25, -46, 370, 378));
+                        // Draw the flag colours
+                        foreach (var child in rdg.Children)
+                            dc.DrawDrawing(child);
+                        // Add the overlay (pole and outline)
+                        foreach (var child in (m_flag_data["overlay"] as DrawingGroup).Children)
+                            dc.DrawDrawing(child);
+                    }
+
+                    // These values were manually retrieved from rendering 🏳️ (U+1F1F3 White Flag)
+                    width = 1.30322265625;
+                    height = 1.330078125;
+                    return ret;
                 }
             }
 
