@@ -48,35 +48,30 @@ namespace Emoji.Wpf
 
         internal static DrawingGroup RenderEmoji(string text, Brush brush, out double width, out double height)
         {
-            if (text.Length >= 4 && text[0] == 0xd83c && text[2] == 0xd83c
-                 && (text[1] & 0xffe0) == 0xdde0 && (text[3] & 0xffe0) == 0xdde0)
+            var dg = new DrawingGroup();
+
+            using (var dc = dg.Open())
             {
-                char c1 = (char)(text[1] - 0xdde6 + 'a');
-                char c2 = (char)(text[3] - 0xdde6 + 'a');
-                if (m_flag_data[new string(new char[] { c1, c2 })] is DrawingGroup rdg)
+                if (m_flag_data[text] is DrawingGroup xdg)
                 {
-                    var ret = new DrawingGroup();
-                    using (var dc = ret.Append())
-                    {
-                        dc.DrawRectangle(Brushes.Transparent, null, new Rect(-25, -46, 370, 378));
-                        // Draw the flag colours
-                        foreach (var child in rdg.Children)
-                            dc.DrawDrawing(child);
-                        // Add the overlay (pole and outline)
-                        foreach (var child in (m_flag_data["overlay"] as DrawingGroup).Children)
-                            dc.DrawDrawing(child);
-                    }
+                    dc.DrawRectangle(Brushes.Transparent, null, new Rect(-25, -46, 370, 378));
+                    // Draw the flag colours
+                    foreach (var child in xdg.Children)
+                        dc.DrawDrawing(child);
+                    // Add the overlay (pole and outline)
+                    foreach (var child in (m_flag_data["overlay"] as DrawingGroup).Children)
+                        dc.DrawDrawing(child);
 
                     // These values were manually retrieved from rendering 🏳️ (U+1F1F3 White Flag)
                     width = 1.30322265625;
                     height = 1.330078125;
-                    return ret;
+                }
+                else
+                {
+                    RenderText(dc, text, brush, out width, out height);
                 }
             }
 
-            var dg = new DrawingGroup();
-            using (var dc = dg.Open())
-                RenderText(dc, text, brush, out width, out height);
             return dg;
         }
 
