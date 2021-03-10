@@ -32,18 +32,15 @@ namespace Emoji.Wpf
         internal static void ColorizeEmojis(this FlowDocument document)
             => ColorizeEmojis(document, new EmojiOptions {});
 
-        internal static void ColorizeEmojis(this FlowDocument document, TextPointer caret)
-            => ColorizeEmojis(document, new EmojiOptions {}, caret);
-
         internal static void ColorizeEmojis(this FlowDocument document, EmojiOptions options)
-            => ColorizeEmojis(document, options, document.ContentStart);
-
-        internal static TextPointer ColorizeEmojis(this FlowDocument document, EmojiOptions options,
-                                                   TextPointer caret)
         {
+            // If our parent is a RichTextBox, try to retain the caret position
+            RichTextBox rtb = document.Parent as RichTextBox;
+
             var colon_syntax = options.ColonSyntax;
             var color_blend = options.ColorBlend;
 
+            TextPointer caret = rtb?.CaretPosition;
             TextPointer cur = document.ContentStart;
             while (cur.CompareTo(document.ContentEnd) < 0)
             {
@@ -88,7 +85,7 @@ namespace Emoji.Wpf
                 if (replace_text != null)
                 {
                     // Preserve caret position in case of replacement
-                    bool caret_was_next = cur.CompareTo(caret) < 0 && next.CompareTo(caret) >= 0;
+                    bool caret_was_next = caret != null && cur.CompareTo(caret) < 0 && next.CompareTo(caret) >= 0;
 
                     var font_size = replace_range.GetPropertyValue(TextElement.FontSizeProperty);
                     var foreground = replace_range.GetPropertyValue(TextElement.ForegroundProperty);
@@ -110,7 +107,8 @@ namespace Emoji.Wpf
                 cur = next;
             }
 
-            return caret;
+            if (rtb != null)
+                rtb.CaretPosition = caret;
         }
     }
 }
