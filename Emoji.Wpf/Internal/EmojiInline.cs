@@ -86,9 +86,7 @@ namespace Emoji.Wpf
 
             if (Foreground != Brushes.Black || !m_cache.TryGetValue(UnicodeSequence, out var item))
             {
-                var dg = new DrawingGroup();
-                using (var dc = dg.Open())
-                    Image.RenderText(dc, UnicodeSequence, Foreground, out item.width, out item.height);
+                var dg = Image.RenderEmoji(UnicodeSequence, Foreground, out item.width, out item.height);
                 item.di = new DrawingImage(dg);
                 item.di.Freeze();
 
