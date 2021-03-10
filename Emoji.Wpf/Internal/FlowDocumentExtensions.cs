@@ -77,7 +77,7 @@ namespace Emoji.Wpf
                 {
                     var end = next.GetNextContextPosition(LogicalDirection.Forward);
                     var match = ColonSyntaxRegex.Match(new TextRange(cur, end).Text);
-                    if (match.Success && EmojiData.LookupByName.TryGetValue(match.Groups[1].Value.Replace("-", " "), out var emoji))
+                    if (match.Success && EmojiData.LookupByName.TryGetValue(match.Groups[1].Value, out var emoji))
                     {
                         replace_text = match.Value;
                         next = cur.GetPositionAtCharOffset(match.Value.Length);

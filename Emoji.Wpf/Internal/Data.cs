@@ -111,6 +111,9 @@ namespace Emoji.Wpf
             "🦲", // bald
         };
 
+        private static string ToColonSyntax(string s)
+            => Regex.Replace(s.Trim().ToLowerInvariant(), "[^a-z0-9]+", "-");
+
         private static void ParseEmojiList()
         {
             var match_group = new Regex(@"^# group: (.*)");
@@ -204,12 +207,12 @@ namespace Emoji.Wpf
                         Renderable = Typeface.CanRender(text),
                     };
                     LookupByText[text] = emoji;
-                    LookupByName[name] = emoji;
+                    LookupByName[ToColonSyntax(name)] = emoji;
 
                     // Get the left part of the name and check whether we’re a variation of an existing
                     // emoji. If so, append to that emoji. Otherwise, add to current subgroup.
                     // FIXME: does not work properly because variations can appear before the generic emoji
-                    if (name.Contains(":") && LookupByName.TryGetValue(name.Split(':')[0], out var parent_emoji))
+                    if (name.Contains(":") && LookupByName.TryGetValue(ToColonSyntax(name.Split(':')[0]), out var parent_emoji))
                     {
                         if (parent_emoji.VariationList.Count == 0)
                             parent_emoji.VariationList.Add(parent_emoji);
