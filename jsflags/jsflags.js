@@ -38,9 +38,9 @@ function formatXml(xml) {
     return ret.substring(1, ret.length - 3);
 }
 
-function svgToXaml(svg, id) {
+function svgToXaml(svg, unicode_id) {
     let g = svg.findOne('g');
-    let ret = `<DrawingGroup x:Key="${id}">\n`;
+    let ret = `<DrawingGroup x:Key="${unicode_id}">\n`;
     for (let p of g.children()) {
         ret += `    <GeometryDrawing Geometry="`;
         if (!p.attr()['fill-rule'] || p.attr('fill-rule') != 'evenodd')
@@ -491,22 +491,25 @@ function debugSvg(name, svg) {
     _anchor.appendChild(pre);
 }
 
-function handleSvg(id, debug) {
+function handleSvg(filename, debug) {
+    let img_id = all_ids[filename][0];
+    let unicode_id = all_ids[filename][1];
+
     if (debug) {
         _anchor = document.getElementById('anchor');
         _anchor.innerHTML = '';
         _crumbs = document.getElementById('crumbs');
         _crumbs.innerHTML = '';
 
-        img = createFlagImage(id, 200);
+        img = createFlagImage(img_id, 200);
         img.style.margin = '5px';
         _crumbs.appendChild(img);
     }
 
     // Load clicked SVG as text
-    svg = loadSvg(flags[fids[id]]);
+    svg = loadSvg(flags[filename]);
     if (debug)
-        debugSvg(`Original: ${id} (${fids[id].toLowerCase()})`, svg);
+        debugSvg(`Original: ${img_id} / ${unicode_id} (${filename.toLowerCase()})`, svg);
 
     //substituteClones(svg);
 
@@ -534,14 +537,14 @@ function handleSvg(id, debug) {
 
     if (debug) {
         let pre = document.createElement('pre');
-        let text_node = document.createTextNode(svgToXaml(svg, id));
+        let text_node = document.createTextNode(svgToXaml(svg, unicode_id));
         pre.appendChild(text_node);
         _anchor.appendChild(pre);
     }
 
     unloadSvg(svg);
 
-    return svgToXaml(svg, id);
+    return svgToXaml(svg, unicode_id);
 }
 
 function createFlagImage(id, size) {
@@ -558,33 +561,44 @@ function doAll() {
     let pre = document.createElement('pre');
     _anchor.appendChild(pre);
 
-    for (const [newid, id] of Object.entries(fids)) {
-        if (newid == 'np')
+    for (const [filename, data] of Object.entries(flags)) {
+        if (all_ids[filename][0] == 'np')
             continue;
-        let text_node = document.createTextNode(handleSvg(newid, false) + '\n');
+        let text_node = document.createTextNode(handleSvg(filename, false) + '\n');
         pre.appendChild(text_node);
     }
 }
 
-let bar = document.getElementById('menubar');
-let fids = {}
-for (const [id, data] of Object.entries(flags)) {
-    let newid = id.replace('.svg', '');
-    if (id.substring(0,3).toLowerCase() == '1f1') {
-        newid = String.fromCharCode('0x' + id.substring(0,5) - 0x1f1e6 + 97)
-              + String.fromCharCode('0x' + id.substring(6,11) - 0x1f1e6 + 97);
+let all_ids = {}
+for (const [filename, data] of Object.entries(flags)) {
+    let img_id = filename;
+    let unicode_id = filename;
+    if (filename.indexOf('-') != -1) {
+        img_id = '';
+        unicode_id = '';
+        for (let s of filename.split('-')) {
+            let n = '0x' + s | 0;
+            if (n - 0x1f1e6 >= 0 && n - 0x1f1e6 <= 26)
+                img_id += String.fromCharCode(n - 0x1f1e6 + 97);
+            else if (n - 0xe0000 >= 97 && n - 0xe0000 <= 97 + 26)
+                img_id += String.fromCharCode(n - 0xe0000);
+            else
+                img_id += '[' + n + ']';
+            unicode_id += String.fromCodePoint(n);
+        }
     }
-    fids[newid] = id;
-    img = createFlagImage(newid, 30);
-    img.id = newid;
+    all_ids[filename] = [img_id, unicode_id];
+    img = createFlagImage(img_id, 30);
+    img.id = filename;
     img.style.margin = '3px';
     img.addEventListener("click", function(e) {
-        handleSvg(newid, true);
+        handleSvg(filename, true);
     });
     let span = document.createElement('span');
     span.style.padding = 5;
     if (data.indexOf('clip-path=') >= 0)
         span.innerHTML = '*';
     span.appendChild(img);
+    let bar = document.getElementById('menubar');
     bar.appendChild(span);
 }

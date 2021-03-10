@@ -1,13 +1,15 @@
 
-SVGDIR = openmoji/src/flags/country-flag
-SVGFILES = $(shell grep '<use' $(SVGDIR)/* | cut -f1 -d: | uniq | xargs du -sb | sort -n | head -n 60 | sed 's,.*/,,' | awk '{print $2}')
-#SVGFILES = $(shell du -sb $(SVGDIR)/* | sort -n | head -n 120 | tail -n 40 | sed 's,.*/,,' | awk '{print $2}')
+ALL_FLAGS = \
+    openmoji/src/flags/country-flag/* \
+    openmoji/src/flags/subdivision-flag/* \
+    openmoji/src/flags/flag/1F3F3-FE0F-200D-26A7-FE0F.svg \
+    openmoji/src/flags/flag/1F3F4-FE0F-200D-1F170-FE0F.svg
 
 all: .allflags.js
 
 .allflags.js: Makefile
 	echo 'flags = {' > $@
-	for x in $(SVGDIR)/*; do echo "'"`basename $$x`"': '"`sed "s/'/\\\\\\\\'/g" $$x`"',"; done >> $@
+	for x in $(ALL_FLAGS); do echo "'"`basename $$x | sed 's/[.]svg//'`"': '"`sed "s/'/\\\\\\\\'/g" $$x`"',"; done >> $@
 	echo '}' >> $@
 
 clean:
