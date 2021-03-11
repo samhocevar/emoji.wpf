@@ -151,6 +151,7 @@ namespace Emoji.Wpf
             var child = "(👦|👧|👶)(🏻|🏼|🏽|🏾|🏿)?";
             var match_family = new Regex($"{adult}(\u200d{adult})*(\u200d{child})+");
 
+            var qualified_lut = new Dictionary<string, string>();
             var list = new List<Group>();
             var alltext = new List<string>();
 
@@ -213,16 +214,13 @@ namespace Emoji.Wpf
                             alltext.Add(has_modifier ? regex_text : text);
                     }
 
-                    // Only add fully-qualified characters to the groups, or we will
-                    // end with a lot of dupes.
-                    if (line.Contains("unqualified") || line.Contains("minimally-qualified"))
-                    {
-                        // Skip this if there is already a fully qualified version
-                        if (LookupByText.ContainsKey(text + "\ufe0f"))
-                            continue;
-                        if (LookupByText.ContainsKey(text.Replace("\u20e3", "\ufe0f\u20e3")))
-                            continue;
-                    }
+                    // If there is already a differently-qualified version of this character, skip it.
+                    // FIXME: this only works well if fully-qualified appears first in the list.
+                    var unqualified = text.Replace("\ufe0f", "");
+                    if (qualified_lut.ContainsKey(unqualified))
+                        continue;
+
+                    qualified_lut[unqualified] = text;
 
                     var emoji = new Emoji
                     {
@@ -251,12 +249,17 @@ namespace Emoji.Wpf
 
             // Remove the Component group. Not sure we want to have the skin tones in the picker.
             list.RemoveAll(g => g.Name == "Component");
-
             AllGroups = list;
 
-            // Build a regex that matches any Emoji
+            // Make U+fe0f optional in the regex so that we can match any combination.
+            // FIXME: this is the starting point to implement variation selectors.
             var sortedtext = alltext.OrderByDescending(x => x.Length);
-            m_match_one_string = match_family.ToString() + "|" + string.Join("|", sortedtext).Replace("*", "[*]");
+            var match_other = string.Join("|", sortedtext)
+                                    .Replace("*", "[*]")
+                                    .Replace("\ufe0f", "\ufe0f?");
+
+            // Build a regex that matches any Emoji
+            m_match_one_string = match_family.ToString() + "|" + match_other;
             MatchOne = new Regex("(" + m_match_one_string + ")");
         }
 
