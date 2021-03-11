@@ -32,18 +32,15 @@ namespace Emoji.Wpf
         internal static void ColorizeEmojis(this FlowDocument document)
             => ColorizeEmojis(document, new EmojiOptions {});
 
-        internal static void ColorizeEmojis(this FlowDocument document, TextPointer caret)
-            => ColorizeEmojis(document, new EmojiOptions {}, caret);
-
         internal static void ColorizeEmojis(this FlowDocument document, EmojiOptions options)
-            => ColorizeEmojis(document, options, document.ContentStart);
-
-        internal static TextPointer ColorizeEmojis(this FlowDocument document, EmojiOptions options,
-                                                   TextPointer caret)
         {
+            // If our parent is a RichTextBox, try to retain the caret position
+            RichTextBox rtb = document.Parent as RichTextBox;
+
             var colon_syntax = options.ColonSyntax;
             var color_blend = options.ColorBlend;
 
+            TextPointer caret = rtb?.CaretPosition;
             TextPointer cur = document.ContentStart;
             while (cur.CompareTo(document.ContentEnd) < 0)
             {
@@ -53,31 +50,34 @@ namespace Emoji.Wpf
 
                 string replace_text = null;
                 var replace_range = new TextRange(cur, next);
-                if (EmojiData.MatchOne.IsMatch(replace_range.Text))
+                if (replace_range.Text.Length > 0 && EmojiData.MatchStart.Contains(replace_range.Text[0]))
                 {
-                    // We found an emoji, but it’s possible that GetNextInsertionPosition
-                    // did not pick enough characters and the emoji sequence is actually
-                    // longer. To avoid this, we look up to 50 characters ahead and retry
-                    // the match.
+                    // GetNextInsertionPosition() is not reliable to find emoji because
+                    // it sometimes stops in the middle of a valid sequence (for flags
+                    // that do not use ZWJ, or for some recent skin tone variations).
+                    // To fix this, we look up to 50 characters ahead.
                     var lookup = next.GetNextContextPosition(LogicalDirection.Forward);
                     if (cur.GetOffsetToPosition(lookup) > 50)
                         lookup = cur.GetPositionAtOffset(50, LogicalDirection.Forward);
                     var match = EmojiData.MatchOne.Match(new TextRange(cur, lookup).Text);
-                    while (match.Length > replace_range.Text.Length)
+                    if (match.Success)
                     {
-                        next = next.GetNextInsertionPosition(LogicalDirection.Forward);
-                        if (next == null)
-                            break;
-                        replace_range = new TextRange(cur, next);
-                    }
+                        while (match.Length > replace_range.Text.Length)
+                        {
+                            next = next.GetNextInsertionPosition(LogicalDirection.Forward);
+                            if (next == null)
+                                break;
+                            replace_range = new TextRange(cur, next);
+                        }
 
-                    replace_text = match.Value;
+                        replace_text = match.Value;
+                    }
                 }
                 else if (colon_syntax && replace_range.Text == ":")
                 {
                     var end = next.GetNextContextPosition(LogicalDirection.Forward);
                     var match = ColonSyntaxRegex.Match(new TextRange(cur, end).Text);
-                    if (match.Success && EmojiData.LookupByName.TryGetValue(match.Groups[1].Value.Replace("-", " "), out var emoji))
+                    if (match.Success && EmojiData.LookupByName.TryGetValue(match.Groups[1].Value, out var emoji))
                     {
                         replace_text = match.Value;
                         next = cur.GetPositionAtCharOffset(match.Value.Length);
@@ -88,7 +88,7 @@ namespace Emoji.Wpf
                 if (replace_text != null)
                 {
                     // Preserve caret position in case of replacement
-                    bool caret_was_next = cur.CompareTo(caret) < 0 && next.CompareTo(caret) >= 0;
+                    bool caret_was_next = caret != null && cur.CompareTo(caret) < 0 && next.CompareTo(caret) >= 0;
 
                     var font_size = replace_range.GetPropertyValue(TextElement.FontSizeProperty);
                     var foreground = replace_range.GetPropertyValue(TextElement.ForegroundProperty);
@@ -110,7 +110,8 @@ namespace Emoji.Wpf
                 cur = next;
             }
 
-            return caret;
+            if (rtb != null)
+                rtb.CaretPosition = caret;
         }
     }
 }

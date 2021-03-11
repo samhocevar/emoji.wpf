@@ -16,6 +16,7 @@
         <clr:String x:Key="DisabledButtonText">💾 Disabled</clr:String>
         <clr:String x:Key="QualifiedEmoji">▶︎ ▶ ▶️</clr:String>
         <clr:String x:Key="EditableText" xml:space="preserve">I💖emoji! Edit me, or use the picker😄&#x0a;🐍🏍️📞🍰☘️🖋️💩</clr:String>
+        <clr:String x:Key="FlagsText">🏁🇺🇳🇸🇰🏳️‍⚧️🏴󠁧󠁢󠁷󠁬󠁳󠁿🇧🇷🇦🇺🏳️‍🌈🇲🇰🏴󠁦󠁲󠁢󠁲󠁥󠁿</clr:String>
         <clr:String x:Key="StringImageSource">👩‍💻</clr:String>
         <DrawingImage x:Key="DrawingImageSource" emoji:Image.Source="🏇"/>
     </Window.Resources>
@@ -24,7 +25,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="5*" />
             <RowDefinition Height="4*" />
-            <RowDefinition Height="4*" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
@@ -114,13 +115,22 @@
         </Grid>
 
         <Grid Grid.Row="2">
-            <FlowDocumentScrollViewer>
-                <FlowDocument emoji:Behaviors.EmojiRendering="true">
-                    <Paragraph>
-                        <Run Text="{StaticResource SampleText}" />
-                    </Paragraph>
-                </FlowDocument>
-            </FlowDocumentScrollViewer>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="4*" />
+                <ColumnDefinition Width="5*" />
+            </Grid.ColumnDefinitions>
+            <GroupBox Grid.Column="0" Header="wpf:FlowDocument" Margin="4">
+                <FlowDocumentScrollViewer>
+                    <FlowDocument emoji:Behaviors.EmojiRendering="true" PagePadding="4">
+                        <Paragraph>
+                            <Run Text="{StaticResource SampleText}" />
+                        </Paragraph>
+                    </FlowDocument>
+                </FlowDocumentScrollViewer>
+            </GroupBox>
+            <GroupBox Grid.Column="1" Header="Flags" Margin="4">
+                <emoji:TextBlock FontSize="24" Text="{StaticResource FlagsText}"/>
+            </GroupBox>
         </Grid>
 
         <Grid Grid.Row="3">

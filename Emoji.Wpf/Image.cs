@@ -30,8 +30,7 @@ namespace Emoji.Wpf
         public static string GetSource(DependencyObject o)
             => (string)o.GetValue(SourceProperty);
 
-        private static void OnSourceChanged(DependencyObject o,
-                                            DependencyPropertyChangedEventArgs e)
+        private static void OnSourceChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
         {
             if (o is Controls.Image image)
             {
@@ -41,15 +40,43 @@ namespace Emoji.Wpf
             }
             else if (o is DrawingImage di)
             {
-                var dg = new DrawingGroup();
-                using (var dc = dg.Open())
-                    RenderText(dc, e.NewValue as string, Brushes.Black, out var width, out var height);
-                di.Drawing = dg;
+                di.Drawing = RenderEmoji(e.NewValue as string, Brushes.Black, out var width, out var height);
             }
         }
 
-        internal static void RenderText(DrawingContext dc, string text, Brush brush,
-                                        out double width, out double height)
+        private static FlagData m_flag_data = new FlagData();
+
+        internal static DrawingGroup RenderEmoji(string text, Brush brush, out double width, out double height)
+        {
+            var dg = new DrawingGroup();
+
+            using (var dc = dg.Open())
+            {
+                if (m_flag_data[text] is DrawingGroup xdg)
+                {
+                    dc.DrawRectangle(Brushes.Transparent, null, new Rect(-25, -46, 370, 378));
+                    // Draw the flag colours
+                    foreach (var child in xdg.Children)
+                        dc.DrawDrawing(child);
+                    // Add the overlay (pole and outline)
+                    foreach (var child in (m_flag_data["overlay"] as DrawingGroup).Children)
+                        dc.DrawDrawing(child);
+
+                    // These values were manually retrieved from rendering 🏳️ (U+1F1F3 White Flag)
+                    width = 1.30322265625;
+                    height = 1.330078125;
+                }
+                else
+                {
+                    RenderText(dc, text, brush, out width, out height);
+                }
+            }
+
+            return dg;
+        }
+
+        private static void RenderText(DrawingContext dc, string text, Brush brush,
+                                       out double width, out double height)
         {
             var font = EmojiData.Typeface;
             var glyphplanlist = font.MakeGlyphPlanList(text);

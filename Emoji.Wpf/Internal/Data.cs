@@ -34,7 +34,8 @@ namespace Emoji.Wpf
             = new Dictionary<string, Emoji>();
 
         public static Regex MatchOne { get; private set; }
-        public static Regex MatchMultiple { get; private set; }
+        public static HashSet<char> MatchStart { get; private set; }
+            = new HashSet<char>();
 
         public static bool EnableZwjRenderingFallback { get; set; } = true;
 
@@ -51,6 +52,18 @@ namespace Emoji.Wpf
         {
             Typeface = new EmojiTypeface(font_name);
             ParseEmojiList();
+
+            // Insert Microsoft’s custom hacker emoji (in reverse order)
+            Register("hacker cat",  "🐱\u200d💻", after: "pouting cat");
+            Register("dino cat",    "🐱\u200d🐉", after: "pouting cat");
+            Register("ninja cat",   "🐱\u200d👤", after: "pouting cat");
+            Register("astro cat",   "🐱\u200d🚀", after: "pouting cat");
+            Register("hipster cat", "🐱\u200d👓", after: "pouting cat");
+            Register("stunt cat",   "🐱\u200d🏍", after: "pouting cat");
+
+            // Some custom flags that we like to have
+            Register("anarchy flag", "🏴‍🅰️", after: "transgender-flag");
+            Register("flag: Bretagne", "🏴󠁦󠁲󠁢󠁲󠁥󠁿", after: "flag-brazil");
         }
 
         public class Emoji
@@ -93,6 +106,30 @@ namespace Emoji.Wpf
                    select e;
         }
 
+        public static void Register(string name, string sequence, string after)
+        {
+            if (!LookupByName.TryGetValue(ToColonSyntax(after), out var predecessor))
+                predecessor = AllEmoji.Last();
+
+            var entry = new Emoji
+            {
+                Name = name,
+                Text = sequence,
+                SubGroup = predecessor.SubGroup,
+            };
+            var list = predecessor.SubGroup.EmojiList;
+            list.Insert(list.IndexOf(predecessor) + 1, entry);
+
+            MatchStart.Add(sequence[0]);
+            LookupByName[ToColonSyntax(name)] = entry;
+            LookupByText[sequence] = entry;
+
+            m_match_one_string = sequence + "|" + m_match_one_string;
+            MatchOne = new Regex("(" + m_match_one_string + ")");
+        }
+
+        private static string m_match_one_string;
+
         // FIXME: this could be read directly from emoji-test.txt.gz
         private static List<string> SkinToneComponents = new List<string>
         {
@@ -111,6 +148,9 @@ namespace Emoji.Wpf
             "🦲", // bald
         };
 
+        private static string ToColonSyntax(string s)
+            => Regex.Replace(s.Trim().ToLowerInvariant(), "[^a-z0-9]+", "-");
+
         private static void ParseEmojiList()
         {
             var match_group = new Regex(@"^# group: (.*)");
@@ -123,6 +163,7 @@ namespace Emoji.Wpf
             var child = "(👦|👧|👶)(🏻|🏼|🏽|🏾|🏿)?";
             var match_family = new Regex($"{adult}(\u200d{adult})*(\u200d{child})+");
 
+            var qualified_lut = new Dictionary<string, string>();
             var list = new List<Group>();
             var alltext = new List<string>();
 
@@ -185,16 +226,13 @@ namespace Emoji.Wpf
                             alltext.Add(has_modifier ? regex_text : text);
                     }
 
-                    // Only add fully-qualified characters to the groups, or we will
-                    // end with a lot of dupes.
-                    if (line.Contains("unqualified") || line.Contains("minimally-qualified"))
-                    {
-                        // Skip this if there is already a fully qualified version
-                        if (LookupByText.ContainsKey(text + "\ufe0f"))
-                            continue;
-                        if (LookupByText.ContainsKey(text.Replace("\u20e3", "\ufe0f\u20e3")))
-                            continue;
-                    }
+                    // If there is already a differently-qualified version of this character, skip it.
+                    // FIXME: this only works well if fully-qualified appears first in the list.
+                    var unqualified = text.Replace("\ufe0f", "");
+                    if (qualified_lut.ContainsKey(unqualified))
+                        continue;
+
+                    qualified_lut[unqualified] = text;
 
                     var emoji = new Emoji
                     {
@@ -204,12 +242,13 @@ namespace Emoji.Wpf
                         Renderable = Typeface.CanRender(text),
                     };
                     LookupByText[text] = emoji;
-                    LookupByName[name] = emoji;
+                    LookupByName[ToColonSyntax(name)] = emoji;
+                    MatchStart.Add(text[0]);
 
                     // Get the left part of the name and check whether we’re a variation of an existing
                     // emoji. If so, append to that emoji. Otherwise, add to current subgroup.
                     // FIXME: does not work properly because variations can appear before the generic emoji
-                    if (name.Contains(":") && LookupByName.TryGetValue(name.Split(':')[0], out var parent_emoji))
+                    if (name.Contains(":") && LookupByName.TryGetValue(ToColonSyntax(name.Split(':')[0]), out var parent_emoji))
                     {
                         if (parent_emoji.VariationList.Count == 0)
                             parent_emoji.VariationList.Add(parent_emoji);
@@ -222,36 +261,24 @@ namespace Emoji.Wpf
 
             // Remove the Component group. Not sure we want to have the skin tones in the picker.
             list.RemoveAll(g => g.Name == "Component");
-
             AllGroups = list;
 
-            // Build a regex that matches any Emoji
+            // Make U+fe0f optional in the regex so that we can match any combination.
+            // FIXME: this is the starting point to implement variation selectors.
             var sortedtext = alltext.OrderByDescending(x => x.Length);
-            var regextext = "(" + match_family.ToString() + "|" + string.Join("|", sortedtext).Replace("*", "[*]") + ")";
-            MatchOne = new Regex(regextext);
-            MatchMultiple = new Regex(regextext + "+");
+            var match_other = string.Join("|", sortedtext)
+                                    .Replace("*", "[*]")
+                                    .Replace("\ufe0f", "\ufe0f?");
+
+            // Build a regex that matches any Emoji
+            m_match_one_string = match_family.ToString() + "|" + match_other;
+            MatchOne = new Regex("(" + m_match_one_string + ")");
         }
 
         private static IEnumerable<string> EmojiDescriptionLines()
         {
             using (var sr = new GZipResourceStream("emoji-test.txt.gz"))
-            {
-                foreach (var line in sr.ReadToEnd().Split('\r', '\n'))
-                {
-                    yield return line;
-
-                    // Append these extra Microsoft emoji after 😾 E2.0 pouting cat
-                    if (line.StartsWith("1F63E  "))
-                    {
-                        yield return "1F431 200D 1F3CD ; fully-qualified # 🐱\u200d🏍 stunt cat";
-                        yield return "1F431 200D 1F453 ; fully-qualified # 🐱\u200d👓 hipster cat";
-                        yield return "1F431 200D 1F680 ; fully-qualified # 🐱\u200d🚀 astro cat";
-                        yield return "1F431 200D 1F464 ; fully-qualified # 🐱\u200d👤 ninja cat";
-                        yield return "1F431 200D 1F409 ; fully-qualified # 🐱\u200d🐉 dino cat";
-                        yield return "1F431 200D 1F4BB ; fully-qualified # 🐱\u200d💻 hacker cat";
-                    }
-                }
-            }
+                return sr.ReadToEnd().Split('\r', '\n');
         }
     }
 }
