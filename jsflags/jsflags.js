@@ -198,9 +198,11 @@ function replaceShapes(svg) {
             let x = e.x(), y = e.y(), w = e.width(), h = e.height();
             let d = `M${x},${y} h${w} v${h} h-${w} v-${h}`;
             // Hack: if there is no fill, make sure the shape has nice corners
-            // by adding an extra segment
-            if (e.fill() == 'none' || e.fill() == e.stroke())
-                d += `h${w} Z`; // extra round
+            // by adding an extra segment. Fixes: lk.svg (very subtle), mv.svg
+            let e_fill = e.fill();
+            let e_stroke = e.attr()['stroke'] || 'none';
+            if (e_fill == 'none' || e_fill == e_stroke)
+                d += `h${w}`; // extra round
             p.attr('d', d);
             for (let a in e.attr())
                 p.attr(a, e.attr(a));
