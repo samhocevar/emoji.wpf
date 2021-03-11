@@ -536,6 +536,10 @@ function handleSvg(filename, debug) {
         debugSvg('Add flag', svg);
 
     if (debug) {
+        let div = document.createElement('div');
+        div.innerHTML = `<h4>XAML data:</h4>`;
+        _anchor.appendChild(div);
+
         let pre = document.createElement('pre');
         let text_node = document.createTextNode(svgToXaml(svg, unicode_id));
         pre.appendChild(text_node);
