@@ -34,7 +34,6 @@ namespace Emoji.Wpf
             = new Dictionary<string, Emoji>();
 
         public static Regex MatchOne { get; private set; }
-        public static Regex MatchMultiple { get; private set; }
         public static HashSet<char> MatchStart { get; private set; }
             = new HashSet<char>();
 
@@ -53,6 +52,8 @@ namespace Emoji.Wpf
         {
             Typeface = new EmojiTypeface(font_name);
             ParseEmojiList();
+
+            RegisterNew("flag-bretagne", "🏴󠁦󠁲󠁢󠁲󠁥󠁿", LookupByName["flag-brazil"]);
         }
 
         public class Emoji
@@ -94,6 +95,27 @@ namespace Emoji.Wpf
                    from e in s.EmojiList
                    select e;
         }
+
+        public static void RegisterNew(string name, string sequence, Emoji pred)
+        {
+            var entry = new Emoji
+            {
+                Name = name,
+                Text = sequence,
+                SubGroup = pred.SubGroup,
+            };
+            var list = pred.SubGroup.EmojiList;
+            list.Insert(list.IndexOf(pred) + 1, entry);
+
+            MatchStart.Add(sequence[0]);
+            LookupByName[name] = entry;
+            LookupByText[sequence] = entry;
+
+            m_match_one_string = sequence + "|" + m_match_one_string;
+            MatchOne = new Regex("(" + m_match_one_string + ")");
+        }
+
+        private static string m_match_one_string;
 
         // FIXME: this could be read directly from emoji-test.txt.gz
         private static List<string> SkinToneComponents = new List<string>
@@ -233,9 +255,8 @@ namespace Emoji.Wpf
 
             // Build a regex that matches any Emoji
             var sortedtext = alltext.OrderByDescending(x => x.Length);
-            var regextext = "(" + match_family.ToString() + "|" + string.Join("|", sortedtext).Replace("*", "[*]") + ")";
-            MatchOne = new Regex(regextext);
-            MatchMultiple = new Regex(regextext + "+");
+            m_match_one_string = match_family.ToString() + "|" + string.Join("|", sortedtext).Replace("*", "[*]");
+            MatchOne = new Regex("(" + m_match_one_string + ")");
         }
 
         private static IEnumerable<string> EmojiDescriptionLines()

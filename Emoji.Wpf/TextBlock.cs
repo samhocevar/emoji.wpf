@@ -92,9 +92,8 @@ namespace Emoji.Wpf
             // We could use EmojiData.MatchMultiple when wrapping is disabled, but for
             // now EmojiInline is unable to render a mix of emoji GlyphRuns and our
             // custom XAML data.
-            var regex = EmojiData.MatchOne;
             int pos = 0;
-            foreach (Match m in regex.Matches(text))
+            foreach (Match m in EmojiData.MatchOne.Matches(text))
             {
                 Inlines.Add(text.Substring(pos, m.Index - pos));
                 Inlines.Add(new EmojiInline
