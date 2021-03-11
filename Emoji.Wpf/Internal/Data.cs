@@ -35,6 +35,8 @@ namespace Emoji.Wpf
 
         public static Regex MatchOne { get; private set; }
         public static Regex MatchMultiple { get; private set; }
+        public static HashSet<char> MatchStart { get; private set; }
+            = new HashSet<char>();
 
         public static bool EnableZwjRenderingFallback { get; set; } = true;
 
@@ -208,6 +210,7 @@ namespace Emoji.Wpf
                     };
                     LookupByText[text] = emoji;
                     LookupByName[ToColonSyntax(name)] = emoji;
+                    MatchStart.Add(text[0]);
 
                     // Get the left part of the name and check whether we’re a variation of an existing
                     // emoji. If so, append to that emoji. Otherwise, add to current subgroup.

@@ -50,25 +50,28 @@ namespace Emoji.Wpf
 
                 string replace_text = null;
                 var replace_range = new TextRange(cur, next);
-                if (EmojiData.MatchOne.IsMatch(replace_range.Text))
+                if (replace_range.Text.Length > 0 && EmojiData.MatchStart.Contains(replace_range.Text[0]))
                 {
-                    // We found an emoji, but it’s possible that GetNextInsertionPosition
-                    // did not pick enough characters and the emoji sequence is actually
-                    // longer. To avoid this, we look up to 50 characters ahead and retry
-                    // the match.
+                    // GetNextInsertionPosition() is not reliable to find emoji because
+                    // it sometimes stops in the middle of a valid sequence (for flags
+                    // that do not use ZWJ, or for some recent skin tone variations).
+                    // To fix this, we look up to 50 characters ahead.
                     var lookup = next.GetNextContextPosition(LogicalDirection.Forward);
                     if (cur.GetOffsetToPosition(lookup) > 50)
                         lookup = cur.GetPositionAtOffset(50, LogicalDirection.Forward);
                     var match = EmojiData.MatchOne.Match(new TextRange(cur, lookup).Text);
-                    while (match.Length > replace_range.Text.Length)
+                    if (match.Success)
                     {
-                        next = next.GetNextInsertionPosition(LogicalDirection.Forward);
-                        if (next == null)
-                            break;
-                        replace_range = new TextRange(cur, next);
-                    }
+                        while (match.Length > replace_range.Text.Length)
+                        {
+                            next = next.GetNextInsertionPosition(LogicalDirection.Forward);
+                            if (next == null)
+                                break;
+                            replace_range = new TextRange(cur, next);
+                        }
 
-                    replace_text = match.Value;
+                        replace_text = match.Value;
+                    }
                 }
                 else if (colon_syntax && replace_range.Text == ":")
                 {
