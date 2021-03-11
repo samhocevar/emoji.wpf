@@ -53,8 +53,17 @@ namespace Emoji.Wpf
             Typeface = new EmojiTypeface(font_name);
             ParseEmojiList();
 
-            RegisterNew("flag: Bretagne", "🏴󠁦󠁲󠁢󠁲󠁥󠁿", after: LookupByName["flag-brazil"]);
-            RegisterNew("anarchy flag", "🏴‍🅰️", after: LookupByName["transgender-flag"]);
+            // Insert Microsoft’s custom hacker emoji (in reverse order)
+            Register("hacker cat",  "🐱\u200d💻", after: "pouting cat");
+            Register("dino cat",    "🐱\u200d🐉", after: "pouting cat");
+            Register("ninja cat",   "🐱\u200d👤", after: "pouting cat");
+            Register("astro cat",   "🐱\u200d🚀", after: "pouting cat");
+            Register("hipster cat", "🐱\u200d👓", after: "pouting cat");
+            Register("stunt cat",   "🐱\u200d🏍", after: "pouting cat");
+
+            // Some custom flags that we like to have
+            Register("anarchy flag", "🏴‍🅰️", after: "transgender-flag");
+            Register("flag: Bretagne", "🏴󠁦󠁲󠁢󠁲󠁥󠁿", after: "flag-brazil");
         }
 
         public class Emoji
@@ -97,16 +106,19 @@ namespace Emoji.Wpf
                    select e;
         }
 
-        public static void RegisterNew(string name, string sequence, Emoji after)
+        public static void Register(string name, string sequence, string after)
         {
+            if (!LookupByName.TryGetValue(ToColonSyntax(after), out var predecessor))
+                predecessor = AllEmoji.Last();
+
             var entry = new Emoji
             {
                 Name = name,
                 Text = sequence,
-                SubGroup = after.SubGroup,
+                SubGroup = predecessor.SubGroup,
             };
-            var list = after.SubGroup.EmojiList;
-            list.Insert(list.IndexOf(after) + 1, entry);
+            var list = predecessor.SubGroup.EmojiList;
+            list.Insert(list.IndexOf(predecessor) + 1, entry);
 
             MatchStart.Add(sequence[0]);
             LookupByName[ToColonSyntax(name)] = entry;
@@ -266,23 +278,7 @@ namespace Emoji.Wpf
         private static IEnumerable<string> EmojiDescriptionLines()
         {
             using (var sr = new GZipResourceStream("emoji-test.txt.gz"))
-            {
-                foreach (var line in sr.ReadToEnd().Split('\r', '\n'))
-                {
-                    yield return line;
-
-                    // Append these extra Microsoft emoji after 😾 E2.0 pouting cat
-                    if (line.StartsWith("1F63E  "))
-                    {
-                        yield return "1F431 200D 1F3CD ; fully-qualified # 🐱\u200d🏍 stunt cat";
-                        yield return "1F431 200D 1F453 ; fully-qualified # 🐱\u200d👓 hipster cat";
-                        yield return "1F431 200D 1F680 ; fully-qualified # 🐱\u200d🚀 astro cat";
-                        yield return "1F431 200D 1F464 ; fully-qualified # 🐱\u200d👤 ninja cat";
-                        yield return "1F431 200D 1F409 ; fully-qualified # 🐱\u200d🐉 dino cat";
-                        yield return "1F431 200D 1F4BB ; fully-qualified # 🐱\u200d💻 hacker cat";
-                    }
-                }
-            }
+                return sr.ReadToEnd().Split('\r', '\n');
         }
     }
 }
