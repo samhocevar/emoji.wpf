@@ -53,7 +53,8 @@ namespace Emoji.Wpf
             Typeface = new EmojiTypeface(font_name);
             ParseEmojiList();
 
-            RegisterNew("flag-bretagne", "🏴󠁦󠁲󠁢󠁲󠁥󠁿", LookupByName["flag-brazil"]);
+            RegisterNew("flag: Bretagne", "🏴󠁦󠁲󠁢󠁲󠁥󠁿", after: LookupByName["flag-brazil"]);
+            RegisterNew("anarchy flag", "🏴‍🅰️", after: LookupByName["transgender-flag"]);
         }
 
         public class Emoji
@@ -96,19 +97,19 @@ namespace Emoji.Wpf
                    select e;
         }
 
-        public static void RegisterNew(string name, string sequence, Emoji pred)
+        public static void RegisterNew(string name, string sequence, Emoji after)
         {
             var entry = new Emoji
             {
                 Name = name,
                 Text = sequence,
-                SubGroup = pred.SubGroup,
+                SubGroup = after.SubGroup,
             };
-            var list = pred.SubGroup.EmojiList;
-            list.Insert(list.IndexOf(pred) + 1, entry);
+            var list = after.SubGroup.EmojiList;
+            list.Insert(list.IndexOf(after) + 1, entry);
 
             MatchStart.Add(sequence[0]);
-            LookupByName[name] = entry;
+            LookupByName[ToColonSyntax(name)] = entry;
             LookupByText[sequence] = entry;
 
             m_match_one_string = sequence + "|" + m_match_one_string;
