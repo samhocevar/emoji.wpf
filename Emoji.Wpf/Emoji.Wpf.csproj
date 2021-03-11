@@ -16,7 +16,7 @@
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
     <UseWPF>true</UseWPF>
     <DefaultItemExcludes>
-        $(DefaultItemExcludes);gitversion.json;*.swp;
+        $(DefaultItemExcludes);gitversion.json;**\*.swp;**\*~;
         UnicodeCLDR\**;UnicodeEmoji\**
     </DefaultItemExcludes>
 
