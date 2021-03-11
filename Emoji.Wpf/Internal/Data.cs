@@ -62,7 +62,7 @@ namespace Emoji.Wpf
             Register("stunt cat",   "🐱\u200d🏍", after: "pouting cat");
 
             // Some custom flags that we like to have
-            Register("anarchy flag", "🏴‍🅰️", after: "transgender-flag");
+            Register("anarchy flag", "🏴️‍🅰️", after: "transgender-flag");
             Register("flag: Bretagne", "🏴󠁦󠁲󠁢󠁲󠁥󠁿", after: "flag-brazil");
         }
 
@@ -120,11 +120,11 @@ namespace Emoji.Wpf
             var list = predecessor.SubGroup.EmojiList;
             list.Insert(list.IndexOf(predecessor) + 1, entry);
 
-            MatchStart.Add(sequence[0]);
             LookupByName[ToColonSyntax(name)] = entry;
             LookupByText[sequence] = entry;
+            MatchStart.Add(sequence[0]);
 
-            m_match_one_string = sequence + "|" + m_match_one_string;
+            m_match_one_string = sequence.Replace("\ufe0f", "\ufe0f?") + "|" + m_match_one_string;
             MatchOne = new Regex("(" + m_match_one_string + ")");
         }
 
@@ -241,6 +241,7 @@ namespace Emoji.Wpf
                         SubGroup = current_subgroup,
                         Renderable = Typeface.CanRender(text),
                     };
+                    // FIXME: this prevents LookupByText from working with the unqualified version
                     LookupByText[text] = emoji;
                     LookupByName[ToColonSyntax(name)] = emoji;
                     MatchStart.Add(text[0]);
