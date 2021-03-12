@@ -26,6 +26,10 @@ function closePath(d) {
     return d;
 }
 
+function compressPath(d) {
+    return d.replace(/((?![0-9.]) +| +(?![0-9.]))/, '');
+}
+
 function formatXml(xml) {
     var ret = '', indent = '';
     var tab = '  ';
@@ -54,7 +58,7 @@ function svgToXaml(svg, unicode_id) {
         if (i + 1 < l.length && sameAttributes(p, l[i + 1])) {
             continue;
         }
-        ret += `${path}"`;
+        ret += `${compressPath(path)}"`;
         path = '';
         if (p.attr()['fill'] && p.attr('fill') != 'none')
             ret += ` Brush="${p.attr('fill')}"`;
