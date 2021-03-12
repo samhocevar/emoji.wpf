@@ -40,12 +40,22 @@ function formatXml(xml) {
 
 function svgToXaml(svg, unicode_id) {
     let g = svg.findOne('g');
+    let l = g.children();
+    let path = '';
     let ret = `<DrawingGroup x:Key="${unicode_id}">\n`;
-    for (let p of g.children()) {
-        ret += `    <GeometryDrawing Geometry="`;
-        if (!p.attr()['fill-rule'] || p.attr('fill-rule') != 'evenodd')
-            ret += 'F1 ';
-        ret += `${p.attr('d')}"`;
+    for (let i = 0; i < l.length; ++i) {
+        let p = l[i];
+        if (!path) {
+            ret += `    <GeometryDrawing Geometry="`;
+            if (!p.attr()['fill-rule'] || p.attr('fill-rule') != 'evenodd')
+                path += 'F1 ';
+        }
+        path += `${p.attr('d')}`;
+        if (i + 1 < l.length && sameAttributes(p, l[i + 1])) {
+            continue;
+        }
+        ret += `${path}"`;
+        path = '';
         if (p.attr()['fill'] && p.attr('fill') != 'none')
             ret += ` Brush="${p.attr('fill')}"`;
         if (p.attr()['stroke']) {
