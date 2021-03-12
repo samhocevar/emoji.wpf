@@ -9,6 +9,3 @@
 [submodule "UnicodeEmoji"]
 	path = Emoji.Wpf/UnicodeEmoji
 	url = ../../samhocevar/unicode-emoji.git
-[submodule "CountryFlags"]
-	path = Emoji.Wpf/CountryFlags
-	url = ../../hampusborgos/country-flags.git

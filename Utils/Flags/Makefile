@@ -9,8 +9,8 @@ all: .allflags.js
 
 .allflags.js: Makefile
 	echo 'flags = {' > $@
-	for x in $(ALL_FLAGS); do echo "'"`basename $$x | sed 's/[.]svg//'`"': '"`sed "s/'/\\\\\\\\'/g" $$x`"',"; done >> $@
+	for x in $(ALL_FLAGS); do echo "'$$x': '"`sed "s/'/\\\\\\\\'/g" $$x`"',"; done >> $@
 	echo '}' >> $@
 
 clean:
-	rm -f .allflags.inc .allflags.js
+	rm -f .allflags.js

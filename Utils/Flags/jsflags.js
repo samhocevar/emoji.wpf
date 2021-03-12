@@ -503,25 +503,21 @@ function debugSvg(name, svg) {
     _anchor.appendChild(pre);
 }
 
-function handleSvg(filename, debug) {
-    let img_id = all_ids[filename][0];
-    let unicode_id = all_ids[filename][1];
+function handleSvg(filepath, debug) {
+    let img_id = all_ids[filepath][0];
+    let unicode_id = all_ids[filepath][1];
 
     if (debug) {
         _anchor = document.getElementById('anchor');
         _anchor.innerHTML = '';
         _crumbs = document.getElementById('crumbs');
         _crumbs.innerHTML = '';
-
-        img = createFlagImage(img_id, 200);
-        img.style.margin = '5px';
-        _crumbs.appendChild(img);
     }
 
     // Load clicked SVG as text
-    svg = loadSvg(flags[filename]);
+    svg = loadSvg(flags[filepath]);
     if (debug)
-        debugSvg(`Original: ${img_id} / ${unicode_id} (${filename.toLowerCase()})`, svg);
+        debugSvg(`Original: ${img_id} / ${unicode_id} (${filepath.toLowerCase()})`, svg);
 
     //substituteClones(svg);
 
@@ -563,11 +559,11 @@ function handleSvg(filename, debug) {
     return svgToXaml(svg, unicode_id);
 }
 
-function createFlagImage(id, size) {
+function createFlagImage(filepath, size) {
     let img = document.createElement('img');
-    img.src = `../Emoji.Wpf/CountryFlags/png${size < 100 ? 100 : 250}px/${id}.png`;
+    img.src = filepath;
     img.width = size;
-    img.title = id;
+    img.title = all_ids[filepath][0];
     return img;
 }
 
@@ -577,18 +573,19 @@ function doAll() {
     let pre = document.createElement('pre');
     _anchor.appendChild(pre);
 
-    for (const [filename, data] of Object.entries(flags)) {
-        if (all_ids[filename][0] == 'np')
+    for (const [filepath, data] of Object.entries(flags)) {
+        if (all_ids[filepath][0] == 'np')
             continue;
-        let text_node = document.createTextNode(handleSvg(filename, false) + '\n');
+        let text_node = document.createTextNode(handleSvg(filepath, false) + '\n');
         pre.appendChild(text_node);
     }
 }
 
 let all_ids = {}
-for (const [filename, data] of Object.entries(flags)) {
-    let img_id = filename;
-    let unicode_id = filename;
+for (const [filepath, data] of Object.entries(flags)) {
+    let filename = filepath.replace(/.*\/([^\/]*)[.].*/, '$1');
+    let img_id = filepath;
+    let unicode_id = filepath;
     if (filename.indexOf('-') != -1) {
         img_id = '';
         unicode_id = '';
@@ -603,12 +600,12 @@ for (const [filename, data] of Object.entries(flags)) {
             unicode_id += String.fromCodePoint(n);
         }
     }
-    all_ids[filename] = [img_id, unicode_id];
-    img = createFlagImage(img_id, 30);
-    img.id = filename;
+    all_ids[filepath] = [img_id, unicode_id];
+    img = createFlagImage(filepath, 30);
+    img.id = filepath;
     img.style.margin = '3px';
     img.addEventListener("click", function(e) {
-        handleSvg(filename, true);
+        handleSvg(filepath, true);
     });
     let span = document.createElement('span');
     span.style.padding = 5;
