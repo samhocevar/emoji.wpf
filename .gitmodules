@@ -5,7 +5,7 @@
 
 [submodule "UnicodeCLDR"]
 	path = Emoji.Wpf/UnicodeCLDR
-	url = ../../unicode-org/cldr
+	url = ../../unicode-org/cldr.git
 [submodule "UnicodeEmoji"]
 	path = Emoji.Wpf/UnicodeEmoji
 	url = ../../samhocevar/unicode-emoji.git
