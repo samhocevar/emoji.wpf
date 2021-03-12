@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Windows.Media;
 
 namespace Emoji.Wpf
 {
@@ -54,18 +55,18 @@ namespace Emoji.Wpf
             ParseEmojiList();
 
             // Insert Microsoft’s custom hacker emoji (in reverse order)
-            Register("hacker cat",  "🐱\u200d💻", after: "pouting cat");
-            Register("dino cat",    "🐱\u200d🐉", after: "pouting cat");
-            Register("ninja cat",   "🐱\u200d👤", after: "pouting cat");
-            Register("astro cat",   "🐱\u200d🚀", after: "pouting cat");
-            Register("hipster cat", "🐱\u200d👓", after: "pouting cat");
-            Register("stunt cat",   "🐱\u200d🏍", after: "pouting cat");
+            RegisterEmoji("hacker cat",  "🐱\u200d💻", after: "pouting cat");
+            RegisterEmoji("dino cat",    "🐱\u200d🐉", after: "pouting cat");
+            RegisterEmoji("ninja cat",   "🐱\u200d👤", after: "pouting cat");
+            RegisterEmoji("astro cat",   "🐱\u200d🚀", after: "pouting cat");
+            RegisterEmoji("hipster cat", "🐱\u200d👓", after: "pouting cat");
+            RegisterEmoji("stunt cat",   "🐱\u200d🏍", after: "pouting cat");
 
             // Some custom flags that we like to have
-            Register("anarchy flag", "🏴️‍🅰️", after: "transgender-flag");
-            Register("flag: Basque Country", "🏴󠁥󠁳󠁰󠁶󠁿", after: "flag-bosnia-herzegovina");
-            Register("flag: Bretagne", "🏴󠁦󠁲󠁢󠁲󠁥󠁿", after: "flag-brazil");
-            Register("flag: Catalonia", "🏴󠁥󠁳󠁣󠁴󠁿", after: "flag-canada");
+            RegisterEmoji("anarchy flag", "🏴️‍🅰️", after: "transgender-flag");
+            RegisterEmoji("flag: Basque Country", "🏴󠁥󠁳󠁰󠁶󠁿", after: "flag-bosnia-herzegovina");
+            RegisterEmoji("flag: Bretagne", "🏴󠁦󠁲󠁢󠁲󠁥󠁿", after: "flag-brazil");
+            RegisterEmoji("flag: Catalonia", "🏴󠁥󠁳󠁣󠁴󠁿", after: "flag-canada");
         }
 
         public class Emoji
@@ -108,7 +109,7 @@ namespace Emoji.Wpf
                    select e;
         }
 
-        public static void Register(string name, string sequence, string after)
+        public static void RegisterEmoji(string name, string sequence, string after)
         {
             if (!LookupByName.TryGetValue(ToColonSyntax(after), out var predecessor))
                 predecessor = AllEmoji.Last();
@@ -129,6 +130,18 @@ namespace Emoji.Wpf
             m_match_one_string = sequence.Replace("\ufe0f", "\ufe0f?") + "|" + m_match_one_string;
             MatchOne = new Regex("(" + m_match_one_string + ")");
         }
+
+        public static void RegisterDrawing(string sequence, Drawing dg)
+        {
+            m_custom_drawings[sequence] = dg;
+            EmojiInline.InvalidateCache(sequence);
+        }
+
+        internal static Drawing GetDrawing(string sequence)
+            => m_custom_drawings.TryGetValue(sequence, out var ret) ? ret : null;
+
+        private static Dictionary<string, Drawing> m_custom_drawings
+            = new Dictionary<string, Drawing>();
 
         private static string m_match_one_string;
 

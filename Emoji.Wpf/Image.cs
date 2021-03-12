@@ -46,25 +46,50 @@ namespace Emoji.Wpf
 
         private static FlagData m_flag_data = new FlagData();
 
+        private static Rect PadRect(Rect bounds)
+        {
+            // Manually tweaked values
+            const double left = 35.0 / 300;
+            const double right = 35.0 / 300;
+            const double top = 47.0 / 320;
+            const double bottom = 11.0 / 320;
+            return new Rect(new Point(bounds.Left - left * bounds.Width, bounds.Top - top * bounds.Height),
+                            new Point(bounds.Right + right * bounds.Width, bounds.Bottom + bottom * bounds.Height));
+        }
+
         internal static DrawingGroup RenderEmoji(string text, Brush brush, out double width, out double height)
         {
             var dg = new DrawingGroup();
 
             using (var dc = dg.Open())
             {
-                if (m_flag_data[text] is DrawingGroup xdg)
+                if (EmojiData.GetDrawing(text) is Drawing d)
                 {
-                    dc.DrawRectangle(Brushes.Transparent, null, new Rect(-25, -46, 370, 378));
+                    // In case the user provided a bitmap image, we want high quality scaling
+                    RenderOptions.SetBitmapScalingMode(dg, BitmapScalingMode.HighQuality);
+                    var padding = PadRect(d.Bounds);
+                    dc.DrawRectangle(Brushes.Transparent, null, padding);
+                    dc.DrawDrawing(d);
+
+                    height = 1.330078125;
+                    width = height * padding.Width / padding.Height;
+                }
+                else if (m_flag_data[text] is DrawingGroup xdg)
+                {
+                    var overlay = m_flag_data["overlay"] as DrawingGroup;
+                    var padding = PadRect(overlay.Bounds);
+                    dc.DrawRectangle(Brushes.Transparent, null, padding);
                     // Draw the flag colours
                     foreach (var child in xdg.Children)
                         dc.DrawDrawing(child);
                     // Add the overlay (pole and outline)
-                    foreach (var child in (m_flag_data["overlay"] as DrawingGroup).Children)
+                    foreach (var child in overlay.Children)
                         dc.DrawDrawing(child);
 
-                    // These values were manually retrieved from rendering 🏳️ (U+1F1F3 White Flag)
-                    width = 1.30322265625;
+                    // The height was manually retrieved from rendering 🏳️ (U+1F1F3 White Flag), and
+                    // the corresponding width should be 1.30322265625 (for a 30×32 emoji).
                     height = 1.330078125;
+                    width = height * padding.Width / padding.Height;
                 }
                 else
                 {

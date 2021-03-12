@@ -70,7 +70,12 @@ namespace Emoji.Wpf
             internal double width, height;
         };
 
+        // FIXME: the cache should not be in this class
         private static readonly Dictionary<string, CacheItem> m_cache = new Dictionary<string, CacheItem>();
+
+        // FIXME: this is not a very nice API
+        internal static void InvalidateCache(string sequence)
+            => m_cache.Remove(sequence);
 
         private void Rebuild()
         {
