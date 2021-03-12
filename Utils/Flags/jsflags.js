@@ -17,7 +17,7 @@ var pathToString = function(array) {
 //    | grep = | sort | uniq; done | sort | uniq -c | sort -n
 var important_attrs = ['stroke-linejoin', 'stroke-linecap', 'clip-path', 'stroke-width', 'stroke', 'fill', 'style'];
 
-// Close three-point paths
+// Close three-point paths (used by clipping and merging)
 function closePath(d) {
     let start = d.replace(/M *([^,C ]*, *[^,C ]*).*/, '$1');
     let end = d.replace(/.*C.*,([^C, ]*, *[^C, ]*)/, '$1');
@@ -44,24 +44,15 @@ function formatXml(xml) {
 
 function svgToXaml(svg, unicode_id) {
     let g = svg.findOne('g');
-    let l = g.children();
-    let path = '';
     let ret = `<DrawingGroup x:Key="${unicode_id}">\n`;
-    for (let i = 0; i < l.length; ++i) {
-        let p = l[i];
-        if (!path) {
-            ret += `    <GeometryDrawing Geometry="`;
-            if (!p.attr()['fill-rule'] || p.attr('fill-rule') != 'evenodd')
-                path += 'F1 ';
-        }
-        path += `${p.attr('d')}`;
-        if (i + 1 < l.length && sameAttributes(p, l[i + 1])) {
-            continue;
-        }
-        ret += `${compressPath(path)}"`;
-        path = '';
+    for (let p of g.children()) {
+        ret += `    <GeometryDrawing`;
         if (p.attr()['fill'] && p.attr('fill') != 'none')
             ret += ` Brush="${p.attr('fill')}"`;
+        ret += ` Geometry="`;
+        if (!p.attr()['fill-rule'] || p.attr('fill-rule') != 'evenodd')
+            ret += 'F1';
+        ret += `${compressPath(p.attr('d'))}"`;
         if (p.attr()['stroke']) {
             ret += '>\n';
             ret += '        <GeometryDrawing.Pen>\n';
@@ -294,6 +285,38 @@ function collapseGroups(svg) {
         }
     }
     apply(svg, {});
+}
+
+function concatenatePaths(svg) {
+    let raph_tmp = document.createElement('div');
+    raph_tmp.id = 'raphael_canvas';
+    document.body.appendChild(raph_tmp);
+    let paper = Raphael('raphael_canvas', 250, 250);
+
+    let dir1 = null;
+    let apply = function(e) {
+        for (let ch of e.children()) {
+            apply(ch);
+        }
+        // Do not concatenate paths if they have different winding
+        let d2 = e.attr('d');
+        let path2 = paper.path(d2);
+        let dir2 = null;
+        try {
+            dir2 = paper.getPathDir(path2);
+        } catch {
+        }
+        if (dir1 == dir2 && e.parent() && e.prev() && sameAttributes(e.prev(), e)) {
+            let d1 = e.prev().attr('d');
+            e.attr('d', d1 + d2);
+            e.prev().remove();
+        }
+        path2.remove();
+        dir1 = dir2;
+    }
+
+    apply(svg);
+    raph_tmp.remove();
 }
 
 function mergePaths(svg) {
@@ -529,6 +552,7 @@ function handleSvg(filepath, debug) {
     replaceShapes(svg);
     flattenShapes(svg);
     collapseGroups(svg);
+    concatenatePaths(svg);
 
 //for (var i = 0; i < 10; ++i) {
 //    text = mergePaths(text);
