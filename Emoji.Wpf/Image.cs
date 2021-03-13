@@ -46,15 +46,21 @@ namespace Emoji.Wpf
 
         private static FlagData m_flag_data = new FlagData();
 
+        // Metrics from Segoe UI Emoji, measured on 😄 U+1F600 GRINNING FACE.
+        private const double FONT_EM_SIZE = 2048;
+        private const double FONT_GLYPH_SIZE = 2300; // both horizontal and vertical
+        private const double FONT_TOP_PADDING = 341;
+        private const double FONT_BOTTOM_PADDING = 83;
+        private const double FONT_SIDE_PADDING = 256;
+
         private static Rect PadRect(Rect bounds)
         {
-            // Manually tweaked values
-            const double left = 35.0 / 300;
-            const double right = 35.0 / 300;
-            const double top = 47.0 / 320;
-            const double bottom = 11.0 / 320;
-            return new Rect(new Point(bounds.Left - left * bounds.Width, bounds.Top - top * bounds.Height),
-                            new Point(bounds.Right + right * bounds.Width, bounds.Bottom + bottom * bounds.Height));
+            // Compute padding by assuming the glyph is full-height.
+            double top = bounds.Height * FONT_TOP_PADDING / FONT_GLYPH_SIZE;
+            double bottom = bounds.Height * FONT_BOTTOM_PADDING / FONT_GLYPH_SIZE;
+            double sides = bounds.Height * FONT_SIDE_PADDING / FONT_GLYPH_SIZE;
+            return new Rect(new Point(bounds.Left - sides, bounds.Top - top),
+                            new Point(bounds.Right + sides, bounds.Bottom + bottom));
         }
 
         internal static DrawingGroup RenderEmoji(string text, Brush brush, out double width, out double height)
@@ -71,24 +77,19 @@ namespace Emoji.Wpf
                     dc.DrawRectangle(Brushes.Transparent, null, padding);
                     dc.DrawDrawing(d);
 
-                    height = 1.330078125;
+                    height = (FONT_TOP_PADDING + FONT_GLYPH_SIZE + FONT_BOTTOM_PADDING) / FONT_EM_SIZE;
                     width = height * padding.Width / padding.Height;
                 }
-                else if (m_flag_data[text] is DrawingGroup xdg)
+                else if (m_flag_data[text] is DrawingGroup flag)
                 {
                     var overlay = m_flag_data["overlay"] as DrawingGroup;
                     var padding = PadRect(overlay.Bounds);
                     dc.DrawRectangle(Brushes.Transparent, null, padding);
-                    // Draw the flag colours
-                    foreach (var child in xdg.Children)
-                        dc.DrawDrawing(child);
-                    // Add the overlay (pole and outline)
-                    foreach (var child in overlay.Children)
+                    // Draw the flag colours then the overlay (pole and outline)
+                    foreach (var child in flag.Children.Concat(overlay.Children))
                         dc.DrawDrawing(child);
 
-                    // The height was manually retrieved from rendering 🏳️ (U+1F1F3 White Flag), and
-                    // the corresponding width should be 1.30322265625 (for a 30×32 emoji).
-                    height = 1.330078125;
+                    height = (FONT_TOP_PADDING + FONT_GLYPH_SIZE + FONT_BOTTOM_PADDING) / FONT_EM_SIZE;
                     width = height * padding.Width / padding.Height;
                 }
                 else
