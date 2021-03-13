@@ -73,22 +73,28 @@ namespace Emoji.Wpf
                 {
                     // In case the user provided a bitmap image, we want high quality scaling
                     RenderOptions.SetBitmapScalingMode(dg, BitmapScalingMode.HighQuality);
-                    var padding = PadRect(d.Bounds);
-                    dc.DrawRectangle(Brushes.Transparent, null, padding);
                     dc.DrawDrawing(d);
 
+                    var padding = PadRect(d.Bounds);
+                    dc.DrawRectangle(Brushes.Transparent, null, padding);
                     height = (FONT_TOP_PADDING + FONT_GLYPH_SIZE + FONT_BOTTOM_PADDING) / FONT_EM_SIZE;
                     width = height * padding.Width / padding.Height;
                 }
                 else if (m_flag_data[text] is DrawingGroup flag)
                 {
-                    var overlay = m_flag_data["overlay"] as DrawingGroup;
-                    var padding = PadRect(overlay.Bounds);
-                    dc.DrawRectangle(Brushes.Transparent, null, padding);
-                    // Draw the flag colours then the overlay (pole and outline)
-                    foreach (var child in flag.Children.Concat(overlay.Children))
+                    // Draw the flag colours first
+                    foreach (var child in flag.Children)
                         dc.DrawDrawing(child);
 
+                    // Draw the flag outline; Switzerland and Vatican City have square flags
+                    bool is_square = text == "🇨🇭" || text == "🇻🇦";
+                    var outline = m_flag_data[is_square ? "square" : "rectangle"] as GeometryDrawing;
+                    dc.DrawDrawing(outline);
+                    var pole = m_flag_data["pole"] as GeometryDrawing;
+                    dc.DrawDrawing(pole);
+
+                    var padding = PadRect(outline.Bounds);
+                    dc.DrawRectangle(Brushes.Transparent, null, padding);
                     height = (FONT_TOP_PADDING + FONT_GLYPH_SIZE + FONT_BOTTOM_PADDING) / FONT_EM_SIZE;
                     width = height * padding.Width / padding.Height;
                 }

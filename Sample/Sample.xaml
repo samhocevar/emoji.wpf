@@ -9,14 +9,14 @@
         Title="Emoji.Wpf Sample" Width="640" Height="480">
 
     <Window.Resources>
-        <clr:String x:Key="SampleText">Hello! 😁🎀🍊👨‍👦👨🏻‍👩🏿‍👧🏽‍👦🏽‍‍🐱‍🐉</clr:String>
+        <clr:String x:Key="SampleText">Hello! 😁🎀🇬🇧👨‍👦👨🏻‍👩🏿‍👧🏽‍👦🏽‍‍🐱‍🐉</clr:String>
         <clr:String x:Key="PickerEmoji">🍣</clr:String>
         <clr:String x:Key="FontSizeEmoji">🍷🐉</clr:String>
         <clr:String x:Key="EnabledButtonText">💾 Enabled</clr:String>
         <clr:String x:Key="DisabledButtonText">💾 Disabled</clr:String>
         <clr:String x:Key="QualifiedEmoji">▶︎ ▶ ▶️</clr:String>
         <clr:String x:Key="EditableText" xml:space="preserve">I💖emoji! Edit me, or use the picker😄&#x0a;🐍🏍️📞🍰☘️🖋️💩</clr:String>
-        <clr:String x:Key="FlagsText">🏁🎏🇺🇳🇸🇰🏳️‍⚧️🏴󠁧󠁢󠁷󠁬󠁳󠁿🇧🇷🇦🇺🏳️‍🌈🇲🇰🏴󠁦󠁲󠁢󠁲󠁥󠁿</clr:String>
+        <clr:String x:Key="FlagsText">🏁🇨🇭🇺🇳🇸🇰🏳️‍⚧️🏴󠁧󠁢󠁷󠁬󠁳󠁿🇧🇷🇦🇺🏳️‍🌈🇲🇰🏴󠁦󠁲󠁢󠁲󠁥󠁿</clr:String>
         <clr:String x:Key="StringImageSource">👩‍💻</clr:String>
         <DrawingImage x:Key="DrawingImageSource" emoji:Image.Source="🏇"/>
     </Window.Resources>
