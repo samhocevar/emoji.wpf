@@ -67,12 +67,15 @@ useful and robust library if given enough care. Any help appreciated!
 ### Version changelog
 
  - next release:
+   - glyphs for flags!
+   - new `emoji:EmojiRendering` dependency property for `FlowDocument`
    - optional subpixel glyph rendering
+   - experimental support for custom emoji sequences and custom glyphs
  - v0.2.5 (2021/01/29):
    - minor adjustments in `emoji:Picker`
  - v0.2.4 (2021/01/28):
    - new `emoji:Image.Source` dependency property for `Image` and `DrawingImage` objects, allowing
-     to easily render emoji as icons.
+     to easily render emoji as icons
  - v0.2.3 (2021/01/27):
    - the rendering pipeline now exclusively uses vector objects
    - subpixel glyph positioning
@@ -86,7 +89,7 @@ useful and robust library if given enough care. Any help appreciated!
    - fixed a warning caused by the Typography DLLs about `ExtensionAttribute` being redefined
  - v0.2.0 (2021/01/17):
    - support for undo/redo and numerous bugfixes in `emoji:RichTextBox`
-   - minimal .NET version is now Framework 4.0 (was 3.0).
+   - minimal .NET version is now Framework 4.0 (was 3.0)
  - v0.1.8 (2021/01/13):
    - composite emoji such as 🧔🏻 or 👨🏻‍🦰 now render properly in `emoji:RichTextBox`
    - new `Picked` event in `emoji:Picker`
