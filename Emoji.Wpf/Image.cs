@@ -122,8 +122,9 @@ namespace Emoji.Wpf
             if (EmojiData.EnableZwjRenderingFallback)
             {
                 width -= glyphplanlist.WithPreviousAndNext()
-                                      .Where(t => t.Next.glyphIndex == font.ZwjGlyph)
-                                      .Sum(t => t.Current.AdvanceX) * scale;
+                                      .Skip(1)
+                                      .Where(t => t.Current.glyphIndex == font.ZwjGlyph)
+                                      .Sum(t => t.Previous.AdvanceX) * scale;
             }
             height = font.Height;
 

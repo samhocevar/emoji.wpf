@@ -77,6 +77,7 @@ namespace Emoji.Wpf
 
         /// <summary>
         /// Convert a sequence into a context-aware sequence
+        /// e.g. { 12, 42, 17 } ⇒ { [0, 12, 42], [12, 42, 17], [42, 17, 0] }
         /// </summary>
         public static IEnumerable<(T Previous, T Current, T Next)> WithPreviousAndNext<T>(this IEnumerable<T> elements)
         {
