@@ -11,34 +11,35 @@
 //  See http://www.wtfpl.net/ for more details.
 //
 
+using System;
 using System.Text.RegularExpressions;
 using System.Windows.Documents;
-#if DEBUG
-#endif
 using System.Windows.Media;
 
 namespace Emoji.Wpf
 {
-    internal class EmojiOptions
+    [Flags]
+    public enum SubstituteOptions
     {
-        public bool ColonSyntax { get; set; }
-        public bool ColorBlend { get; set; }
+        None = 0,
+        ColonSyntax = 1,
+        ColorBlend = 2,
     }
 
-    internal static class FlowDocumentExtensions
+    public static class FlowDocumentExtensions
     {
         private static readonly Regex ColonSyntaxRegex = new Regex("^:([-a-z]+):");
 
-        internal static void ColorizeEmojis(this FlowDocument document)
-            => ColorizeEmojis(document, new EmojiOptions {});
+        public static void SubstituteGlyphs(this FlowDocument document)
+            => SubstituteGlyphs(document, SubstituteOptions.None);
 
-        internal static void ColorizeEmojis(this FlowDocument document, EmojiOptions options)
+        public static void SubstituteGlyphs(this FlowDocument document, SubstituteOptions options)
         {
             // If our parent is a RichTextBox, try to retain the caret position
             RichTextBox rtb = document.Parent as RichTextBox;
 
-            var colon_syntax = options.ColonSyntax;
-            var color_blend = options.ColorBlend;
+            var colon_syntax = (options & SubstituteOptions.ColonSyntax) != 0;
+            var color_blend = (options & SubstituteOptions.ColorBlend) != 0;
 
             TextPointer caret = rtb?.CaretPosition;
             TextPointer cur = document.ContentStart;

@@ -153,11 +153,9 @@ namespace Emoji.Wpf
             // Prevent our operation from polluting the undo buffer
             BeginChange();
 
-            Document.ColorizeEmojis(new EmojiOptions
-            {
-                ColonSyntax = ColonSyntax,
-                ColorBlend = ColorBlend,
-            });
+            Document.SubstituteGlyphs(
+                (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
+                (ColorBlend ? SubstituteOptions.ColorBlend : SubstituteOptions.None));
 
             EndChange();
 

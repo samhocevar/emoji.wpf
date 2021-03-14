@@ -80,7 +80,7 @@ namespace Emoji.Wpf
         private static void FlowDocument_Loaded(object sender, RoutedEventArgs e)
         {
             if (sender is FlowDocument doc)
-                doc.ColorizeEmojis();
+                doc.SubstituteGlyphs();
         }
     }
 }
