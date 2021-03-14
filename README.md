@@ -10,6 +10,7 @@
    code required.
  - **Colour emoji**! 😨 💩 🍰 ✈️ ✏️ 📞 ☘️
  - **Multiracial family emoji**! 👩🏿‍👩🏻‍👦🏽 👨🏻‍👩🏿‍👧🏽‍👦🏽 👩🏻‍👶🏽
+ - **Emoji for flags**! <img src="https://github.com/samhocevar/emoji.wpf/raw/main/Resources/flags.png" height="24"/>
  - **Full vector emoji**! Render at huge sizes without quality loss.
  - Optional support for subpixel antialiasing.
  - **Lightweight**; does not embed a font or emoji images; just uses the system font.
