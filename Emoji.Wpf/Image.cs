@@ -86,9 +86,10 @@ namespace Emoji.Wpf
                     foreach (var child in flag.Children)
                         dc.DrawDrawing(child);
 
-                    // Draw the flag outline; Switzerland and Vatican City have square flags
-                    bool is_square = text == "🇨🇭" || text == "🇻🇦";
-                    var outline = m_flag_data[is_square ? "square" : "rectangle"] as GeometryDrawing;
+                    // Draw the flag outline; Switzerland and Vatican City have square flags, Nepal has a special shape
+                    var style = text == "🇨🇭" || text == "🇻🇦" ? "square"
+                              : text == "🇳🇵" ? "nepal" : "rectangle";
+                    var outline = m_flag_data[style] as GeometryDrawing;
                     dc.DrawDrawing(outline);
                     var pole = m_flag_data["pole"] as GeometryDrawing;
                     dc.DrawDrawing(pole);
