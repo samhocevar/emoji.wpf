@@ -12,7 +12,9 @@
 
 using System.Collections.Generic;
 using System.Text;
+#if DEBUG
 using System.Text.RegularExpressions;
+#endif
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Documents;
