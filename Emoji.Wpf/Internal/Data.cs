@@ -42,6 +42,8 @@ namespace Emoji.Wpf
 
         public static bool EnableSubPixelRendering { get; set; } = false;
 
+        public static bool EnableWindowsStyleFlags { get; set; } = true;
+
         // FIXME: should we lazy load this? If the user calls Load() later, then
         // this first Load() call will have been for nothing.
         static EmojiData() => Load();

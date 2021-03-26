@@ -80,7 +80,7 @@ namespace Emoji.Wpf
                     height = (FONT_TOP_PADDING + FONT_GLYPH_SIZE + FONT_BOTTOM_PADDING) / FONT_EM_SIZE;
                     width = height * padding.Width / padding.Height;
                 }
-                else if (m_flag_data[text] is DrawingGroup flag)
+                else if (EmojiData.EnableWindowsStyleFlags && m_flag_data[text] is DrawingGroup flag)
                 {
                     // Draw the flag colours first
                     foreach (var child in flag.Children)
