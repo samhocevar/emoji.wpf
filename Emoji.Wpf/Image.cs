@@ -123,10 +123,15 @@ namespace Emoji.Wpf
             {
                 width -= glyphplanlist.WithPreviousAndNext()
                                       .Skip(1)
-                                      .Where(t => t.Current.glyphIndex == font.ZwjGlyph)
+                                      .Where(t => t.Current.glyphIndex == font.ZwjGlyph
+                                               && t.Previous.AdvanceX != font.ZwjGlyph)
                                       .Sum(t => t.Previous.AdvanceX) * scale;
             }
             height = font.Height;
+
+            // This should not happen, but better be safe
+            if (width < 0)
+                return;
 
             // Clip to the render area, and draw a transparent rectangle to avoid
             // automatic resizing. See https://stackoverflow.com/a/8824459/111461
