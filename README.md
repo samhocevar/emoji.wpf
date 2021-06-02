@@ -72,7 +72,10 @@ useful and robust library if given enough care. Any help appreciated!
 
 ### Version changelog
 
- - next release:
+ - v0.3.1 (2021/06/02):
+   - fix a crash on Windows 8
+   - allow to disable flag rendering
+ - v0.3.0 (2021/03/14):
    - glyphs for flags!
    - new `emoji:EmojiRendering` dependency property for `FlowDocument`
    - optional subpixel glyph rendering
