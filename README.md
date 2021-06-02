@@ -31,6 +31,11 @@
  - `Emoji.Image.Source`: attach to either `System.Windows.Controls.Image` control or
    `System.Windows.Media.DrawingImage` object in order to manipulate emoji images
 
+### Available runtime flags
+
+ - `bool Emoji.Wpf.EmojiData.EnableSubPixelRendering`: enable subpixel rendering, defaults to `false`
+ - `bool Emoji.Wpf.EmojiData.EnableWindowsStyleFlags`: enable flag rendering, defaults to `true`
+
 ### Examples
 
 Here is how to use Emoji.Wpf in your XAML:
