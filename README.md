@@ -72,10 +72,10 @@ useful and robust library if given enough care. Any help appreciated!
 
 ### Version changelog
 
- - v0.3.2 (2021/06/03):
+ - v0.3.3 (2021/06/03):
+   - fix a crash on Windows 8
    - fix flag rendering with the Twemoji font
  - v0.3.1 (2021/06/02):
-   - fix a crash on Windows 8
    - allow to disable flag rendering
  - v0.3.0 (2021/03/14):
    - glyphs for flags!

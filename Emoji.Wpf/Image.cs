@@ -10,6 +10,7 @@
 //  See http://www.wtfpl.net/ for more details.
 //
 
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
@@ -126,12 +127,10 @@ namespace Emoji.Wpf
                                       .Where(t => t.Current.glyphIndex == font.ZwjGlyph
                                                && t.Previous.AdvanceX != font.ZwjGlyph)
                                       .Sum(t => t.Previous.AdvanceX) * scale;
+                // FIXME: width may be < 0 (reproduced on Windows 8), investigate one day
+                width = Math.Max(width, 0);
             }
             height = font.Height;
-
-            // This should not happen, but better be safe
-            if (width < 0)
-                return;
 
             // Clip to the render area, and draw a transparent rectangle to avoid
             // automatic resizing. See https://stackoverflow.com/a/8824459/111461
