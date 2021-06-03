@@ -42,7 +42,13 @@ namespace Emoji.Wpf
 
         public static bool EnableSubPixelRendering { get; set; } = false;
 
-        public static bool EnableWindowsStyleFlags { get; set; } = true;
+        public static bool EnableWindowsStyleFlags
+        {
+            get => m_use_custom_flags.GetValueOrDefault(!Typeface.HasFlagGlyphs);
+            set => m_use_custom_flags = value;
+        }
+
+        private static bool? m_use_custom_flags = null;
 
         // FIXME: should we lazy load this? If the user calls Load() later, then
         // this first Load() call will have been for nothing.

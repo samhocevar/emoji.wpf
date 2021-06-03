@@ -46,6 +46,9 @@ namespace Emoji.Wpf
         public ushort ZwjGlyph
             => m_fonts[0].ZwjGlyph;
 
+        public bool HasFlagGlyphs
+            => m_fonts[0].HasFlagGlyphs;
+
         public IEnumerable<ushort> MakeGlyphIndexList(string s)
             => MakeGlyphPlanList(s).Select(x => x.glyphIndex);
 
@@ -100,6 +103,10 @@ namespace Emoji.Wpf
 
             // Cache the glyph index for the zero-width joiner
             ZwjGlyph = StringToGlyphPlans("\u200d", use_gpos: false).FirstOrDefault().glyphIndex;
+
+            // Check whether the font has flag glyphs (Segoe UI Emoji doesn’t)
+            HasFlagGlyphs = StringToGlyphPlans("\U0001f1fa\U0001f1f8", use_gpos: false)
+                                .Count(x => x.glyphIndex != 0) == 1;
         }
 
         private GlyphTypeface GetGlyphTypeface(string first_candidate)
@@ -164,6 +171,7 @@ namespace Emoji.Wpf
         public double Height => m_gtf.Height;
         public double Baseline => m_gtf.Baseline;
         public ushort ZwjGlyph { get; private set; }
+        public bool HasFlagGlyphs { get; private set; }
 
         public IEnumerable<(GlyphRun, Brush)> DrawGlyph(ushort gid, Brush fallback_brush)
         {
