@@ -95,6 +95,7 @@ namespace Emoji.Wpf
                 EnableGsub = true,
                 EnableLigature = true,
                 PositionTechnique = PositionTechnique.OpenFont,
+                ScriptLang = new ScriptLang("DFLT"),
             };
 
             // Cache the glyph index for the zero-width joiner
