@@ -4,6 +4,7 @@
             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+            xmlns:stfu="clr-namespace:Stfu.Wpf;assembly=Stfu"
             xmlns:emoji="clr-namespace:Emoji.Wpf"
             Orientation="Horizontal"
             mc:Ignorable="d">
@@ -46,7 +47,7 @@
             <ToggleButton Width="40" Height="40" Margin="0" Padding="2"
                           x:Name="VariationButton" Background="Transparent" BorderBrush="Transparent"
                           Click="OnEmojiPicked" Focusable="False" ToolTip="{Binding Path=Name}"
-                          IsHitTestVisible="{Binding ElementName=VariationPopup, Path=IsOpen, Mode=OneWay, Converter={emoji:BoolInverter}}">
+                          IsHitTestVisible="{Binding ElementName=VariationPopup, Path=IsOpen, Mode=OneWay, Converter={stfu:BoolInverter}}">
                 <Grid>
                     <Image Height="24" Margin="4" emoji:Image.Source="{Binding Path=Text}"
                            VerticalAlignment="Center" HorizontalAlignment="Center"/>
@@ -64,7 +65,7 @@
     </StackPanel.Resources>
 
     <ToggleButton x:Name="Button_INTERNAL"
-                  IsHitTestVisible="{Binding IsOpen, ElementName=Popup_INTERNAL, Mode=OneWay, Converter={emoji:BoolInverter}}">
+                  IsHitTestVisible="{Binding IsOpen, ElementName=Popup_INTERNAL, Mode=OneWay, Converter={stfu:BoolInverter}}">
         <Image x:Name="Image" emoji:Image.Source="{Binding ElementName=StackPanel_INTERNAL, Mode=OneWay, Path=Selection, UpdateSourceTrigger=PropertyChanged}"/>
     </ToggleButton>
 
@@ -95,12 +96,12 @@
                                   MaxHeight="320" Height="Auto" Padding="0" Margin="1"
                                   VirtualizingStackPanel.IsVirtualizing="True"
                                   VirtualizingStackPanel.VirtualizationMode="Recycling"
-                                  emoji:Behaviors.SmoothScrolling="True"
+                                  stfu:Behaviors.SmoothScrolling="True"
                                   ScrollViewer.VerticalScrollBarVisibility="Visible"
                                   ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                             <ListView.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <VirtualizingStackPanel emoji:Behaviors.SmoothScrolling="True"/>
+                                    <VirtualizingStackPanel stfu:Behaviors.SmoothScrolling="True"/>
                                 </ItemsPanelTemplate>
                             </ListView.ItemsPanel>
                             <ListView.ItemContainerStyle>

@@ -60,8 +60,7 @@
     <PackageReference Include="GitVersion.MsBuild" Version="5.6.6" PrivateAssets="all">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.ValueTuple" Version="4.5.0"
-                      Condition="'$(TargetFramework)' == 'net40'"/>
+    <PackageReference Include="Stfu" Version="0.1.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Typography\Build\N20\Typography.GlyphLayout\Typography.GlyphLayout.csproj" PrivateAssets="all" />

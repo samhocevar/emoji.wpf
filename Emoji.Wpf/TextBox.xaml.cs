@@ -10,6 +10,7 @@
 //  See http://www.wtfpl.net/ for more details.
 //
 
+using Stfu.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
