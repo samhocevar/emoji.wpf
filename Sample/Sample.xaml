@@ -17,6 +17,8 @@
         <clr:String x:Key="QualifiedEmoji">▶︎ ▶ ▶️</clr:String>
         <clr:String x:Key="EditableText" xml:space="preserve">I💖emoji! Edit me, or use the picker😄&#x0a;🐍🏍️📞🍰☘️🖋️💩</clr:String>
         <clr:String x:Key="FlagsText">🏁🇨🇭🇺🇳🇸🇰🏳️‍⚧️🏴󠁧󠁢󠁷󠁬󠁳󠁿🇧🇷🇦🇺🏳️‍🌈🇳🇵🇲🇰🏴󠁦󠁲󠁢󠁲󠁥󠁿</clr:String>
+        <clr:String x:Key="Run1Text">🕺</clr:String>
+        <clr:String x:Key="Run2Text">💃</clr:String>
         <clr:String x:Key="StringImageSource">👩‍💻</clr:String>
         <DrawingImage x:Key="DrawingImageSource" emoji:Image.Source="🏇"/>
     </Window.Resources>
@@ -136,8 +138,9 @@
         <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="2*" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="3*" />
             </Grid.ColumnDefinitions>
             <GroupBox Grid.Column="0" Header="Emoji for Icon Buttons" Margin="4">
                 <StackPanel Orientation="Horizontal">
@@ -151,13 +154,21 @@
                     </Button>
                 </StackPanel>
             </GroupBox>
-            <GroupBox Grid.Column="1" Header="Variation Selectors Debugging" Margin="4">
+            <GroupBox Grid.Column="1" Header="Variation Selectors" Margin="4">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="{StaticResource QualifiedEmoji}"/>
                     <emoji:TextBlock Text="{StaticResource QualifiedEmoji}"/>
                 </StackPanel>
             </GroupBox>
-            <GroupBox Grid.Column="2" Header="Font Size" Margin="4">
+            <GroupBox Grid.Column="2" Header="Runs" Margin="4">
+                <emoji:TextBlock>
+                    <Run Text="{StaticResource Run1Text}"/>
+<Span>
+                    <Run Text="{StaticResource Run2Text}"/>
+</Span>
+                </emoji:TextBlock>
+            </GroupBox>
+            <GroupBox Grid.Column="3" Header="Font Size" Margin="4">
                 <emoji:RichTextBox IsReadOnly="True" BorderThickness="0">
                     <FlowDocument>
                         <Paragraph>
