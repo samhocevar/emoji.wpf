@@ -96,7 +96,9 @@ namespace Emoji.Wpf
             int pos = 0;
             foreach (Match m in EmojiData.MatchOne.Matches(text))
             {
-                Inlines.Add(text.Substring(pos, m.Index - pos));
+                if (m.Index != pos)
+                    Inlines.Add(text.Substring(pos, m.Index - pos));
+
                 Inlines.Add(new EmojiInline
                 {
                     FontSize = FontSize,
@@ -106,7 +108,9 @@ namespace Emoji.Wpf
 
                 pos = m.Index + m.Length;
             }
-            Inlines.Add(text.Substring(pos));
+
+            if (pos != text.Length)
+                Inlines.Add(text.Substring(pos));
         }
 
         private void OnColorBlendChanged(bool color_blend)
