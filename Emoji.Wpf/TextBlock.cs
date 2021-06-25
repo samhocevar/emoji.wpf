@@ -16,6 +16,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Documents;
 using System.Windows.Media;
 
 using Controls = System.Windows.Controls;
@@ -44,6 +45,15 @@ namespace Emoji.Wpf
             TextWrappingProperty.OverrideMetadata(typeof(TextBlock), new FrameworkPropertyMetadata(
                 (TextWrapping)TextWrappingProperty.GetMetadata(typeof(Controls.TextBlock)).DefaultValue,
                 (o, e) => (o as TextBlock)?.OnTextWrappingChanged((TextWrapping)e.NewValue)));
+        }
+
+        public TextBlock()
+        {
+            // If the client does not use the Text property, nothing will notify us that
+            // inlines have been created and may need glyph substitution, so we do it
+            // manually on load.
+            Loaded += (o, e) =>
+                Inlines.OfType<Run>().ToList().ForEach(r => r.SubstituteGlyphs());
         }
 
         /// <summary>

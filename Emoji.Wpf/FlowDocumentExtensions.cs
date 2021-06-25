@@ -30,20 +30,39 @@ namespace Emoji.Wpf
     {
         private static readonly Regex ColonSyntaxRegex = new Regex("^:([-a-z]+):");
 
+        /// <summary>
+        /// Substitute emoji glyphs with emoji inlines in a FlowDocument
+        /// </summary>
         public static void SubstituteGlyphs(this FlowDocument document)
             => SubstituteGlyphs(document, SubstituteOptions.None);
 
         public static void SubstituteGlyphs(this FlowDocument document, SubstituteOptions options)
+            => SubstituteGlyphs(document.ContentStart, document.ContentEnd, document.FontSize,
+                                document.Foreground, document.Parent, options);
+
+        /// <summary>
+        /// Substitute emoji glyphs with emoji inlines in a text Run
+        /// </summary>
+        public static void SubstituteGlyphs(this Run run)
+            => SubstituteGlyphs(run, SubstituteOptions.None);
+
+        public static void SubstituteGlyphs(this Run run, SubstituteOptions options)
+            => SubstituteGlyphs(run.ContentStart, run.ContentEnd, run.FontSize,
+                                run.Foreground, run.Parent, options);
+
+        private static void SubstituteGlyphs(TextPointer range_start, TextPointer range_end, double default_font_size,
+                                             Brush default_foreground, System.Windows.DependencyObject parent,
+                                             SubstituteOptions options)
         {
             // If our parent is a RichTextBox, try to retain the caret position
-            RichTextBox rtb = document.Parent as RichTextBox;
+            RichTextBox rtb = parent as RichTextBox;
 
             var colon_syntax = (options & SubstituteOptions.ColonSyntax) != 0;
             var color_blend = (options & SubstituteOptions.ColorBlend) != 0;
 
             TextPointer caret = rtb?.CaretPosition;
-            TextPointer cur = document.ContentStart;
-            while (cur.CompareTo(document.ContentEnd) < 0)
+            TextPointer cur = range_start;
+            while (cur.CompareTo(range_end) < 0)
             {
                 TextPointer next = cur.GetNextInsertionPosition(LogicalDirection.Forward);
                 if (next == null)
@@ -98,8 +117,8 @@ namespace Emoji.Wpf
                     replace_range.Text = "";
                     Inline inline = new EmojiInline(cur)
                     {
-                        FontSize = (double)(font_size ?? document.FontSize),
-                        Foreground = color_blend ? (Brush)(foreground ?? document.Foreground) : Brushes.Black,
+                        FontSize = (double)(font_size ?? default_font_size),
+                        Foreground = color_blend ? (Brush)(foreground ?? default_foreground) : Brushes.Black,
                         Text = replace_text,
                     };
 

@@ -162,10 +162,8 @@
             </GroupBox>
             <GroupBox Grid.Column="2" Header="Runs" Margin="4">
                 <emoji:TextBlock>
-                    <Run Text="{StaticResource Run1Text}"/>
-<Span>
-                    <Run Text="{StaticResource Run2Text}"/>
-</Span>
+                    <Run FontSize="12" Text="{StaticResource Run1Text}"/>
+                    <Run FontSize="18" Text="{StaticResource Run2Text}"/>
                 </emoji:TextBlock>
             </GroupBox>
             <GroupBox Grid.Column="3" Header="Font Size" Margin="4">
