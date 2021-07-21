@@ -116,8 +116,6 @@ namespace Emoji.Wpf
             var font = EmojiData.Typeface;
             var glyphplanlist = font.MakeGlyphPlanList(text);
 
-            // FIXME: height is computed using the Windows typeface object
-            // and width using Typography.OpenFont. Try to use only one.
             var scale = font.GetScale(0.75); // 1px = 0.75pt
             width = glyphplanlist.Where(g => g.glyphIndex != font.ZwjGlyph)
                                  .Sum(g => g.AdvanceX) * scale;

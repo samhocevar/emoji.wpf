@@ -168,8 +168,9 @@ namespace Emoji.Wpf
         public double GetScale(double point_size)
             => m_openfont.CalculateScaleToPixelFromPointSize((float)point_size);
 
-        public double Height => m_gtf.Height;
-        public double Baseline => m_gtf.Baseline;
+        public double Height => (m_openfont.ClipedAscender + m_openfont.ClipedDescender) / (double)m_openfont.UnitsPerEm;
+
+        public double Baseline => m_openfont.ClipedAscender / (double)m_openfont.UnitsPerEm;
         public ushort ZwjGlyph { get; private set; }
         public bool HasFlagGlyphs { get; private set; }
 
