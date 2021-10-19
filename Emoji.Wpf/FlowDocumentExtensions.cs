@@ -80,8 +80,11 @@ namespace Emoji.Wpf
                     if (cur.GetOffsetToPosition(lookup) > 50)
                         lookup = cur.GetPositionAtOffset(50, LogicalDirection.Forward);
                     var match = EmojiData.MatchOne.Match(new TextRange(cur, lookup).Text);
-                    if (match.Success)
+                    // Try to replace an emoji only if it is within 15 characters of the current
+                    // position, otherwise wait until the next iteration.
+                    if (match.Success && match.Index < 15)
                     {
+                        next = cur = cur.GetPositionAtOffset(match.Index);
                         while (match.Length > replace_range.Text.Length)
                         {
                             next = next.GetNextInsertionPosition(LogicalDirection.Forward);
