@@ -42,7 +42,7 @@ namespace Emoji.Wpf
             }
             else if (o is DrawingImage di)
             {
-                di.Drawing = RenderEmoji(e.NewValue as string, Brushes.Black, out var width, out var height);
+                di.Drawing = RenderEmoji(e.NewValue as string, out var width, out var height);
             }
         }
 
@@ -65,7 +65,7 @@ namespace Emoji.Wpf
                             new Point(bounds.Right + sides, bounds.Bottom + bottom));
         }
 
-        internal static DrawingGroup RenderEmoji(string text, Brush brush, out double width, out double height)
+        internal static DrawingGroup RenderEmoji(string text, out double width, out double height)
         {
             var dg = new DrawingGroup();
 
@@ -103,14 +103,14 @@ namespace Emoji.Wpf
                 }
                 else
                 {
-                    RenderText(dc, text, brush, out width, out height);
+                    RenderText(dc, text, out width, out height);
                 }
             }
 
             return dg;
         }
 
-        private static void RenderText(DrawingContext dc, string text, Brush brush,
+        private static void RenderText(DrawingContext dc, string text,
                                        out double width, out double height)
         {
             var font = EmojiData.Typeface;
@@ -165,7 +165,7 @@ namespace Emoji.Wpf
                 }
 
                 dc.PushTransform(new MatrixTransform(ds, 0, 0, ds, xpos, ypos));
-                foreach ((var gr, var br) in font.DrawGlyph(g.glyphIndex, brush))
+                foreach ((var gr, var br) in font.DrawGlyph(g.glyphIndex))
                 {
                     if (EmojiData.EnableSubPixelRendering)
                         dc.DrawGlyphRun(br, gr);

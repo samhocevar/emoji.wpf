@@ -89,15 +89,20 @@ namespace Emoji.Wpf
                 return;
             }
 
-            if (Foreground != Brushes.Black || !m_cache.TryGetValue(UnicodeSequence, out var item))
+            if (!m_cache.TryGetValue(UnicodeSequence, out var item))
             {
-                var dg = Image.RenderEmoji(UnicodeSequence, Foreground, out item.width, out item.height);
+                var dg = Image.RenderEmoji(UnicodeSequence, out item.width, out item.height);
                 item.di = new DrawingImage(dg);
                 item.di.Freeze();
 
-                if (Foreground == Brushes.Black)
-                    m_cache[UnicodeSequence] = item;
+                m_cache[UnicodeSequence] = item;
             }
+
+            // If there is a tint color, apply a shader effect
+            if (Foreground is SolidColorBrush scb && scb.Color != Colors.Black)
+                Child.Effect = new TintEffect() { Tint = scb.Color };
+            else
+                Child.Effect = null;
 
             Child.Source = item.di;
             Child.Width = item.width * FontSize;

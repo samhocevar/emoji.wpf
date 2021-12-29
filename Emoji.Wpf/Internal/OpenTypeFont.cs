@@ -59,8 +59,8 @@ namespace Emoji.Wpf
             return ret;
         }
 
-        internal IEnumerable<(GlyphRun, Brush)> DrawGlyph(ushort gid, Brush fallback_brush)
-            => m_fonts[0].DrawGlyph(gid, fallback_brush);
+        internal IEnumerable<(GlyphRun, Brush)> DrawGlyph(ushort gid)
+            => m_fonts[0].DrawGlyph(gid);
 
         /// <summary>
         /// A cache of GlyphPlanList objects, indexed by source strings. Should
@@ -174,7 +174,7 @@ namespace Emoji.Wpf
         public ushort ZwjGlyph { get; private set; }
         public bool HasFlagGlyphs { get; private set; }
 
-        public IEnumerable<(GlyphRun, Brush)> DrawGlyph(ushort gid, Brush fallback_brush)
+        public IEnumerable<(GlyphRun, Brush)> DrawGlyph(ushort gid)
         {
             if (m_openfont.COLRTable != null && m_openfont.CPALTable != null
                  && m_openfont.COLRTable.LayerIndices.TryGetValue(gid, out var layer_index))
@@ -187,19 +187,13 @@ namespace Emoji.Wpf
                     ushort sub_gid = m_openfont.COLRTable.GlyphLayers[i];
                     int cid = m_openfont.CPALTable.Palettes[palette] + m_openfont.COLRTable.GlyphPalettes[i];
                     m_openfont.CPALTable.GetColor(cid, out var r, out var g, out var b, out var a);
-                    if (fallback_brush is SolidColorBrush tint_brush)
-                    {
-                        r = (byte)(r + (255 - r) * tint_brush.Color.R / 255);
-                        g = (byte)(g + (255 - g) * tint_brush.Color.G / 255);
-                        b = (byte)(b + (255 - b) * tint_brush.Color.B / 255);
-                    }
-                    Brush blended_brush = new SolidColorBrush(Color.FromArgb(a, r, g, b));
-                    yield return (MakeGlyphRun(sub_gid), blended_brush);
+
+                    yield return (MakeGlyphRun(sub_gid), new SolidColorBrush(Color.FromArgb(a, r, g, b)));
                 }
             }
             else
             {
-                yield return (MakeGlyphRun(gid), fallback_brush);
+                yield return (MakeGlyphRun(gid), Brushes.Black);
             }
         }
 
