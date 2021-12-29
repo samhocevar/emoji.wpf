@@ -3,6 +3,7 @@
 
 # This is really text
 *.cs text
+*.hlsl text
 *.po text
 *.resx text
 *.xaml text

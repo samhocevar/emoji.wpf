@@ -56,10 +56,21 @@
     <EmbeddedResource Include="WinFonts\wingdings.txt" LogicalName="wingdings.txt" />
     <EmbeddedResource Include="$(OutputPath)\emoji-test.txt.gz" LogicalName="emoji-test.txt.gz" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="**\*.hlsl" />
+    <HLSLShader Include="**\*.hlsl">
+      <ShaderProfile>ps_3_0</ShaderProfile>
+      <ObjectFileOutput>$(OutputPath)\$([System.IO.Path]::GetFileNameWithoutExtension('%(Identity)')).ps</ObjectFileOutput>
+    </HLSLShader>
+    <EmbeddedResource Include="$(OutputPath)\*.ps" LogicalName="$([System.IO.Path]::GetFileName('%(Identity)'))" Visible="False" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="GitVersion.MsBuild" Version="5.6.6" PrivateAssets="all">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="JeremyAnsel.HLSL.Targets" Version="1.0.13" />
     <PackageReference Include="Stfu" Version="0.1.1" />
   </ItemGroup>
   <ItemGroup>
