@@ -118,6 +118,7 @@ namespace Emoji.Wpf
                    select e;
         }
 
+        #region Custom emoji sequences
         public static void RegisterEmoji(string name, string sequence, string after)
         {
             if (!LookupByName.TryGetValue(ToColonSyntax(after), out var predecessor))
@@ -139,7 +140,9 @@ namespace Emoji.Wpf
             m_match_one_string = sequence.Replace("\ufe0f", "\ufe0f?") + "|" + m_match_one_string;
             MatchOne = new Regex("(" + m_match_one_string + ")");
         }
+        #endregion
 
+        #region Custom drawings
         public static void RegisterDrawing(string sequence, Drawing dg)
         {
             m_custom_drawings[sequence] = dg;
@@ -151,6 +154,7 @@ namespace Emoji.Wpf
 
         private static Dictionary<string, Drawing> m_custom_drawings
             = new Dictionary<string, Drawing>();
+        #endregion
 
         private static string m_match_one_string;
 

@@ -9,7 +9,7 @@
         Title="Emoji.Wpf Sample" Width="640" Height="480">
 
     <Window.Resources>
-        <clr:String x:Key="SampleText">Hello! 😁🎀🇬🇧👨‍👦👨🏻‍👩🏿‍👧🏽‍👦🏽‍‍🐱‍🐉</clr:String>
+        <clr:String x:Key="SampleText">Hello! 😁🎀🇬🇧👨‍👦👨🏻‍👩🏿‍👧🏽‍👦🏽‍‍😶‍🌫️</clr:String>
         <clr:String x:Key="PickerEmoji">🍣</clr:String>
         <clr:String x:Key="FontSizeEmoji">🍷🐉</clr:String>
         <clr:String x:Key="EnabledButtonText">💾 Enabled</clr:String>
