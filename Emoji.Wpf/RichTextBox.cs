@@ -119,6 +119,30 @@ namespace Emoji.Wpf
             base.OnMouseDown(e);
         }
 
+        /// <summary>
+        /// Handle preview drag event in order to override the serialized data. By default WPF will not
+        /// serialize embedded elements unless they are images (see [1]), so all our emojis get replaced
+        /// with " ". To avoid this problem we get rid of the XAML and RTF serialisations and replace the
+        /// dragged text with the current selection.
+        /// [1] https://referencesource.microsoft.com/#PresentationFramework/src/Framework/System/windows/Documents/TextRangeSerialization.cs,1180
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnPreviewDragEnter(DragEventArgs e)
+        {
+            if (e.Source == Document)
+            {
+                foreach (var fmt in new string[] { DataFormats.Rtf, DataFormats.Xaml, DataFormats.XamlPackage })
+                    if (e.Data.GetDataPresent(fmt, autoConvert: false))
+                        e.Data.SetData(fmt, "");
+
+                var text = Selection.Text;
+                e.Data.SetData(DataFormats.Text, text);
+                e.Data.SetData(DataFormats.UnicodeText, text);
+            }
+
+            base.OnPreviewDragEnter(e);
+        }
+
         private static void PreviewExecuted(object sender, ExecutedRoutedEventArgs e)
             => (sender as RichTextBox)?.OnPreviewExecuted(e);
 
