@@ -49,6 +49,11 @@ namespace Emoji.Wpf
             set => Image.Height = value / 0.75;
         }
 
+        public bool ShowPopup
+        {
+            set => Button_INTERNAL.IsChecked = value;
+        }
+
         public event PropertyChangedEventHandler SelectionChanged;
 
         public event EmojiPickedEventHandler Picked;
