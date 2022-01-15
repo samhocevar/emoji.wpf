@@ -91,7 +91,7 @@
                 <DataTemplate>
                     <StackPanel Orientation="Vertical">
                         <TextBlock Margin="4" Text="{Binding Name}" FontStyle="Italic"/>
-                        <ListView Name="EmojiListView" ItemsSource="{Binding EmojiChunkList}"
+                        <ListView Name="EmojiListView"
                                   BorderThickness="0"
                                   MaxHeight="320" Height="Auto" Padding="0" Margin="1"
                                   VirtualizingStackPanel.IsVirtualizing="True"
@@ -133,6 +133,16 @@
                                     </ItemsControl>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
+                            <ListView.Style>
+                                <Style TargetType="ListView">
+                                    <Setter Property="ItemsSource" Value="{Binding EmojiChunkList}"></Setter>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type emoji:Picker}},Path=ShowOnlyRenderable}" Value="True">
+                                            <Setter Property="ItemsSource" Value="{Binding EmojiRenderableChunkList}"></Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ListView.Style>
                         </ListView>
                     </StackPanel>
                 </DataTemplate>

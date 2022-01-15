@@ -152,8 +152,7 @@ namespace Emoji.Wpf
         /// <param name="s"></param>
         /// <returns></returns>
         public bool CanRender(string s)
-            => StringToGlyphPlans(s, use_gpos: false)
-                   .All(g => g.glyphIndex != 0 && g.glyphIndex != ZwjGlyph);
+            => StringToGlyphPlans(s, use_gpos: false).Any(g => g.glyphIndex != 0 && g.glyphIndex != ZwjGlyph);
 
         internal IEnumerable<UnscaledGlyphPlan> StringToGlyphPlans(string s, bool use_gpos = true)
         {

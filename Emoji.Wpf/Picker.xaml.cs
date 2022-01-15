@@ -65,6 +65,15 @@ namespace Emoji.Wpf
             set => SetValue(SelectionProperty, value);
         }
 
+        /// <summary>
+        /// Show only emojis that can be rendered with the installed font
+        /// </summary>
+        public bool ShowOnlyRenderable
+        {
+            get;
+            set;
+        }
+
         private void OnSelectionChanged(string s)
         {
             var is_disabled = string.IsNullOrEmpty(s);

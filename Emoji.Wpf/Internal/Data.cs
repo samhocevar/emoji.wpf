@@ -112,6 +112,9 @@ namespace Emoji.Wpf
             public IEnumerable<IEnumerable<Emoji>> EmojiChunkList
                 => EmojiList.Chunk(8);
 
+            public IEnumerable<IEnumerable<Emoji>> EmojiRenderableChunkList
+                => EmojiList.Where(e => e.Renderable).Chunk(8);
+
             public IEnumerable<Emoji> EmojiList
                 => from s in SubGroups
                    from e in s.EmojiList
@@ -129,6 +132,7 @@ namespace Emoji.Wpf
                 Name = name,
                 Text = sequence,
                 SubGroup = predecessor.SubGroup,
+                Renderable = Typeface.CanRender(sequence),
             };
             var list = predecessor.SubGroup.EmojiList;
             list.Insert(list.IndexOf(predecessor) + 1, entry);
