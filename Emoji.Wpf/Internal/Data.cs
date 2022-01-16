@@ -265,7 +265,7 @@ namespace Emoji.Wpf
                     var emoji = new Emoji
                     {
                         Name = name,
-                        Text = text,
+                        Text = unqualified,
                         SubGroup = current_subgroup,
                         Renderable = Typeface.CanRender(text),
                     };
