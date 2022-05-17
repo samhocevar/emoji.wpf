@@ -22,7 +22,7 @@ namespace Emoji.Wpf.BBCode
 {
     public static class BBCodeExtensions
     {
-        private readonly static Regex _bbcode_regex = new Regex(@"\[(.+?).*?\](.*?)\[\/\1\]", RegexOptions.Compiled);
+        private readonly static Regex _bbcode_regex = new Regex(@"\[(.+?)\](.*?)\[\/\1\]", RegexOptions.Compiled);
 
         private static List<BBCodeMarkup> _markups = new List<BBCodeMarkup>()
         {
@@ -40,7 +40,6 @@ namespace Emoji.Wpf.BBCode
             // - don't make a full rebuild of the document, use TextPointer methods instead
             // - show only the markups that enclose the caret, as in Typora
             // - evaluate performance impact
-            // - fix text erasure bug when typing "[b erased text [b]some text[/b]"
 
             if (document.Blocks.FirstBlock == null)
                 return;
@@ -93,10 +92,7 @@ namespace Emoji.Wpf.BBCode
 
             // Restore caret position
             if (rtb != null)
-            {
-                rtb.CaretPosition = rtb.Document.ContentStart;
-                rtb.CaretPosition = rtb.CaretPosition.GetPositionAtCharOffset(caret_index);
-            }
+                rtb.CaretPosition = rtb.Document.ContentStart.GetPositionAtCharOffset(caret_index);
         }
     }
 }
