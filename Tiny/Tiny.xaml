@@ -7,15 +7,20 @@
         xmlns:local="clr-namespace:Tiny"
         xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
         mc:Ignorable="d"
-        WindowStyle="None" AllowsTransparency="True" Opacity="0.7"
+        WindowStyle="ToolWindow"
         MouseLeftButtonDown="OnMouseLeftButtonDown"
-        Title="Emoji.Wpf Tiny" Width="600" Height="200">
+        Title="Emoji.Wpf Tiny" Width="1024" Height="768">
 
     <Window.Resources>
-        <clr:String x:Key="SampleText">Hi👨🏻‍👩🏿‍👧🏽‍👦🏽‍👦🏿lol</clr:String>
+        <clr:String x:Key="SampleTextBackup">Hi👨🏻‍👩🏿‍👧🏽‍👦🏽‍👦🏿lol</clr:String>
+        <clr:String x:Key="SampleText">Hello, here is [b]some bold text[/b], also here is [test]a custom markup[/test], and that's all.</clr:String>
     </Window.Resources>
 
-    <emoji:TextBlock FontSize="120" Text="{StaticResource SampleText}"
-                     FontFamily="Segoe UI Emoji, Segoe UI, Arial" TextWrapping="Wrap"
-                     VerticalAlignment="Center" HorizontalAlignment="Center"/>
+    <ScrollViewer>
+        <emoji:RichTextBox FontSize="60"
+                           Text="{StaticResource SampleText}"
+                           FontFamily="Segoe UI Emoji, Segoe UI, Arial"
+                           VerticalAlignment="Center" HorizontalAlignment="Center"
+                           VerticalContentAlignment="Stretch"/>
+    </ScrollViewer>
 </Window>

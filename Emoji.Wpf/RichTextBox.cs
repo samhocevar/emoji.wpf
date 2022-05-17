@@ -10,6 +10,7 @@
 //  See http://www.wtfpl.net/ for more details.
 //
 
+using Emoji.Wpf.BBCode;
 using Stfu.Linq;
 using System.Collections.Generic;
 using System.Text;
@@ -167,7 +168,6 @@ namespace Emoji.Wpf
         /// <summary>
         /// Replace Emoji characters with EmojiInline objects inside the document.
         /// </summary>
-        /// <param name="e"></param>
         protected override void OnTextChanged(Controls.TextChangedEventArgs e)
         {
             if (m_pending_change)
@@ -179,6 +179,8 @@ namespace Emoji.Wpf
 
             // Prevent our operation from polluting the undo buffer
             BeginChange();
+
+            Document.ApplyBBCodeFormatting();
 
             Document.SubstituteGlyphs(
                 (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
