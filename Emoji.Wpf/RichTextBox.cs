@@ -175,8 +175,6 @@ namespace Emoji.Wpf
 
             m_pending_change = true;
 
-            base.OnTextChanged(e);
-
             // Prevent our operation from polluting the undo buffer
             BeginChange();
 
@@ -187,6 +185,8 @@ namespace Emoji.Wpf
                 (ColorBlend ? SubstituteOptions.ColorBlend : SubstituteOptions.None));
 
             EndChange();
+
+            base.OnTextChanged(e);
 
             // FIXME: make this call lazy inside Text.get()
             SetValue(TextProperty, new TextSelection(Document.ContentStart, Document.ContentEnd).Text);

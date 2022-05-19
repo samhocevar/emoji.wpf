@@ -3,19 +3,21 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emoji.Wpf", "Emoji.Wpf\Emoji.Wpf.csproj", "{6A9C0AD6-14F7-451A-A0D4-38987A275F0D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emoji.Wpf", "Emoji.Wpf\Emoji.Wpf.csproj", "{6A9C0AD6-14F7-451A-A0D4-38987A275F0D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample", "Sample\Sample.csproj", "{4C358318-FF04-4FF7-9F5C-18165927A7E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample", "Sample\Sample.csproj", "{4C358318-FF04-4FF7-9F5C-18165927A7E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tiny", "Tiny\Tiny.csproj", "{A1AD34BF-A47B-42D2-B9DB-DF382B1D8F0C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tiny", "Tiny\Tiny.csproj", "{A1AD34BF-A47B-42D2-B9DB-DF382B1D8F0C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FontViewer", "FontViewer\FontViewer.csproj", "{7F68102E-00A3-4E83-8DA8-0F9CF736ED2C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FontViewer", "FontViewer\FontViewer.csproj", "{7F68102E-00A3-4E83-8DA8-0F9CF736ED2C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Typography.OpenFont", "Typography\Build\N20\Typography.OpenFont\Typography.OpenFont.csproj", "{F7D71E61-9342-4DD7-9AFD-69045F2EC98B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Typography.GlyphLayout", "Typography\Build\N20\Typography.GlyphLayout\Typography.GlyphLayout.csproj", "{C6807D05-09BE-4313-9F8B-BD2D51C55819}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{00F1DBB1-6BF8-43DE-AA15-57A043E34F45}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{00F1DBB1-6BF8-43DE-AA15-57A043E34F45}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Editor", "Editor\Editor.csproj", "{A834C95C-A51B-411C-9DA0-3FADB02C8D7C}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -55,6 +57,10 @@ Global
 		{00F1DBB1-6BF8-43DE-AA15-57A043E34F45}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00F1DBB1-6BF8-43DE-AA15-57A043E34F45}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00F1DBB1-6BF8-43DE-AA15-57A043E34F45}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A834C95C-A51B-411C-9DA0-3FADB02C8D7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A834C95C-A51B-411C-9DA0-3FADB02C8D7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A834C95C-A51B-411C-9DA0-3FADB02C8D7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A834C95C-A51B-411C-9DA0-3FADB02C8D7C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
