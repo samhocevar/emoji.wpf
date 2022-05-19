@@ -6,19 +6,17 @@ using System.Windows.Documents;
 
 namespace Emoji.Wpf.BBCode
 {
-    public class BBCodeInline : Run
+    public class BBCodeTextInline : BBCodeInline
     {
-        public BBCodeMarkup Markup { get; }
-
-        public BBCodeInline()
+        public BBCodeTextInline()
             : base()
         {
         }
 
-        public BBCodeInline(BBCodeMarkup markup)
-            : this()
+        public BBCodeTextInline(BBCodeMarkup markup, string text)
+            : base(markup)
         {
-            Markup = markup;
+            Text = text;
         }
     }
 }

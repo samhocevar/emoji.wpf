@@ -27,9 +27,9 @@ namespace Emoji.Wpf.BBCode
             FontStyle = font_style;
         }
 
-        public BBCodeInline CreateInline(string text)
+        public BBCodeTextInline CreateTextInline(string text)
         {
-            var result = new BBCodeInline(this, text);
+            var result = new BBCodeTextInline(this, text);
 
             if (Foreground.HasValue)
                 result.Foreground = new SolidColorBrush(Foreground.Value);
@@ -39,6 +39,11 @@ namespace Emoji.Wpf.BBCode
                 result.FontStyle = FontStyle.Value;
 
             return result;
+        }
+
+        public BBCodeMarkupInline CreateMarkupInline(BBCodeMarkupInlineType type)
+        {
+            return new BBCodeMarkupInline(this, type);
         }
     }
 }

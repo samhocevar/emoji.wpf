@@ -62,25 +62,22 @@ namespace Emoji.Wpf.BBCode
             {
                 var match_markup = match.Groups[1].Value;
                 var match_text = match.Groups[2].Value;
+                var markup = _markups.Find(x => x.Markup == match_markup);
+
+                if (markup == null)
+                    continue;
 
                 // Insert unformatted text before the match
                 var unmatched_text = text.Substring(cur, match.Index - cur);
                 if (unmatched_text.Length > 0)
                     paragraph.Inlines.Add(unmatched_text);
 
-                // Insert markup start
-                var markup_begin = new Run($"[{match_markup}]");
-                markup_begin.Foreground = new SolidColorBrush(Colors.LightGray);
+                var markup_begin = markup?.CreateMarkupInline(BBCodeMarkupInlineType.Opening);
+                var markup_inline = markup?.CreateTextInline(match_text);
+                var markup_close = markup?.CreateMarkupInline(BBCodeMarkupInlineType.Closing);
+
                 paragraph.Inlines.Add(markup_begin);
-
-                // Insert formatted text
-                var markup = _markups.Find(x => x.Markup == match_markup);
-                var markup_inline = markup?.CreateInline(match_text) ?? new Run(match_text);
                 paragraph.Inlines.Add(markup_inline);
-
-                // Insert markup close
-                var markup_close = new Run($"[/{match_markup}]");
-                markup_close.Foreground = new SolidColorBrush(Colors.LightGray);
                 paragraph.Inlines.Add(markup_close);
 
                 // Move cursor to the end of the match
