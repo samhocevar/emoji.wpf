@@ -7,7 +7,7 @@ namespace Emoji.Wpf.BBCode
 {
     public class BBCodeMarkupInline : Run
     {
-        public BBCodeMarkupInlineType Type { get; }
+        public readonly BBCodeMarkupInlineType Type;
 
         public BBCodeMarkupInline()
             : base()
