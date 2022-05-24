@@ -72,13 +72,8 @@ namespace Emoji.Wpf.BBCode
                 if (unmatched_text.Length > 0)
                     paragraph.Inlines.Add(unmatched_text);
 
-                var markup_begin = markup?.CreateMarkupInline(BBCodeMarkupInlineType.Opening);
-                var markup_inline = markup?.CreateTextInline(match_text);
-                var markup_close = markup?.CreateMarkupInline(BBCodeMarkupInlineType.Closing);
-
-                paragraph.Inlines.Add(markup_begin);
-                paragraph.Inlines.Add(markup_inline);
-                paragraph.Inlines.Add(markup_close);
+                // Insert BBCode span
+                paragraph.Inlines.Add(new BBCodeSpan(markup, match_text));
 
                 // Move cursor to the end of the match
                 cur = match.Index + match.Length;

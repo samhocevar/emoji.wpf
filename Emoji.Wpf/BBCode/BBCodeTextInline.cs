@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Windows.Documents;
 
 namespace Emoji.Wpf.BBCode
 {
-    public class BBCodeTextInline : BBCodeInline
+    public class BBCodeTextInline : Run
     {
         public BBCodeTextInline()
             : base()
@@ -14,7 +12,6 @@ namespace Emoji.Wpf.BBCode
         }
 
         public BBCodeTextInline(BBCodeMarkup markup, string text)
-            : base(markup)
         {
             Text = text;
         }

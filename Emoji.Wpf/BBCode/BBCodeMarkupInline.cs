@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Windows.Documents;
 using System.Windows.Media;
 
 namespace Emoji.Wpf.BBCode
 {
-    public class BBCodeMarkupInline : BBCodeInline
+    public class BBCodeMarkupInline : Run
     {
         public BBCodeMarkupInlineType Type { get; }
 
@@ -18,7 +16,6 @@ namespace Emoji.Wpf.BBCode
         }
 
         public BBCodeMarkupInline(BBCodeMarkup markup, BBCodeMarkupInlineType type)
-            : base(markup)
         {
             Foreground = new SolidColorBrush(Colors.LightGray);
             Type = type;
