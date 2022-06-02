@@ -12,7 +12,10 @@
 
 using Emoji.Wpf.BBCode;
 using Stfu.Linq;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 #if DEBUG
 using System.Text.RegularExpressions;
@@ -79,6 +82,7 @@ namespace Emoji.Wpf
         public RichTextBox()
         {
             CommandManager.AddPreviewExecutedHandler(this, PreviewExecuted);
+            CommandManager.AddPreviewCanExecuteHandler(this, PreviewCanExecuteHandler);
             SetValue(Block.LineHeightProperty, 1.0);
             Selection = new TextSelection(Document.ContentStart, Document.ContentStart);
         }
@@ -144,16 +148,46 @@ namespace Emoji.Wpf
             base.OnPreviewDragEnter(e);
         }
 
+        private static void PreviewCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
+            => (sender as RichTextBox)?.OnPreviewCanExecute(e);
+        
         private static void PreviewExecuted(object sender, ExecutedRoutedEventArgs e)
             => (sender as RichTextBox)?.OnPreviewExecuted(e);
 
         /// <summary>
-        /// Intercept some high level commands to ensure consistency.
+        /// Intercept some high level command.CanExecute calls to ensure consistency.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        void OnPreviewCanExecute(CanExecuteRoutedEventArgs e)
+        {
+            if (e.Command == ApplicationCommands.Undo)
+            {
+                e.CanExecute = m_undo_manager.CanUndo();
+                e.Handled = true;
+            }
+            else if (e.Command == ApplicationCommands.Redo)
+            {
+                e.CanExecute = m_undo_manager.CanRedo();
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// Intercept some high level command.Execute calls to ensure consistency.
+        /// </summary>
         protected void OnPreviewExecuted(ExecutedRoutedEventArgs e)
         {
+            if (e.Command == ApplicationCommands.Undo)
+            {
+                Undo();
+                e.Handled = true;
+            }
+
+            if (e.Command == ApplicationCommands.Redo)
+            {
+                Redo();
+                e.Handled = true;
+            }
+
             if (e.Command == ApplicationCommands.Copy || e.Command == ApplicationCommands.Cut)
             {
                 /// Make sure the clipboard contains the proper emoji characters.
@@ -175,7 +209,6 @@ namespace Emoji.Wpf
 
             m_pending_change = true;
 
-            // Prevent our operation from polluting the undo buffer
             BeginChange();
 
             Document.ApplyBBCodeFormatting();
@@ -192,6 +225,19 @@ namespace Emoji.Wpf
             SetValue(TextProperty, new TextSelection(Document.ContentStart, Document.ContentEnd).Text);
 
             m_pending_change = false;
+
+            switch (e.UndoAction)
+            {
+                case Controls.UndoAction.Create:
+                    m_undo_manager.Create(Document);
+                    break;
+                case Controls.UndoAction.Merge:
+                    m_undo_manager.UpdateCurrent(Document);
+                    break;
+                case Controls.UndoAction.Clear:
+                    m_undo_manager.Clear(Document);
+                    break;
+            }
 #if DEBUG
             try
             {
@@ -271,5 +317,27 @@ namespace Emoji.Wpf
             nameof(XamlText), typeof(string), typeof(RichTextBox),
             new PropertyMetadata(""));
 #endif
+
+        #region Undo/Redo
+
+        private UndoManager<FlowDocument> m_undo_manager = new UndoManager<FlowDocument>();
+
+        private new void Undo()
+        {
+            m_pending_change = true;
+            if (m_undo_manager.TryUndo(out var document))
+                Document = document;
+            m_pending_change = false;
+        }
+
+        private new void Redo()
+        {
+            m_pending_change = true;
+            if (m_undo_manager.TryRedo(out var document))
+                Document = document;
+            m_pending_change = false;
+        }
+
+        #endregion
     }
 }
