@@ -226,18 +226,8 @@ namespace Emoji.Wpf
 
             m_pending_change = false;
 
-            switch (e.UndoAction)
-            {
-                case Controls.UndoAction.Create:
-                    m_undo_manager.Create(Document);
-                    break;
-                case Controls.UndoAction.Merge:
-                    m_undo_manager.UpdateCurrent(Document);
-                    break;
-                case Controls.UndoAction.Clear:
-                    m_undo_manager.Clear(Document);
-                    break;
-            }
+            m_undo_manager.Update(this, e.UndoAction);
+
 #if DEBUG
             try
             {
@@ -320,21 +310,19 @@ namespace Emoji.Wpf
 
         #region Undo/Redo
 
-        private UndoManager<FlowDocument> m_undo_manager = new UndoManager<FlowDocument>();
+        private UndoManager m_undo_manager = new UndoManager();
 
         private new void Undo()
         {
             m_pending_change = true;
-            if (m_undo_manager.TryUndo(out var document))
-                Document = document;
+            m_undo_manager.Undo(this);
             m_pending_change = false;
         }
 
         private new void Redo()
         {
             m_pending_change = true;
-            if (m_undo_manager.TryRedo(out var document))
-                Document = document;
+            m_undo_manager.Redo(this);
             m_pending_change = false;
         }
 

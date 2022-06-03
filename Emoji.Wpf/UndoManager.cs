@@ -2,119 +2,139 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Markup;
 
 namespace Emoji.Wpf
 {
-    public class UndoManager<T>
+    internal class UndoState
     {
-        private List<byte[]> m_changes_history = new List<byte[]>(100);
-        private int m_current = -1;
+        public int StartPosition { get; private set; }
+        public int EndPosition { get; private set; }
+        private byte[] _data;
 
-        /// <summary>
-        /// Add a new undo state and move the current state pointer.
-        /// </summary>
-        /// <param name="obj">Object that will be serialized in the state.</param>
-        public void Create(T obj)
+        public UndoState(RichTextBox rtb, int start_position)
         {
-            using (var stream = new MemoryStream(2000))
+            using (var stream = new MemoryStream())
             {
-                if (m_current < m_changes_history.Count - 1)
-                {
-                    var range_start = m_current + 1;
-                    var range_length = m_changes_history.Count - range_start;
-                    m_changes_history.RemoveRange(range_start, range_length);
-                }
-                XamlWriter.Save(obj, stream);
-                m_changes_history.Add(stream.ToArray());
-                m_current = m_changes_history.Count - 1;
+                XamlWriter.Save(rtb.Document, stream);
+                _data = stream.ToArray();
+                EndPosition = rtb.Document.ContentStart.GetOffsetToPosition(rtb.CaretPosition);
+                StartPosition = EndPosition - 1;
             }
         }
 
-        /// <summary>
-        /// Override current undo state with a new one.
-        /// </summary>
-        /// <param name="obj">Object that will be serialized in the state.</param>
-        public void UpdateCurrent(T obj)
+        public void Update(RichTextBox rtb)
         {
-            using (var stream = new MemoryStream(2000))
+            using (var stream = new MemoryStream())
             {
-                XamlWriter.Save(obj, stream);
-                m_changes_history[m_current] = stream.ToArray();
+                XamlWriter.Save(rtb.Document, stream);
+                _data = stream.ToArray();
+                EndPosition = rtb.Document.ContentStart.GetOffsetToPosition(rtb.CaretPosition);
             }
         }
 
-        /// <summary>
-        /// Clear all undo states and create a base undo state.
-        /// </summary>
-        /// <param name="obj">Object that will be serialized in the base state.</param>
-        public void Clear(T obj)
+        public void Load(RichTextBox rtb)
         {
-            m_changes_history.Clear();
-            m_current = -1;
-            Create(obj);
+            using (var stream = new MemoryStream(_data))
+                rtb.Document = XamlReader.Load(stream) as FlowDocument;
+        }
+    }
+
+    public class UndoManager
+    {
+        private List<UndoState> _states = new List<UndoState>(100);
+        private int _current = -1;
+        private int _start_position = 0;
+
+        /// <summary>
+        /// Update the undo history according to the undo action after text changed.
+        /// </summary>
+        public void Update(RichTextBox rtb, UndoAction undo_action)
+        {
+            switch (undo_action)
+            {
+                case UndoAction.Create:
+                    CreateState(rtb);
+                    break;
+                case UndoAction.Merge:
+                    UpdateCurrentState(rtb);
+                    break;
+                case UndoAction.Clear:
+                    ClearStates(rtb);
+                    break;
+            }
         }
 
         /// <summary>
         /// Returns whether the undo operation can be performed.
         /// </summary>
-        public bool CanUndo() => m_current > 0;
+        public bool CanUndo() => _current > 0;
 
         /// <summary>
         /// Returns whether the redo operation can be performed.
         /// </summary>
-        public bool CanRedo() => m_current < m_changes_history.Count - 1;
+        public bool CanRedo() => _current < _states.Count - 1;
 
         /// <summary>
-        /// Gets the last undo state object value.
+        /// Performs undo on a <see cref="RichTextBox"/>
         /// </summary>
-        /// <param name="obj">When this method returns, contains the new object state,
-        /// otherwise, the default value for the type of the value parameter.
-        /// This parameter is passed uninitialized.</param>
-        /// <returns>true if the undo was successful, false otherwise.</returns>
-        public bool TryUndo(out T obj)
+        public void Undo(RichTextBox rtb)
         {
             if (CanUndo())
             {
-                m_current--;
-                using (var stream = new MemoryStream(m_changes_history[m_current]))
-                {
-                    var untyped_obj = XamlReader.Load(stream);
-                    if (untyped_obj is T)
-                    {
-                        obj = (T)untyped_obj;
-                        return true;
-                    }
-                }
+                _current--;
+                _states[_current].Load(rtb);
+                rtb.CaretPosition = rtb.Document.ContentStart.GetPositionAtOffset(_states[_current + 1].StartPosition);
             }
-            obj = default(T);
-            return false;
         }
 
         /// <summary>
-        /// Gets the next undo state object value.
+        /// Performs redo on a <see cref="RichTextBox"/>
         /// </summary>
-        /// <param name="obj">When this method returns, contains the new object state,
-        /// otherwise, the default value for the type of the value parameter.
-        /// This parameter is passed uninitialized.</param>
-        /// <returns>true if the undo was successful, false otherwise.</returns>
-        public bool TryRedo(out T obj)
+        public void Redo(RichTextBox rtb)
         {
             if (CanRedo())
             {
-                m_current++;
-                using (var stream = new MemoryStream(m_changes_history[m_current]))
-                {
-                    var untyped_obj = XamlReader.Load(stream);
-                    if (untyped_obj is T)
-                    {
-                        obj = (T)untyped_obj;
-                        return true;
-                    }
-                }
+                _current++;
+                _states[_current].Load(rtb);
+                rtb.CaretPosition = rtb.Document.ContentStart.GetPositionAtOffset(_states[_current].EndPosition);
             }
-            obj = default(T);
-            return false;
+        }
+
+        /// <summary>
+        /// Add a new undo state and move the current state pointer.
+        /// </summary>
+        private void CreateState(RichTextBox rtb)
+        {
+            if (_current < _states.Count - 1)
+            {
+                var range_start = _current + 1;
+                var range_length = _states.Count - range_start;
+                _states.RemoveRange(range_start, range_length);
+            }
+            _states.Add(new UndoState(rtb, _start_position));
+            _current = _states.Count - 1;
+        }
+
+        /// <summary>
+        /// Override current undo state with a new one.
+        /// </summary>
+        private void UpdateCurrentState(RichTextBox rtb)
+        {
+            if (_current >= 0 && _current < _states.Count)
+                _states[_current].Update(rtb);
+        }
+
+        /// <summary>
+        /// Clear all undo states and create a base undo state.
+        /// </summary>
+        private void ClearStates(RichTextBox rtb)
+        {
+            _states.Clear();
+            _current = -1;
+            CreateState(rtb);
         }
     }
 }
