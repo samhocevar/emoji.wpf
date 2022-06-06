@@ -15,7 +15,6 @@ using System;
 using System.Text;
 using System.Windows;
 using System.Windows.Documents;
-using System.Windows.Input;
 
 namespace Editor
 {
@@ -46,7 +45,45 @@ namespace Editor
         private void EmojiTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             if (IsLoaded)
-                CodeTextBox.Text = GetXaml((sender as RichTextBox).Document);
+                CodeTextBox.Text = GetXaml((sender as System.Windows.Controls.RichTextBox).Document);
+        }
+        
+        private string GetTextPointerFlow(FlowDocument document)
+        {
+            StringBuilder buffer = new StringBuilder();
+
+            // Position a "navigator" pointer before the opening tag of the element.
+            var navigator = document.ContentStart;
+            var next = navigator.GetPointerContext(LogicalDirection.Forward);
+
+            while (navigator != null && navigator.CompareTo(document.ContentEnd) < 0)
+            {
+                var context = navigator.GetPointerContext(LogicalDirection.Forward);
+
+                buffer.Append(Environment.NewLine);
+                buffer.Append($"[{context}]".PadRight(16) + ": ");
+
+                switch (context)
+                {
+                    case TextPointerContext.ElementStart:
+                        buffer.AppendFormat("<{0}>", navigator.GetAdjacentElement(LogicalDirection.Forward)?.GetType().Name ?? "null");
+                        break;
+                    case TextPointerContext.ElementEnd:
+                        buffer.AppendFormat("</{0}>", navigator.GetAdjacentElement(LogicalDirection.Forward)?.GetType().Name ?? "null");
+                        break;
+                    case TextPointerContext.EmbeddedElement:
+                        buffer.AppendFormat("<{0}/>", navigator.GetAdjacentElement(LogicalDirection.Forward)?.GetType().Name ?? "null");
+                        break;
+                    case TextPointerContext.Text:
+                        buffer.AppendFormat("{0}", navigator.GetTextInRun(LogicalDirection.Forward));
+                        break;
+                }
+
+                // Advance the navigator to the next insertion position.
+                navigator = navigator.GetNextContextPosition(LogicalDirection.Forward);
+            }
+
+            return buffer.ToString();
         }
 
         // Adapted from https://docs.microsoft.com/en-us/dotnet/api/system.windows.documents.textpointercontext
@@ -94,9 +131,9 @@ namespace Editor
 
                 // Advance the naviagtor to the next context position.
                 navigator = navigator.GetNextContextPosition(LogicalDirection.Forward);
-            } // End while.
+            }
 
             return buffer.ToString();
-        } // End GetXaml method.
+        }
     }
 }
