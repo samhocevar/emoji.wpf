@@ -14,7 +14,7 @@ namespace Emoji.Wpf
         public int EndPosition { get; private set; }
         private byte[] _data;
 
-        public UndoState(RichTextBox rtb, int start_position)
+        public UndoState(RichTextBox rtb)
         {
             using (var stream = new MemoryStream())
             {
@@ -46,7 +46,6 @@ namespace Emoji.Wpf
     {
         private List<UndoState> _states = new List<UndoState>(100);
         private int _current = -1;
-        private int _start_position = 0;
 
         /// <summary>
         /// Update the undo history according to the undo action after text changed.
@@ -114,7 +113,7 @@ namespace Emoji.Wpf
                 var range_length = _states.Count - range_start;
                 _states.RemoveRange(range_start, range_length);
             }
-            _states.Add(new UndoState(rtb, _start_position));
+            _states.Add(new UndoState(rtb));
             _current = _states.Count - 1;
         }
 

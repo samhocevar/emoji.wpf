@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Documents;
 using System.Windows.Media;
 
 namespace Emoji.Wpf.BBCode
 {
+    [DebuggerDisplay(@"\{BBCodeMarkupInline: {Text}\}")]
     public class BBCodeMarkupInline : Run
     {
         public readonly BBCodeMarkupInlineType Type;

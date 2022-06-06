@@ -12,6 +12,7 @@
 //
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -20,6 +21,15 @@ using System.Windows.Media;
 
 namespace Emoji.Wpf.BBCode
 {
+    // TODO:
+    // - fix caret bug when text contains emoji(s)
+    // - show only the markups that enclose the caret, as in Typora
+    // - evaluate performance impact
+    // - improve undo/redo performance :
+    //     - store undo state objects by deserializing them asynchronously after serialization ?
+    //     - don't override current state on key press
+    // - move markups definitions list to a DependencyProperty on the control
+
     public static class BBCodeExtensions
     {
         private readonly static Regex _bbcode_regex = new Regex(@"\[(.+?)\](.*?)\[\/\1\]", RegexOptions.Compiled);
@@ -35,12 +45,6 @@ namespace Emoji.Wpf.BBCode
         /// </summary>
         public static void ApplyBBCodeFormatting(this FlowDocument document)
         {
-            // TODO:
-            // - fix caret bug when text contains emoji(s)
-            // - don't make a full rebuild of the document, use TextPointer methods instead
-            // - show only the markups that enclose the caret, as in Typora
-            // - evaluate performance impact
-
             if (document.Blocks.FirstBlock == null)
                 return;
 
@@ -52,35 +56,39 @@ namespace Emoji.Wpf.BBCode
             TextPointer caret = rtb?.CaretPosition;
             var caret_index = new TextRange(rtb.Document.ContentStart, rtb.CaretPosition).Text.Length;
 
-            var paragraph = document.Blocks.FirstBlock as Paragraph;
-            paragraph.Inlines.Clear();
-
-            var cur = 0;
-            var matches = _bbcode_regex.Matches(text);
-
-            foreach (Match match in matches)
+            foreach (var paragraph in document.Blocks.OfType<Paragraph>().ToList())
             {
-                var match_markup = match.Groups[1].Value;
-                var match_text = match.Groups[2].Value;
-                var markup = _markups.Find(x => x.Markup == match_markup);
+                paragraph.Inlines.Clear();
 
-                if (markup == null)
-                    continue;
+                var cur = 0;
+                var matches = _bbcode_regex.Matches(text);
 
-                // Insert unformatted text before the match
-                var unmatched_text = text.Substring(cur, match.Index - cur);
-                if (unmatched_text.Length > 0)
-                    paragraph.Inlines.Add(unmatched_text);
+                foreach (Match match in matches)
+                {
+                    var match_markup = match.Groups[1].Value;
+                    var match_text = match.Groups[2].Value;
+                    var markup = _markups.Find(x => x.Markup == match_markup);
 
-                // Insert BBCode span
-                paragraph.Inlines.Add(new BBCodeSpan(markup, match_text));
+                    if (markup == null)
+                        continue;
 
-                // Move cursor to the end of the match
-                cur = match.Index + match.Length;
+                    // Insert unformatted text before the match
+                    var unmatched_text = text.Substring(cur, match.Index - cur);
+                    if (unmatched_text.Length > 0)
+                        paragraph.Inlines.Add(unmatched_text);
+
+                    // Insert BBCode span
+                    var span = new BBCodeSpan(markup, match_text);
+                    paragraph.Inlines.Add(span);
+                    span.IsExpanded = false;
+
+                    // Move cursor to the end of the match
+                    cur = match.Index + match.Length;
+                }
+
+                var unformatted_end_text = text.Substring(cur, text.Length - cur);
+                paragraph.Inlines.Add(unformatted_end_text);
             }
-
-            var unformatted_end_text = text.Substring(cur, text.Length - cur);
-            paragraph.Inlines.Add(unformatted_end_text);
 
             // Restore caret position
             if (rtb != null)
