@@ -48,13 +48,17 @@ namespace Emoji.Wpf.BBCode
             if (document.Blocks.FirstBlock == null)
                 return;
 
-            var text = new TextSelection(document.ContentStart, document.ContentEnd).Text;
-
             // If our parent is a RichTextBox, try to retain the caret position
             // FIXME: doesn't work when text contains an emoji
             RichTextBox rtb = document.Parent as RichTextBox;
             TextPointer caret = rtb?.CaretPosition;
             var caret_index = new TextRange(rtb.Document.ContentStart, rtb.CaretPosition).Text.Length;
+
+            foreach (var paragraph in document.Blocks.OfType<Paragraph>().ToList())
+                foreach (var span in paragraph.Inlines.OfType<BBCodeSpan>().ToList())
+                    span.IsExpanded = true;
+
+            var text = new TextSelection(document.ContentStart, document.ContentEnd).Text;
 
             foreach (var paragraph in document.Blocks.OfType<Paragraph>().ToList())
             {
@@ -80,7 +84,7 @@ namespace Emoji.Wpf.BBCode
                     // Insert BBCode span
                     var span = new BBCodeSpan(markup, match_text);
                     paragraph.Inlines.Add(span);
-                    span.IsExpanded = false;
+                    span.IsExpanded = true;
 
                     // Move cursor to the end of the match
                     cur = match.Index + match.Length;

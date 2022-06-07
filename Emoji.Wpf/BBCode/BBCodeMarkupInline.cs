@@ -9,7 +9,23 @@ namespace Emoji.Wpf.BBCode
     [DebuggerDisplay(@"\{BBCodeMarkupInline: {Text}\}")]
     public class BBCodeMarkupInline : Run
     {
-        public readonly BBCodeMarkupInlineType Type;
+        public BBCodeMarkupInlineType Type { get; set; }
+        public string Markup { get; set; }
+
+        private bool _is_visible = false;
+        public bool IsVisible
+        {
+            get => _is_visible;
+            set
+            {
+                if (_is_visible != value)
+                {
+                    _is_visible = value;
+                    Text = _is_visible ? $"[{(Type == BBCodeMarkupInlineType.Closing ? "/" : "")}{Markup}]" : "";
+                }
+
+            }
+        }
 
         public BBCodeMarkupInline()
             : base()
@@ -19,9 +35,10 @@ namespace Emoji.Wpf.BBCode
 
         public BBCodeMarkupInline(BBCodeMarkup markup, BBCodeMarkupInlineType type)
         {
-            Foreground = new SolidColorBrush(Colors.LightGray);
+            Markup = markup.Markup;
             Type = type;
-            Text = $"[{(type == BBCodeMarkupInlineType.Closing ? "/" : "")}{markup.Markup}]";
+            Foreground = new SolidColorBrush(Colors.LightGray);
+            IsVisible = true;
         }
     }
 

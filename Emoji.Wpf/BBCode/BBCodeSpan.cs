@@ -7,13 +7,28 @@ namespace Emoji.Wpf.BBCode
 {
     public class BBCodeSpan : Span
     {
+        public BBCodeMarkupInline MarkupOpen => Inlines.OfType<BBCodeMarkupInline>().FirstOrDefault(x => x.Type == BBCodeMarkupInlineType.Opening);
+        public BBCodeTextInline MarkupText => Inlines.OfType<BBCodeTextInline>().FirstOrDefault();
+        public BBCodeMarkupInline MarkupClose => Inlines.OfType<BBCodeMarkupInline>().FirstOrDefault(x => x.Type == BBCodeMarkupInlineType.Closing);
+
         public BBCodeMarkup Markup { get; }
 
-        //public BBCodeMarkupInline MarkupOpen => Inlines.ElementAtOrDefault(0) as BBCodeMarkupInline;
-        //public BBCodeTextInline MarkupText => Inlines.ElementAtOrDefault(1) as BBCodeTextInline;
-        //public BBCodeMarkupInline MarkupClose => Inlines.ElementAtOrDefault(2) as BBCodeMarkupInline;
+        private bool _is_expanded = false;
+        public bool IsExpanded
+        {
+            get => _is_expanded;
+            set
+            {
+                if (_is_expanded != value)
+                {
+                    _is_expanded = value;
+                    foreach (var markup in Inlines.OfType<BBCodeMarkupInline>().ToList())
+                        markup.IsVisible = value;
+                }
+            }
+        }
 
-        public string Text => String.Join("", Inlines.OfType<Run>().Select(x => x.Text));
+        public string Text => string.Join("", Inlines.OfType<Run>().Select(x => x.Text));
 
         public BBCodeSpan()
             : base()
@@ -27,15 +42,7 @@ namespace Emoji.Wpf.BBCode
             Inlines.Add(new BBCodeMarkupInline(markup, BBCodeMarkupInlineType.Opening));
             Inlines.Add(CreateTextInline(text));
             Inlines.Add(new BBCodeMarkupInline(markup, BBCodeMarkupInlineType.Closing));
-        }
-
-        public BBCodeSpan(TextPointer insertionPosition, BBCodeMarkup markup, string text)
-            : base((Run)null, insertionPosition)
-        {
-            Markup = markup;
-            Inlines.Add(new BBCodeMarkupInline(markup, BBCodeMarkupInlineType.Opening));
-            Inlines.Add(CreateTextInline(text));
-            Inlines.Add(new BBCodeMarkupInline(markup, BBCodeMarkupInlineType.Closing));
+            IsExpanded = true;
         }
 
         private BBCodeTextInline CreateTextInline(string text)
