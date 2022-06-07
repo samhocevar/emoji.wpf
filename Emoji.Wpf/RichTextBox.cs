@@ -14,6 +14,7 @@ using Emoji.Wpf.BBCode;
 using Stfu.Linq;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -85,6 +86,7 @@ namespace Emoji.Wpf
             CommandManager.AddPreviewCanExecuteHandler(this, PreviewCanExecuteHandler);
             SetValue(Block.LineHeightProperty, 1.0);
             Selection = new TextSelection(Document.ContentStart, Document.ContentStart);
+            Language = XmlLanguage.GetLanguage(CultureInfo.CurrentCulture.IetfLanguageTag);
         }
 
         protected override void OnSelectionChanged(RoutedEventArgs e)
