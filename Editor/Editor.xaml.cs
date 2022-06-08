@@ -14,6 +14,7 @@ using Emoji.Wpf;
 using System;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Documents;
 
 namespace Editor
@@ -23,6 +24,8 @@ namespace Editor
     /// </summary>
     public partial class EditorWindow : Window
     {
+        private Func<FlowDocument, string> m_display_method = null;
+
         [STAThread]
         public static void Main()
         {
@@ -34,56 +37,49 @@ namespace Editor
         public EditorWindow()
         {
             InitializeComponent();
-            Loaded += OnLoaded;
+            Loaded += (o, e) => Update();
         }
 
-        private void OnLoaded(object sender, RoutedEventArgs e)
-        {
-            CodeTextBox.Text = GetXaml(EmojiTextBox.Document);
-        }
-
-        private void EmojiTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        private void Update()
         {
             if (IsLoaded)
-                CodeTextBox.Text = GetXaml((sender as System.Windows.Controls.RichTextBox).Document);
+                CodeTextBox.Text = m_display_method?.Invoke(EmojiTextBox.Document);
         }
-        
-        private string GetTextPointerFlow(FlowDocument document)
+
+        private void EmojiTextBox_TextChanged(object sender, TextChangedEventArgs e) => Update();
+        private void EmojiTextBox_SelectionChanged(object sender, RoutedEventArgs e) => Update();
+
+        private string GetCaretContext(FlowDocument document)
         {
-            StringBuilder buffer = new StringBuilder();
+            var result = "";
+            var startb = EmojiTextBox.CaretPosition.GetNextContextPosition(LogicalDirection.Backward);
+            var startf = EmojiTextBox.CaretPosition.GetNextContextPosition(LogicalDirection.Forward);
 
-            // Position a "navigator" pointer before the opening tag of the element.
-            var navigator = document.ContentStart;
-            var next = navigator.GetPointerContext(LogicalDirection.Forward);
-
-            while (navigator != null && navigator.CompareTo(document.ContentEnd) < 0)
+            if (startb != null && startf != null)
             {
-                var context = navigator.GetPointerContext(LogicalDirection.Forward);
-
-                buffer.Append(Environment.NewLine);
-                buffer.Append($"[{context}]".PadRight(16) + ": ");
-
-                switch (context)
-                {
-                    case TextPointerContext.ElementStart:
-                        buffer.AppendFormat("<{0}>", navigator.GetAdjacentElement(LogicalDirection.Forward)?.GetType().Name ?? "null");
-                        break;
-                    case TextPointerContext.ElementEnd:
-                        buffer.AppendFormat("</{0}>", navigator.GetAdjacentElement(LogicalDirection.Forward)?.GetType().Name ?? "null");
-                        break;
-                    case TextPointerContext.EmbeddedElement:
-                        buffer.AppendFormat("<{0}/>", navigator.GetAdjacentElement(LogicalDirection.Forward)?.GetType().Name ?? "null");
-                        break;
-                    case TextPointerContext.Text:
-                        buffer.AppendFormat("{0}", navigator.GetTextInRun(LogicalDirection.Forward));
-                        break;
-                }
-
-                // Advance the navigator to the next insertion position.
-                navigator = navigator.GetNextContextPosition(LogicalDirection.Forward);
+                var elementb1 = startb.GetAdjacentElement(LogicalDirection.Backward)?.GetType().Name;
+                var elementb2 = startb.GetAdjacentElement(LogicalDirection.Forward)?.GetType().Name;
+                var elementf1 = startf.GetAdjacentElement(LogicalDirection.Backward)?.GetType().Name;
+                var elementf2 = startf.GetAdjacentElement(LogicalDirection.Forward)?.GetType().Name;
+                result += $"\n";
+                result += $"Caret Direction : {EmojiTextBox.CaretPosition.LogicalDirection}\n";
+                result += $"\n";
+                result += $"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+                result += $"\n";
+                result += $"Caret Context :\n";
+                result += $"     ←  : {EmojiTextBox.CaretPosition.GetPointerContext(LogicalDirection.Backward)}\n";
+                result += $"     →  : {EmojiTextBox.CaretPosition.GetPointerContext(LogicalDirection.Forward)}\n";
+                result += $"\n";
+                result += $"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+                result += $"\n";
+                result += $"Caret Adjacent Element :\n";
+                result += $"    ← ← : {elementb1?.ToString()}\n";
+                result += $"    ← → : {elementb2?.ToString()}\n";
+                result += $"    → ← : {elementf1?.ToString()}\n";
+                result += $"    → → : {elementf2?.ToString()}";
             }
 
-            return buffer.ToString();
+            return result;
         }
 
         // Adapted from https://docs.microsoft.com/en-us/dotnet/api/system.windows.documents.textpointercontext
@@ -134,6 +130,18 @@ namespace Editor
             }
 
             return buffer.ToString();
+        }
+
+        private void OnXamlChecked(object sender, RoutedEventArgs e)
+        {
+            m_display_method = GetXaml;
+            Update();
+        }
+
+        private void OnCaretChecked(object sender, RoutedEventArgs e)
+        {
+            m_display_method = GetCaretContext;
+            Update();
         }
     }
 }

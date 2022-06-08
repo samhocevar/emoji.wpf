@@ -17,15 +17,27 @@
 
     <DockPanel Background="LightGray">
         <ScrollViewer DockPanel.Dock="Top" Margin="10">
-            <emoji:RichTextBox FontSize="60"
+            <emoji:RichTextBox FontSize="36"
                                Name="EmojiTextBox"
                                Text="{StaticResource SampleText}"
+                               Padding="10,30"
+                               MaxHeight="300"
                                FontFamily="Segoe UI Emoji, Segoe UI, Arial"
                                VerticalAlignment="Center"
                                HorizontalAlignment="Center"
                                VerticalContentAlignment="Stretch"
-                               TextChanged="EmojiTextBox_TextChanged"/>
+                               TextChanged="EmojiTextBox_TextChanged"
+                               SelectionChanged="EmojiTextBox_SelectionChanged"/>
         </ScrollViewer>
+
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="10" HorizontalAlignment="Center">
+            <Viewbox Height="30" Margin="40,10">
+                <RadioButton GroupName="Feature" IsChecked="True" Checked="OnXamlChecked" Content="XAML"/>
+            </Viewbox>
+            <Viewbox Height="30" Margin="40,10">
+                <RadioButton GroupName="Feature" IsChecked="False" Checked="OnCaretChecked" Content="Caret Context"/>
+            </Viewbox>
+        </StackPanel>
         
         <ScrollViewer Margin="10">
             <TextBox Name="CodeTextBox"
