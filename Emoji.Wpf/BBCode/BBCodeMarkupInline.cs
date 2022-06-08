@@ -23,7 +23,6 @@ namespace Emoji.Wpf.BBCode
                     _is_visible = value;
                     Text = _is_visible ? $"[{(Type == BBCodeMarkupInlineType.Closing ? "/" : "")}{Markup}]" : "";
                 }
-
             }
         }
 

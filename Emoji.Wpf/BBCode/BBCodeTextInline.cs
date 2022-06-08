@@ -13,7 +13,7 @@ namespace Emoji.Wpf.BBCode
         {
         }
 
-        public BBCodeTextInline(BBCodeMarkup markup, string text)
+        public BBCodeTextInline(string text)
         {
             Text = text;
         }

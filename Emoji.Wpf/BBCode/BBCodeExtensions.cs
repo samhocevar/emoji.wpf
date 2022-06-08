@@ -11,6 +11,7 @@
 //  See http://www.wtfpl.net/ for more details.
 //
 
+using Stfu.Linq;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -29,6 +30,7 @@ namespace Emoji.Wpf.BBCode
     //     - store undo state objects by deserializing them asynchronously after serialization ?
     //     - don't override current state on key press
     // - move markups definitions list to a DependencyProperty on the control
+    // - merge adjacent similar markups
 
     public static class BBCodeExtensions
     {
@@ -40,23 +42,71 @@ namespace Emoji.Wpf.BBCode
             new BBCodeMarkup("Test", "test", foreground: Colors.Blue),
         };
 
+        private static List<BBCodeSpan> GetPointerParentSpans(TextPointer pointer, FlowDocument document)
+        {
+            var result = new List<BBCodeSpan>();
+            var startb = pointer.GetNextContextPosition(LogicalDirection.Backward);
+            var startf = pointer.GetNextContextPosition(LogicalDirection.Forward);
+
+            if (startb != null && startf != null)
+            {
+                var elementb = startb.GetAdjacentElement(LogicalDirection.Backward);
+                var elementf = startf.GetAdjacentElement(LogicalDirection.Forward);
+                if (elementb is BBCodeSpan span1 && !result.Contains(span1)) result.Add(span1);
+                if (elementf is BBCodeSpan span2 && !result.Contains(span2)) result.Add(span2);
+
+                var parentb = document.GetBBCodeSpans().FirstOrDefault(x => x.Inlines.Contains(elementb));
+                var parentf = document.GetBBCodeSpans().FirstOrDefault(x => x.Inlines.Contains(elementf));
+                if (parentb != null && !result.Contains(parentb)) result.Add(parentb);
+                if (parentf != null && !result.Contains(parentf)) result.Add(parentf);
+            }
+
+            return result;
+        }
+
+        private static IEnumerable<BBCodeSpan> GetSelectedBBCodeSpans(this RichTextBox rtb)
+        {
+            var spans = GetPointerParentSpans(rtb.Selection.Start, rtb.Document);
+
+            if (rtb.Selection.Start != rtb.Selection.End)
+                spans.AddRange(GetPointerParentSpans(rtb.Selection.End, rtb.Document));
+
+            return spans.Distinct();
+        }
+
+        public static void UpdateBBCodeSpans(this RichTextBox rtb)
+        {
+            var selected_spans = rtb.GetSelectedBBCodeSpans().ToList();
+
+            foreach (var bbcode_span in rtb.BBCodeSpans)
+                bbcode_span.IsExpanded = selected_spans.Contains(bbcode_span);
+        }
+
+        public static IEnumerable<BBCodeSpan> GetBBCodeSpans(this FlowDocument document)
+        {
+            for (var p = document.ContentStart; p != null; p = p.GetNextContextPosition(LogicalDirection.Forward))
+                if (p.GetPointerContext(LogicalDirection.Forward) == TextPointerContext.ElementStart)
+                    if (p.GetAdjacentElement(LogicalDirection.Forward) is BBCodeSpan bbcode)
+                        yield return bbcode;
+        }
+
         /// <summary>
         /// Apply text formatted with BBCode markups in a FlowDocument
         /// </summary>
-        public static void ApplyBBCodeFormatting(this FlowDocument document)
+        public static void ApplyBBCode(this FlowDocument document)
         {
             if (document.Blocks.FirstBlock == null)
                 return;
 
+            // Expand all bbcode spans in order to have a correct caret position
+            foreach (var span in document.GetBBCodeSpans())
+                span.IsExpanded = true;
+
             // If our parent is a RichTextBox, try to retain the caret position
             // FIXME: doesn't work when text contains an emoji
-            RichTextBox rtb = document.Parent as RichTextBox;
-            TextPointer caret = rtb?.CaretPosition;
-            var caret_index = new TextRange(rtb.Document.ContentStart, rtb.CaretPosition).Text.Length;
+            var rtb = document.Parent as RichTextBox;
+            var caret_index = rtb != null ? new TextRange(rtb.Document.ContentStart, rtb.CaretPosition).Text.Length : -1;
 
-            foreach (var paragraph in document.Blocks.OfType<Paragraph>().ToList())
-                foreach (var span in paragraph.Inlines.OfType<BBCodeSpan>().ToList())
-                    span.IsExpanded = true;
 
             var text = new TextSelection(document.ContentStart, document.ContentEnd).Text;
 
@@ -82,9 +132,7 @@ namespace Emoji.Wpf.BBCode
                         paragraph.Inlines.Add(unmatched_text);
 
                     // Insert BBCode span
-                    var span = new BBCodeSpan(markup, match_text);
-                    paragraph.Inlines.Add(span);
-                    span.IsExpanded = true;
+                    paragraph.Inlines.Add(new BBCodeSpan(markup, match_text));
 
                     // Move cursor to the end of the match
                     cur = match.Index + match.Length;

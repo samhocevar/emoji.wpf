@@ -99,6 +99,13 @@ namespace Emoji.Wpf
                 base.Selection.Select(tmp.Start, tmp.End);
             }
             Selection = new TextSelection(base.Selection.Start, base.Selection.End);
+
+            if (!m_pending_change)
+            {
+                m_pending_change = true;
+                this.UpdateBBCodeSpans();
+                m_pending_change = false;
+            }
         }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
@@ -213,7 +220,7 @@ namespace Emoji.Wpf
 
             BeginChange();
 
-            Document.ApplyBBCodeFormatting();
+            Document.ApplyBBCode();
 
             Document.SubstituteGlyphs(
                 (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
@@ -302,6 +309,8 @@ namespace Emoji.Wpf
             }
         }
 
+        public IEnumerable<BBCodeSpan> BBCodeSpans => Document.GetBBCodeSpans();
+
 #if DEBUG
         public string XamlText => (string)GetValue(XamlTextProperty);
 
@@ -318,6 +327,7 @@ namespace Emoji.Wpf
         {
             m_pending_change = true;
             m_undo_manager.Undo(this);
+            this.UpdateBBCodeSpans();
             m_pending_change = false;
         }
 
@@ -325,6 +335,7 @@ namespace Emoji.Wpf
         {
             m_pending_change = true;
             m_undo_manager.Redo(this);
+            this.UpdateBBCodeSpans();
             m_pending_change = false;
         }
 

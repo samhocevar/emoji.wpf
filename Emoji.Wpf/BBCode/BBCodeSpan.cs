@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Documents;
 using System.Windows.Media;
 
 namespace Emoji.Wpf.BBCode
 {
+    [DebuggerDisplay(@"\{BBCodeSpan: {Text}\}")]
     public class BBCodeSpan : Span
     {
         public BBCodeMarkupInline MarkupOpen => Inlines.OfType<BBCodeMarkupInline>().FirstOrDefault(x => x.Type == BBCodeMarkupInlineType.Opening);
@@ -47,7 +49,7 @@ namespace Emoji.Wpf.BBCode
 
         private BBCodeTextInline CreateTextInline(string text)
         {
-            var result = new BBCodeTextInline(Markup, text);
+            var result = new BBCodeTextInline(text);
 
             if (Markup.Foreground.HasValue)
                 result.Foreground = new SolidColorBrush(Markup.Foreground.Value);
