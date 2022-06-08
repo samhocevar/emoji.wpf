@@ -78,6 +78,13 @@ namespace Emoji.Wpf
         }
     }
 
+    public enum BBCodeVisibility
+    {
+        Visible,
+        Hidden,
+        OnCaretInside
+    }
+
     public class RichTextBox : Controls.RichTextBox, IEmojiControl
     {
         public RichTextBox()
@@ -310,6 +317,36 @@ namespace Emoji.Wpf
         }
 
         public IEnumerable<BBCodeSpan> BBCodeSpans => Document.GetBBCodeSpans();
+
+        public BBCodeVisibility BBCodeVisibility
+        {
+            get => (BBCodeVisibility)GetValue(BBCodeVisibilityProperty);
+            set => SetValue(BBCodeVisibilityProperty, value);
+        }
+
+        public static readonly DependencyProperty BBCodeVisibilityProperty = DependencyProperty.Register(
+            nameof(BBCodeVisibility), typeof(BBCodeVisibility), typeof(RichTextBox),
+            new FrameworkPropertyMetadata(BBCodeVisibility.Visible, (o, e) => (o as RichTextBox)?.UpdateBBCodeSpans())
+            { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
+
+        public void UpdateBBCodeSpans()
+        {
+            m_pending_change = true;
+            switch (BBCodeVisibility)
+            {
+                case BBCodeVisibility.Visible:
+                    BBCodeSpans.ForAll(x => x.IsExpanded = true);
+                    break;
+                case BBCodeVisibility.Hidden:
+                    BBCodeSpans.ForAll(x => x.IsExpanded = false);
+                    break;
+                case BBCodeVisibility.OnCaretInside:
+                    var selected_spans = this.GetSelectedBBCodeSpans().ToList();
+                    BBCodeSpans.ForAll(x => x.IsExpanded = selected_spans.Contains(x));
+                    break;
+            }
+            m_pending_change = false;
+        }
 
 #if DEBUG
         public string XamlText => (string)GetValue(XamlTextProperty);

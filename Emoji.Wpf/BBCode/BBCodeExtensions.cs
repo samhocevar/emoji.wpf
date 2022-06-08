@@ -24,7 +24,7 @@ namespace Emoji.Wpf.BBCode
 {
     // TODO:
     // - fix caret bug when text contains emoji(s)
-    // - show only the markups that enclose the caret, as in Typora
+    // - copy text with markups even when markups are hidden
     // - evaluate performance impact
     // - improve undo/redo performance :
     //     - store undo state objects by deserializing them asynchronously after serialization ?
@@ -64,7 +64,7 @@ namespace Emoji.Wpf.BBCode
             return result;
         }
 
-        private static IEnumerable<BBCodeSpan> GetSelectedBBCodeSpans(this RichTextBox rtb)
+        public static IEnumerable<BBCodeSpan> GetSelectedBBCodeSpans(this RichTextBox rtb)
         {
             var spans = GetPointerParentSpans(rtb.Selection.Start, rtb.Document);
 
@@ -72,14 +72,6 @@ namespace Emoji.Wpf.BBCode
                 spans.AddRange(GetPointerParentSpans(rtb.Selection.End, rtb.Document));
 
             return spans.Distinct();
-        }
-
-        public static void UpdateBBCodeSpans(this RichTextBox rtb)
-        {
-            var selected_spans = rtb.GetSelectedBBCodeSpans().ToList();
-
-            foreach (var bbcode_span in rtb.BBCodeSpans)
-                bbcode_span.IsExpanded = selected_spans.Contains(bbcode_span);
         }
 
         public static IEnumerable<BBCodeSpan> GetBBCodeSpans(this FlowDocument document)
@@ -106,8 +98,6 @@ namespace Emoji.Wpf.BBCode
             // FIXME: doesn't work when text contains an emoji
             var rtb = document.Parent as RichTextBox;
             var caret_index = rtb != null ? new TextRange(rtb.Document.ContentStart, rtb.CaretPosition).Text.Length : -1;
-
-
             var text = new TextSelection(document.ContentStart, document.ContentEnd).Text;
 
             foreach (var paragraph in document.Blocks.OfType<Paragraph>().ToList())

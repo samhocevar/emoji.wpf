@@ -27,7 +27,8 @@
                                HorizontalAlignment="Center"
                                VerticalContentAlignment="Stretch"
                                TextChanged="EmojiTextBox_TextChanged"
-                               SelectionChanged="EmojiTextBox_SelectionChanged"/>
+                               SelectionChanged="EmojiTextBox_SelectionChanged"
+                               BBCodeVisibility="OnCaretInside"/>
         </ScrollViewer>
 
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="10" HorizontalAlignment="Center">
