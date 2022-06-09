@@ -28,13 +28,15 @@ namespace Emoji.Wpf.BBCode
         {
         }
 
-        public BBCodeSpan(BBCodeMarkup markup, string text)
+        public BBCodeSpan(BBCodeMarkup markup, string text, FlowDocument parent, BBCodeConfig config)
             : base()
         {
             Markup = markup;
             Inlines.Add(new BBCodeMarkupInline(markup, BBCodeMarkupInlineType.Opening));
             Inlines.Add(CreateTextInline(text));
             Inlines.Add(new BBCodeMarkupInline(markup, BBCodeMarkupInlineType.Closing));
+            MarkupOpen.FontSize = parent.FontSize * config.MarkupFontScale;
+            MarkupClose.FontSize = parent.FontSize * config.MarkupFontScale;
             IsExpanded = true;
         }
 

@@ -122,7 +122,7 @@ namespace Emoji.Wpf.BBCode
                         paragraph.Inlines.Add(unmatched_text);
 
                     // Insert BBCode span
-                    paragraph.Inlines.Add(new BBCodeSpan(markup, match_text));
+                    paragraph.Inlines.Add(new BBCodeSpan(markup, match_text, document, config));
 
                     // Move cursor to the end of the match
                     cur = match.Index + match.Length;

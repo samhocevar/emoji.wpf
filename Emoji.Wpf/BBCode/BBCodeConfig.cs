@@ -11,8 +11,13 @@ namespace Emoji.Wpf.BBCode
     public class BBCodeConfig
     {
         /// <summary>
-        /// List of BBCode markup definitions
+        /// List of BBCode markup definitions.
         /// </summary>
         public List<BBCodeMarkup> Markups { get; set; }
+
+        /// <summary>
+        /// Scale factor for markups font size.
+        /// </summary>
+        public double MarkupFontScale { get; set; } = 2.0/3.0;
     }
 }

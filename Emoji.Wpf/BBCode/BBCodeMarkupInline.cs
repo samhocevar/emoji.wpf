@@ -36,7 +36,7 @@ namespace Emoji.Wpf.BBCode
         {
             Markup = markup.Markup;
             Type = type;
-            Foreground = new SolidColorBrush(Colors.LightGray);
+            Foreground = Brushes.LightGray;
             IsVisible = true;
         }
     }
