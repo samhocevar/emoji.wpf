@@ -11,11 +11,14 @@
 //
 
 using Emoji.Wpf;
+using Emoji.Wpf.BBCode;
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Media;
 
 namespace Editor
 {
@@ -38,6 +41,14 @@ namespace Editor
         {
             InitializeComponent();
             Loaded += (o, e) => Update();
+            EmojiTextBox.BBCodeConfig = new BBCodeConfig()
+            {
+                Markups = new List<BBCodeMarkup>()
+                {
+                    new BBCodeMarkup("Bold", "b", font_weight: FontWeights.Bold),
+                    new BBCodeMarkup("Test", "test", foreground: Colors.Blue),
+                }
+            };
         }
 
         private void Update()

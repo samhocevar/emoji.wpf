@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Stfu.Linq;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows.Documents;
@@ -15,19 +16,9 @@ namespace Emoji.Wpf.BBCode
 
         public BBCodeMarkup Markup { get; }
 
-        private bool _is_expanded = false;
-        public bool IsExpanded
+        public bool IsExpanded 
         {
-            get => _is_expanded;
-            set
-            {
-                if (_is_expanded != value)
-                {
-                    _is_expanded = value;
-                    foreach (var markup in Inlines.OfType<BBCodeMarkupInline>().ToList())
-                        markup.IsVisible = value;
-                }
-            }
+            set => Inlines.OfType<BBCodeMarkupInline>().ToList().ForAll(x => x.IsVisible = value);
         }
 
         public string Text => string.Join("", Inlines.OfType<Run>().Select(x => x.Text));

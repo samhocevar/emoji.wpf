@@ -108,11 +108,7 @@ namespace Emoji.Wpf
             Selection = new TextSelection(base.Selection.Start, base.Selection.End);
 
             if (!m_pending_change)
-            {
-                m_pending_change = true;
-                this.UpdateBBCodeSpans();
-                m_pending_change = false;
-            }
+                UpdateBBCodeSpans();
         }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
@@ -227,7 +223,7 @@ namespace Emoji.Wpf
 
             BeginChange();
 
-            Document.ApplyBBCode();
+            Document.ApplyBBCode(BBCodeConfig);
 
             Document.SubstituteGlyphs(
                 (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
@@ -326,8 +322,13 @@ namespace Emoji.Wpf
 
         public static readonly DependencyProperty BBCodeVisibilityProperty = DependencyProperty.Register(
             nameof(BBCodeVisibility), typeof(BBCodeVisibility), typeof(RichTextBox),
-            new FrameworkPropertyMetadata(BBCodeVisibility.Visible, (o, e) => (o as RichTextBox)?.UpdateBBCodeSpans())
+            new FrameworkPropertyMetadata(BBCodeVisibility.Visible, new PropertyChangedCallback(OnBBCodeVisibilityChanged))
             { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
+
+        public static void OnBBCodeVisibilityChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
+        {
+            (obj as RichTextBox)?.UpdateBBCodeSpans();
+        }
 
         public void UpdateBBCodeSpans()
         {
@@ -348,6 +349,23 @@ namespace Emoji.Wpf
             m_pending_change = false;
         }
 
+        public BBCodeConfig BBCodeConfig
+        {
+            get => (BBCodeConfig)GetValue(BBCodeConfigProperty);
+            set => SetValue(BBCodeConfigProperty, value);
+        }
+
+        public static readonly DependencyProperty BBCodeConfigProperty = DependencyProperty.Register(
+            nameof(BBCodeConfig), typeof(BBCodeConfig), typeof(RichTextBox),
+            new FrameworkPropertyMetadata(null, new PropertyChangedCallback(OnBBCodeConfigChanged))
+            { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
+
+        public static void OnBBCodeConfigChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
+        {
+            var rtb = obj as RichTextBox;
+            rtb?.Document.ApplyBBCode(rtb.BBCodeConfig);
+        }
+
 #if DEBUG
         public string XamlText => (string)GetValue(XamlTextProperty);
 
@@ -364,16 +382,16 @@ namespace Emoji.Wpf
         {
             m_pending_change = true;
             m_undo_manager.Undo(this);
-            this.UpdateBBCodeSpans();
             m_pending_change = false;
+            UpdateBBCodeSpans();
         }
 
         private new void Redo()
         {
             m_pending_change = true;
             m_undo_manager.Redo(this);
-            this.UpdateBBCodeSpans();
             m_pending_change = false;
+            UpdateBBCodeSpans();
         }
 
         #endregion

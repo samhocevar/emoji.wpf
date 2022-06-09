@@ -36,12 +36,6 @@ namespace Emoji.Wpf.BBCode
     {
         private readonly static Regex _bbcode_regex = new Regex(@"\[(.+?)\](.*?)\[\/\1\]", RegexOptions.Compiled);
 
-        private static List<BBCodeMarkup> _markups = new List<BBCodeMarkup>()
-        {
-            new BBCodeMarkup("Bold", "b", font_weight: FontWeights.Bold),
-            new BBCodeMarkup("Test", "test", foreground: Colors.Blue),
-        };
-
         private static List<BBCodeSpan> GetPointerParentSpans(TextPointer pointer, FlowDocument document)
         {
             var result = new List<BBCodeSpan>();
@@ -85,9 +79,9 @@ namespace Emoji.Wpf.BBCode
         /// <summary>
         /// Apply text formatted with BBCode markups in a FlowDocument
         /// </summary>
-        public static void ApplyBBCode(this FlowDocument document)
+        public static void ApplyBBCode(this FlowDocument document, BBCodeConfig config)
         {
-            if (document.Blocks.FirstBlock == null)
+            if (document.Blocks.FirstBlock == null || config == null)
                 return;
 
             // Expand all bbcode spans in order to have a correct caret position
@@ -111,7 +105,7 @@ namespace Emoji.Wpf.BBCode
                 {
                     var match_markup = match.Groups[1].Value;
                     var match_text = match.Groups[2].Value;
-                    var markup = _markups.Find(x => x.Markup == match_markup);
+                    var markup = config.Markups.Find(x => x.Markup == match_markup);
 
                     if (markup == null)
                         continue;
