@@ -58,6 +58,9 @@ namespace Emoji.Wpf.BBCode
             return result;
         }
 
+        /// <summary>
+        /// Gets all BBCode spans containing the start or the end of the current selection in a <see cref="RichTextBox"/>
+        /// </summary>
         public static IEnumerable<BBCodeSpan> GetSelectedBBCodeSpans(this RichTextBox rtb)
         {
             var spans = GetPointerParentSpans(rtb.Selection.Start, rtb.Document);
@@ -68,6 +71,9 @@ namespace Emoji.Wpf.BBCode
             return spans.Distinct();
         }
 
+        /// <summary>
+        /// Gets all BBCode spans in a <see cref="FlowDocument"/>
+        /// </summary>
         public static IEnumerable<BBCodeSpan> GetBBCodeSpans(this FlowDocument document)
         {
             for (var p = document.ContentStart; p != null; p = p.GetNextContextPosition(LogicalDirection.Forward))
@@ -77,7 +83,7 @@ namespace Emoji.Wpf.BBCode
         }
 
         /// <summary>
-        /// Apply text formatted with BBCode markups in a FlowDocument
+        /// Apply formatting on text containing BBCode markups in a <see cref="FlowDocument"/>
         /// </summary>
         public static void ApplyBBCode(this FlowDocument document, BBCodeConfig config)
         {

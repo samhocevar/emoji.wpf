@@ -46,6 +46,7 @@ namespace Editor
                 Markups = new List<BBCodeMarkup>()
                 {
                     new BBCodeMarkup("Bold", "b", font_weight: FontWeights.Bold),
+                    new BBCodeMarkup("Italic", "i", font_style: FontStyles.Italic),
                     new BBCodeMarkup("Test", "test", foreground: Colors.Blue),
                 }
             };
