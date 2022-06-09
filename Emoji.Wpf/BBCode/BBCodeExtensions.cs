@@ -91,7 +91,7 @@ namespace Emoji.Wpf.BBCode
             // If our parent is a RichTextBox, try to retain the caret position
             // FIXME: doesn't work when text contains an emoji
             var rtb = document.Parent as RichTextBox;
-            var caret_index = rtb != null ? new TextRange(rtb.Document.ContentStart, rtb.CaretPosition).Text.Length : -1;
+            var caret_index = rtb != null ? new TextSelection(rtb.Document.ContentStart, rtb.CaretPosition).Text.Length : -1;
             var text = new TextSelection(document.ContentStart, document.ContentEnd).Text;
 
             foreach (var paragraph in document.Blocks.OfType<Paragraph>().ToList())
