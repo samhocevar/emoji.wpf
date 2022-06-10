@@ -24,7 +24,6 @@ namespace Emoji.Wpf.BBCode
 {
     // TODO:
     // - fix caret misplacement after undo/redo
-    // - copy text with markups even when markups are hidden
     // - merge adjacent similar markups
     // - evaluate performance impact on large texts and on a long use
     // - improve undo/redo performance :
@@ -74,8 +73,14 @@ namespace Emoji.Wpf.BBCode
         /// Gets all BBCode spans in a <see cref="FlowDocument"/>
         /// </summary>
         public static IEnumerable<BBCodeSpan> GetBBCodeSpans(this FlowDocument document)
+            => GetBBCodeSpans(new TextRange(document.ContentStart, document.ContentEnd));
+
+        /// <summary>
+        /// Gets all BBCode spans between two <see cref="TextPointer"/>s
+        /// </summary>
+        public static IEnumerable<BBCodeSpan> GetBBCodeSpans(this TextRange text_range)
         {
-            for (var p = document.ContentStart; p != null; p = p.GetNextContextPosition(LogicalDirection.Forward))
+            for (var p = text_range.Start; p != null && p != text_range.End; p = p.GetNextContextPosition(LogicalDirection.Forward))
                 if (p.GetPointerContext(LogicalDirection.Forward) == TextPointerContext.ElementStart)
                     if (p.GetAdjacentElement(LogicalDirection.Forward) is BBCodeSpan bbcode)
                         yield return bbcode;

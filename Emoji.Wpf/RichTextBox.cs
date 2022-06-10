@@ -108,7 +108,7 @@ namespace Emoji.Wpf
             Selection = new TextSelection(base.Selection.Start, base.Selection.End);
 
             if (!m_pending_change)
-                UpdateBBCodeSpans();
+                UpdateBBCodeMarkupsVisibility();
         }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
@@ -202,12 +202,20 @@ namespace Emoji.Wpf
 
             if (e.Command == ApplicationCommands.Copy || e.Command == ApplicationCommands.Cut)
             {
-                /// Make sure the clipboard contains the proper emoji characters.
+                // Add BBCode markups to clipboard
+                m_pending_change = true;
+                Selection.GetBBCodeSpans().ForAll(x => x.IsExpanded = true);
+                m_pending_change = false;
+
+                // Make sure the clipboard contains the proper emoji characters.
                 var selection = Selection.Text;
                 if (e.Command == ApplicationCommands.Cut)
                     Cut();
                 try { Clipboard.SetText(selection); } catch { }
                 e.Handled = true;
+
+                // Restore BBCode markups visibility
+                UpdateBBCodeMarkupsVisibility();
             }
         }
 
@@ -327,10 +335,10 @@ namespace Emoji.Wpf
 
         public static void OnBBCodeVisibilityChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
-            (obj as RichTextBox)?.UpdateBBCodeSpans();
+            (obj as RichTextBox)?.UpdateBBCodeMarkupsVisibility();
         }
 
-        public void UpdateBBCodeSpans()
+        public void UpdateBBCodeMarkupsVisibility()
         {
             m_pending_change = true;
             switch (BBCodeMarkupVisibility)
@@ -383,7 +391,7 @@ namespace Emoji.Wpf
             m_pending_change = true;
             m_undo_manager.Undo(this);
             m_pending_change = false;
-            UpdateBBCodeSpans();
+            UpdateBBCodeMarkupsVisibility();
         }
 
         private new void Redo()
@@ -391,7 +399,7 @@ namespace Emoji.Wpf
             m_pending_change = true;
             m_undo_manager.Redo(this);
             m_pending_change = false;
-            UpdateBBCodeSpans();
+            UpdateBBCodeMarkupsVisibility();
         }
 
         #endregion
