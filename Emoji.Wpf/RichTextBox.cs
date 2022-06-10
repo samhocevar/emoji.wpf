@@ -314,14 +314,14 @@ namespace Emoji.Wpf
 
         public IEnumerable<BBCodeSpan> BBCodeSpans => Document.GetBBCodeSpans();
 
-        public BBCodeVisibility BBCodeVisibility
+        public BBCodeVisibility BBCodeMarkupVisibility
         {
-            get => (BBCodeVisibility)GetValue(BBCodeVisibilityProperty);
-            set => SetValue(BBCodeVisibilityProperty, value);
+            get => (BBCodeVisibility)GetValue(BBCodeMarkupVisibilityProperty);
+            set => SetValue(BBCodeMarkupVisibilityProperty, value);
         }
 
-        public static readonly DependencyProperty BBCodeVisibilityProperty = DependencyProperty.Register(
-            nameof(BBCodeVisibility), typeof(BBCodeVisibility), typeof(RichTextBox),
+        public static readonly DependencyProperty BBCodeMarkupVisibilityProperty = DependencyProperty.Register(
+            nameof(BBCodeMarkupVisibility), typeof(BBCodeVisibility), typeof(RichTextBox),
             new FrameworkPropertyMetadata(BBCodeVisibility.Visible, new PropertyChangedCallback(OnBBCodeVisibilityChanged))
             { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
 
@@ -333,7 +333,7 @@ namespace Emoji.Wpf
         public void UpdateBBCodeSpans()
         {
             m_pending_change = true;
-            switch (BBCodeVisibility)
+            switch (BBCodeMarkupVisibility)
             {
                 case BBCodeVisibility.Visible:
                     BBCodeSpans.ForAll(x => x.IsExpanded = true);

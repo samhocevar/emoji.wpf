@@ -23,14 +23,13 @@ using System.Windows.Media;
 namespace Emoji.Wpf.BBCode
 {
     // TODO:
-    // - fix caret bug when text contains emoji(s)
+    // - fix caret misplacement after undo/redo
     // - copy text with markups even when markups are hidden
-    // - evaluate performance impact
+    // - merge adjacent similar markups
+    // - evaluate performance impact on large texts and on a long use
     // - improve undo/redo performance :
     //     - store undo state objects by deserializing them asynchronously after serialization ?
     //     - don't override current state on key press
-    // - move markups definitions list to a DependencyProperty on the control
-    // - merge adjacent similar markups
 
     public static class BBCodeExtensions
     {
