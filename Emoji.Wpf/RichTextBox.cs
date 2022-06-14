@@ -227,6 +227,12 @@ namespace Emoji.Wpf
             if (m_pending_change)
                 return;
 
+            if (m_pending_undo)
+            {
+                base.OnTextChanged(e);
+                return;
+            }
+
             m_pending_change = true;
 
             BeginChange();
@@ -273,6 +279,7 @@ namespace Emoji.Wpf
             => EmojiInlines.ForAll(e => e.Foreground = color_blend ? Foreground : Brushes.Black);
 
         private bool m_pending_change = false;
+        private bool m_pending_undo = false;
 
         private TextSelection m_override_selection;
 
@@ -388,17 +395,17 @@ namespace Emoji.Wpf
 
         private new void Undo()
         {
-            m_pending_change = true;
+            m_pending_undo = true;
             m_undo_manager.Undo(this);
-            m_pending_change = false;
+            m_pending_undo = false;
             UpdateBBCodeMarkupsVisibility();
         }
 
         private new void Redo()
         {
-            m_pending_change = true;
+            m_pending_undo = true;
             m_undo_manager.Redo(this);
-            m_pending_change = false;
+            m_pending_undo = false;
             UpdateBBCodeMarkupsVisibility();
         }
 
