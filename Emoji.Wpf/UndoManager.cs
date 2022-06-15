@@ -12,33 +12,38 @@ namespace Emoji.Wpf
     {
         public int StartPosition { get; private set; }
         public int EndPosition { get; private set; }
+
         private byte[] _data;
+        private int _data_length;
 
         public UndoState(RichTextBox rtb)
         {
-            using (var stream = new MemoryStream())
-            {
-                XamlWriter.Save(rtb.Document, stream);
-                _data = stream.ToArray();
-                EndPosition = rtb.Document.ContentStart.GetOffsetToPosition(rtb.CaretPosition);
-                StartPosition = EndPosition - 1;
-            }
+            var stream = new MemoryStream();
+            XamlWriter.Save(rtb.Document, stream);
+            _data_length = (int)stream.Length;
+            _data = new byte[(int)(_data_length * 1.5)];
+            var data_stream = new MemoryStream(_data);
+            stream.WriteTo(data_stream);
+            EndPosition = rtb.GetCaretPosition();
+            StartPosition = EndPosition - 1;
         }
 
         public void Update(RichTextBox rtb)
         {
-            using (var stream = new MemoryStream())
-            {
-                XamlWriter.Save(rtb.Document, stream);
-                _data = stream.ToArray();
-                EndPosition = rtb.Document.ContentStart.GetOffsetToPosition(rtb.CaretPosition);
-            }
+            var stream = new MemoryStream();
+            XamlWriter.Save(rtb.Document, stream);
+            _data_length = (int)stream.Length;
+            if (_data.LongLength < _data_length)
+                Array.Resize(ref _data, (int)(_data_length * 1.5));
+            var data_stream = new MemoryStream(_data);
+            stream.WriteTo(data_stream);
+            EndPosition = rtb.GetCaretPosition();
         }
 
         public void Load(RichTextBox rtb)
         {
-            using (var stream = new MemoryStream(_data))
-                rtb.Document = XamlReader.Load(stream) as FlowDocument;
+            var stream = new MemoryStream(_data, 0, _data_length);
+            rtb.Document = XamlReader.Load(stream) as FlowDocument;
         }
     }
 
@@ -85,7 +90,7 @@ namespace Emoji.Wpf
             {
                 _current--;
                 _states[_current].Load(rtb);
-                rtb.CaretPosition = rtb.Document.ContentStart.GetPositionAtOffset(_states[_current + 1].StartPosition);
+                rtb.SetCaretPosition(_states[_current + 1].StartPosition);
             }
         }
 
@@ -98,7 +103,7 @@ namespace Emoji.Wpf
             {
                 _current++;
                 _states[_current].Load(rtb);
-                rtb.CaretPosition = rtb.Document.ContentStart.GetPositionAtOffset(_states[_current].EndPosition);
+                rtb.SetCaretPosition(_states[_current].EndPosition);
             }
         }
 

@@ -238,7 +238,6 @@ namespace Emoji.Wpf
             BeginChange();
 
             Document.ApplyBBCode(BBCodeConfig);
-
             Document.SubstituteGlyphs(
                 (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
                 (ColorBlend ? SubstituteOptions.ColorBlend : SubstituteOptions.None));
@@ -377,8 +376,22 @@ namespace Emoji.Wpf
 
         public static void OnBBCodeConfigChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
-            var rtb = obj as RichTextBox;
-            rtb?.Document.ApplyBBCode(rtb.BBCodeConfig);
+            (obj as RichTextBox)?.OnBBCodeConfigChanged();
+        }
+
+        public void OnBBCodeConfigChanged()
+        {
+            m_pending_change = true;
+
+            Document.ApplyBBCode(BBCodeConfig);
+            Document.SubstituteGlyphs(
+                (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
+                (ColorBlend ? SubstituteOptions.ColorBlend : SubstituteOptions.None));
+
+            m_pending_change = false;
+
+            if (!IsLoaded)
+                m_undo_manager.Update(this, Controls.UndoAction.Clear);
         }
 
 #if DEBUG
@@ -388,6 +401,16 @@ namespace Emoji.Wpf
             nameof(XamlText), typeof(string), typeof(RichTextBox),
             new PropertyMetadata(""));
 #endif
+
+        #region Caret Management
+
+        public int GetCaretPosition()
+            => Document.ContentStart.GetOffsetToPosition(CaretPosition);
+
+        public void SetCaretPosition(int char_offset)
+            => CaretPosition = Document.ContentStart.GetPositionAtOffset(char_offset);
+
+        #endregion
 
         #region Undo/Redo
 

@@ -23,12 +23,8 @@ using System.Windows.Media;
 namespace Emoji.Wpf.BBCode
 {
     // TODO:
-    // - fix caret misplacement after undo/redo
     // - merge adjacent similar markups
     // - evaluate performance impact on large texts and on a long use
-    // - improve undo/redo performance :
-    //     - store undo state objects by deserializing them asynchronously after serialization ?
-    //     - don't override current state on key press
 
     public static class BBCodeExtensions
     {
