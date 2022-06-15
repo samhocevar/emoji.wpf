@@ -32,26 +32,12 @@ namespace Emoji.Wpf.BBCode
             : base()
         {
             Markup = markup;
-            Inlines.Add(new BBCodeMarkupInline(markup, BBCodeMarkupInlineType.Opening));
-            Inlines.Add(CreateTextInline(text));
-            Inlines.Add(new BBCodeMarkupInline(markup, BBCodeMarkupInlineType.Closing));
+            Inlines.Add(markup.CreateMarkupInline(BBCodeMarkupInlineType.Opening));
+            Inlines.Add(markup.CreateTextInline(text));
+            Inlines.Add(markup.CreateMarkupInline(BBCodeMarkupInlineType.Closing));
             MarkupOpen.FontSize = parent.FontSize * config.MarkupFontScale;
             MarkupClose.FontSize = parent.FontSize * config.MarkupFontScale;
             IsExpanded = true;
-        }
-
-        private BBCodeTextInline CreateTextInline(string text)
-        {
-            var result = new BBCodeTextInline(text);
-
-            if (Markup.Foreground.HasValue)
-                result.Foreground = new SolidColorBrush(Markup.Foreground.Value);
-            if (Markup.FontWeight.HasValue)
-                result.FontWeight = Markup.FontWeight.Value;
-            if (Markup.FontStyle.HasValue)
-                result.FontStyle = Markup.FontStyle.Value;
-
-            return result;
         }
     }
 }

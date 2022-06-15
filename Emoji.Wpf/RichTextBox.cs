@@ -336,13 +336,8 @@ namespace Emoji.Wpf
 
         public static readonly DependencyProperty BBCodeMarkupVisibilityProperty = DependencyProperty.Register(
             nameof(BBCodeMarkupVisibility), typeof(BBCodeVisibility), typeof(RichTextBox),
-            new FrameworkPropertyMetadata(BBCodeVisibility.Visible, new PropertyChangedCallback(OnBBCodeVisibilityChanged))
+            new FrameworkPropertyMetadata(BBCodeVisibility.Visible, (o,e) => (o as RichTextBox)?.UpdateBBCodeMarkupsVisibility())
             { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
-
-        public static void OnBBCodeVisibilityChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
-        {
-            (obj as RichTextBox)?.UpdateBBCodeMarkupsVisibility();
-        }
 
         public void UpdateBBCodeMarkupsVisibility()
         {
@@ -371,13 +366,8 @@ namespace Emoji.Wpf
 
         public static readonly DependencyProperty BBCodeConfigProperty = DependencyProperty.Register(
             nameof(BBCodeConfig), typeof(BBCodeConfig), typeof(RichTextBox),
-            new FrameworkPropertyMetadata(null, new PropertyChangedCallback(OnBBCodeConfigChanged))
+            new FrameworkPropertyMetadata(null, (o,e) => (o as RichTextBox)?.OnBBCodeConfigChanged())
             { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
-
-        public static void OnBBCodeConfigChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
-        {
-            (obj as RichTextBox)?.OnBBCodeConfigChanged();
-        }
 
         public void OnBBCodeConfigChanged()
         {
@@ -390,6 +380,7 @@ namespace Emoji.Wpf
 
             m_pending_change = false;
 
+            // When it's on control initialization, override first undo state
             if (!IsLoaded)
                 m_undo_manager.Update(this, Controls.UndoAction.Clear);
         }

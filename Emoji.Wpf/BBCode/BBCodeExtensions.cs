@@ -30,6 +30,14 @@ namespace Emoji.Wpf.BBCode
     {
         private readonly static Regex _bbcode_regex = new Regex(@"\[(.+?)\](.*?)\[\/\1\]", RegexOptions.Compiled);
 
+        private readonly static List<BBCodeMarkup> _default_markups = new List<BBCodeMarkup>()
+        {
+            new BBCodeMarkup("Bold", "b", font_weight: FontWeights.Bold),
+            new BBCodeMarkup("Italic", "i", font_style: FontStyles.Italic),
+            new BBCodeMarkup("Underline", "u", text_decorations: TextDecorations.Underline),
+            new BBCodeMarkup("Strikethrough", "s", text_decorations: TextDecorations.Strikethrough),
+        };
+
         private static List<BBCodeSpan> GetPointerParentSpans(TextPointer pointer, FlowDocument document)
         {
             var result = new List<BBCodeSpan>();
@@ -111,7 +119,8 @@ namespace Emoji.Wpf.BBCode
                 {
                     var match_markup = match.Groups[1].Value;
                     var match_text = match.Groups[2].Value;
-                    var markup = config.Markups.Find(x => x.Markup == match_markup);
+                    var markup = _default_markups.Find(x => x.Markup == match_markup) ??
+                                 config.Markups.Find(x => x.Markup == match_markup);
 
                     if (markup == null)
                         continue;
