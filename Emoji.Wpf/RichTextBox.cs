@@ -107,7 +107,7 @@ namespace Emoji.Wpf
             }
             Selection = new TextSelection(base.Selection.Start, base.Selection.End);
 
-            if (!m_pending_change)
+            if (IsBBCodeEnabled && !m_pending_change)
                 UpdateBBCodeMarkupsVisibility();
         }
 
@@ -171,15 +171,18 @@ namespace Emoji.Wpf
         /// </summary>
         void OnPreviewCanExecute(CanExecuteRoutedEventArgs e)
         {
-            if (e.Command == ApplicationCommands.Undo)
+            if (IsBBCodeEnabled)
             {
-                e.CanExecute = m_undo_manager.CanUndo();
-                e.Handled = true;
-            }
-            else if (e.Command == ApplicationCommands.Redo)
-            {
-                e.CanExecute = m_undo_manager.CanRedo();
-                e.Handled = true;
+                if (e.Command == ApplicationCommands.Undo)
+                {
+                    e.CanExecute = m_undo_manager.CanUndo();
+                    e.Handled = true;
+                }
+                else if (e.Command == ApplicationCommands.Redo)
+                {
+                    e.CanExecute = m_undo_manager.CanRedo();
+                    e.Handled = true;
+                }
             }
         }
 
@@ -188,24 +191,30 @@ namespace Emoji.Wpf
         /// </summary>
         protected void OnPreviewExecuted(ExecutedRoutedEventArgs e)
         {
-            if (e.Command == ApplicationCommands.Undo)
+            if (IsBBCodeEnabled)
             {
-                Undo();
-                e.Handled = true;
-            }
+                if (e.Command == ApplicationCommands.Undo)
+                {
+                    Undo();
+                    e.Handled = true;
+                }
 
-            if (e.Command == ApplicationCommands.Redo)
-            {
-                Redo();
-                e.Handled = true;
+                if (e.Command == ApplicationCommands.Redo)
+                {
+                    Redo();
+                    e.Handled = true;
+                }
             }
 
             if (e.Command == ApplicationCommands.Copy || e.Command == ApplicationCommands.Cut)
             {
-                // Add BBCode markups to clipboard
-                m_pending_change = true;
-                Selection.GetBBCodeSpans().ForAll(x => x.IsExpanded = true);
-                m_pending_change = false;
+                if (IsBBCodeEnabled)
+                {
+                    // Add BBCode markups to clipboard
+                    m_pending_change = true;
+                    Selection.GetBBCodeSpans().ForAll(x => x.IsExpanded = true);
+                    m_pending_change = false;
+                }
 
                 // Make sure the clipboard contains the proper emoji characters.
                 var selection = Selection.Text;
@@ -214,8 +223,11 @@ namespace Emoji.Wpf
                 try { Clipboard.SetText(selection); } catch { }
                 e.Handled = true;
 
-                // Restore BBCode markups visibility
-                UpdateBBCodeMarkupsVisibility();
+                if (IsBBCodeEnabled)
+                {
+                    // Restore BBCode markups visibility
+                    UpdateBBCodeMarkupsVisibility();
+                }
             }
         }
 
@@ -227,7 +239,7 @@ namespace Emoji.Wpf
             if (m_pending_change)
                 return;
 
-            if (m_pending_undo)
+            if (IsBBCodeEnabled && m_pending_undo)
             {
                 base.OnTextChanged(e);
                 return;
@@ -237,7 +249,9 @@ namespace Emoji.Wpf
 
             BeginChange();
 
-            Document.ApplyBBCode(BBCodeConfig);
+            if (IsBBCodeEnabled)
+                Document.ApplyBBCode(BBCodeConfig);
+
             Document.SubstituteGlyphs(
                 (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
                 (ColorBlend ? SubstituteOptions.ColorBlend : SubstituteOptions.None));
@@ -251,7 +265,8 @@ namespace Emoji.Wpf
 
             m_pending_change = false;
 
-            m_undo_manager.Update(this, e.UndoAction);
+            if (IsBBCodeEnabled)
+                m_undo_manager.Update(this, e.UndoAction);
 
 #if DEBUG
             try
@@ -326,7 +341,11 @@ namespace Emoji.Wpf
             }
         }
 
+        #region BBCode
+
         public IEnumerable<BBCodeSpan> BBCodeSpans => Document.GetBBCodeSpans();
+
+        public bool IsBBCodeEnabled => BBCodeConfig != null;
 
         public BBCodeVisibility BBCodeMarkupVisibility
         {
@@ -373,7 +392,9 @@ namespace Emoji.Wpf
         {
             m_pending_change = true;
 
-            Document.ApplyBBCode(BBCodeConfig);
+            if (IsBBCodeEnabled)
+                Document.ApplyBBCode(BBCodeConfig);
+
             Document.SubstituteGlyphs(
                 (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
                 (ColorBlend ? SubstituteOptions.ColorBlend : SubstituteOptions.None));
@@ -385,13 +406,7 @@ namespace Emoji.Wpf
                 m_undo_manager.Update(this, Controls.UndoAction.Clear);
         }
 
-#if DEBUG
-        public string XamlText => (string)GetValue(XamlTextProperty);
-
-        public static readonly DependencyProperty XamlTextProperty = DependencyProperty.Register(
-            nameof(XamlText), typeof(string), typeof(RichTextBox),
-            new PropertyMetadata(""));
-#endif
+        #endregion
 
         #region Caret Management
 
@@ -403,7 +418,7 @@ namespace Emoji.Wpf
 
         #endregion
 
-        #region Undo/Redo
+        #region Undo/Redo Override
 
         private UndoManager m_undo_manager = new UndoManager();
 
@@ -424,5 +439,13 @@ namespace Emoji.Wpf
         }
 
         #endregion
+
+#if DEBUG
+        public string XamlText => (string)GetValue(XamlTextProperty);
+
+        public static readonly DependencyProperty XamlTextProperty = DependencyProperty.Register(
+            nameof(XamlText), typeof(string), typeof(RichTextBox),
+            new PropertyMetadata(""));
+#endif
     }
 }
