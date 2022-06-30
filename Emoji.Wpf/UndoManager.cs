@@ -24,8 +24,8 @@ namespace Emoji.Wpf
             _data = new byte[(int)(_data_length * 1.5)];
             var data_stream = new MemoryStream(_data);
             stream.WriteTo(data_stream);
+            StartPosition = rtb.LastCaretPosition;
             EndPosition = rtb.GetCaretPosition();
-            StartPosition = EndPosition - 1;
         }
 
         public void Update(RichTextBox rtb)

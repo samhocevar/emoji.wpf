@@ -106,6 +106,7 @@ namespace Emoji.Wpf
                 base.Selection.Select(tmp.Start, tmp.End);
             }
             Selection = new TextSelection(base.Selection.Start, base.Selection.End);
+            m_last_caret_pos = GetCaretPosition();
 
             if (IsBBCodeEnabled && !m_pending_change)
                 UpdateBBCodeMarkupsVisibility();
@@ -453,8 +454,8 @@ namespace Emoji.Wpf
 
         #region Caret Management
 
-        // FIXME: Caret position restoration doesn't work
-        // when undoing a paragraph creation done with the return key.
+        private int m_last_caret_pos = -1;
+        public int LastCaretPosition => m_last_caret_pos;
 
         public int GetCaretPosition()
             => Document.ContentStart.GetOffsetToPosition(CaretPosition);
