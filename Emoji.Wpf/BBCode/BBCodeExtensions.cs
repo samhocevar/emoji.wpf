@@ -98,18 +98,23 @@ namespace Emoji.Wpf.BBCode
             if (document.Blocks.FirstBlock == null || config == null)
                 return;
 
+            var rtb = document.Parent as RichTextBox;
+
             // Expand all bbcode spans in order to have a correct caret position
             foreach (var span in document.GetBBCodeSpans())
                 span.IsExpanded = true;
 
-            // If our parent is a RichTextBox, try to retain the caret position
-            // FIXME: doesn't work when text contains an emoji
-            var rtb = document.Parent as RichTextBox;
-            var caret_index = rtb != null ? new TextSelection(rtb.Document.ContentStart, rtb.CaretPosition).Text.Length : -1;
-            var text = new TextSelection(document.ContentStart, document.ContentEnd).Text;
-
+            // Rebuild every paragraph inlines
             foreach (var paragraph in document.Blocks.OfType<Paragraph>().ToList())
             {
+                // If caret is in this paragraph, retain its position
+                var caret_index = -1;
+                if (rtb.CaretPosition.CompareTo(paragraph.ContentStart) >= 0 &&
+                    rtb.CaretPosition.CompareTo(paragraph.ContentEnd) <= 0)
+                    caret_index = new TextSelection(paragraph.ContentStart, rtb.CaretPosition).Text.Length;
+
+                // Save the text before rebuilding the paragraph inlines
+                var text = new TextSelection(paragraph.ContentStart, paragraph.ContentEnd).Text;
                 paragraph.Inlines.Clear();
 
                 var cur = 0;
@@ -139,11 +144,11 @@ namespace Emoji.Wpf.BBCode
 
                 var unformatted_end_text = text.Substring(cur, text.Length - cur);
                 paragraph.Inlines.Add(unformatted_end_text);
-            }
 
-            // Restore caret position
-            if (rtb != null)
-                rtb.CaretPosition = rtb.Document.ContentStart.GetPositionAtCharOffset(caret_index);
+                // Restore caret position
+                if (caret_index > -1)
+                    rtb.CaretPosition = paragraph.ContentStart.GetPositionAtCharOffset(caret_index);
+            }
         }
     }
 }

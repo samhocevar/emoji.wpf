@@ -453,11 +453,18 @@ namespace Emoji.Wpf
 
         #region Caret Management
 
+        // FIXME: Caret position restoration doesn't work
+        // when undoing a paragraph creation done with the return key.
+
         public int GetCaretPosition()
             => Document.ContentStart.GetOffsetToPosition(CaretPosition);
 
         public void SetCaretPosition(int char_offset)
-            => CaretPosition = Document.ContentStart.GetPositionAtOffset(char_offset);
+        {
+            var pointer = Document.ContentStart.GetPositionAtOffset(char_offset);
+            if (pointer != null)
+                CaretPosition = pointer;
+        }
 
         #endregion
 
