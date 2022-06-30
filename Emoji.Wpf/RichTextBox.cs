@@ -2,6 +2,7 @@
 //  Emoji.Wpf — Emoji support for WPF
 //
 //  Copyright © 2017—2021 Sam Hocevar <sam@hocevar.net>
+//                   2022 Charles Spitzer <charles.spitzer@dont-nod.com>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -196,13 +197,13 @@ namespace Emoji.Wpf
             {
                 if (e.Command == ApplicationCommands.Undo)
                 {
-                    Undo();
+                    CustomUndo();
                     e.Handled = true;
                 }
 
                 if (e.Command == ApplicationCommands.Redo)
                 {
-                    Redo();
+                    CustomRedo();
                     e.Handled = true;
                 }
             }
@@ -406,8 +407,12 @@ namespace Emoji.Wpf
                 m_undo_manager.Update(this, Controls.UndoAction.Clear);
         }
 
+        #endregion
+
+        #region Inner Classes
+
         /// <summary>
-        /// Allows temporary disable of OnTextChanged call
+        /// Allows temporary disable of OnTextChanged calls
         /// </summary>
         private class PendingChangeBlock : IDisposable
         {
@@ -445,14 +450,15 @@ namespace Emoji.Wpf
             public void Dispose()
             {
                 if (m_rtb.IsBBCodeEnabled)
-                    using (new PendingChangeBlock(m_rtb))
-                        m_rtb.UpdateBBCodeMarkupsVisibility();
+                    m_rtb.UpdateBBCodeMarkupsVisibility();
             }
         }
 
         #endregion
 
-        #region Caret Management
+        #region Undo/Redo Override
+
+        private UndoManager m_undo_manager = new UndoManager();
 
         private int m_last_caret_pos = -1;
         public int LastCaretPosition => m_last_caret_pos;
@@ -467,13 +473,7 @@ namespace Emoji.Wpf
                 CaretPosition = pointer;
         }
 
-        #endregion
-
-        #region Undo/Redo Override
-
-        private UndoManager m_undo_manager = new UndoManager();
-
-        private new void Undo()
+        private void CustomUndo()
         {
             using (new PendingChangeBlock(this))
             {
@@ -482,7 +482,7 @@ namespace Emoji.Wpf
             }
         }
 
-        private new void Redo()
+        private void CustomRedo()
         {
             using (new PendingChangeBlock(this))
             {

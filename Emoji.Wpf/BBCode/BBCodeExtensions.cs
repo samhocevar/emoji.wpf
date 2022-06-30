@@ -2,7 +2,7 @@
 //  Emoji.Wpf — Emoji support for WPF
 //
 //  Copyright © 2017—2021 Sam Hocevar <sam@hocevar.net>
-//                   2021 Victor Irzak <victor.irzak@zomp.com>
+//                   2022 Charles Spitzer <charles.spitzer@dont-nod.com>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
