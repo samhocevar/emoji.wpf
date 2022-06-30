@@ -208,25 +208,15 @@ namespace Emoji.Wpf
 
             if (e.Command == ApplicationCommands.Copy || e.Command == ApplicationCommands.Cut)
             {
-                if (IsBBCodeEnabled)
+                // We want to add BBCode markups to clipboard
+                using (new BBCodeMarkupsExpander(this))
                 {
-                    // Add BBCode markups to clipboard
-                    m_pending_change = true;
-                    Selection.GetBBCodeSpans().ForAll(x => x.IsExpanded = true);
-                    m_pending_change = false;
-                }
-
-                // Make sure the clipboard contains the proper emoji characters.
-                var selection = Selection.Text;
-                if (e.Command == ApplicationCommands.Cut)
-                    Cut();
-                try { Clipboard.SetText(selection); } catch { }
-                e.Handled = true;
-
-                if (IsBBCodeEnabled)
-                {
-                    // Restore BBCode markups visibility
-                    UpdateBBCodeMarkupsVisibility();
+                    // Make sure the clipboard contains the proper emoji characters.
+                    var selection = Selection.Text;
+                    if (e.Command == ApplicationCommands.Cut)
+                        Cut();
+                    try { Clipboard.SetText(selection); } catch { }
+                    e.Handled = true;
                 }
             }
         }
@@ -347,6 +337,15 @@ namespace Emoji.Wpf
 
         public bool IsBBCodeEnabled => BBCodeConfig != null;
 
+        public string BBCodeText
+        {
+            get
+            {
+                using (new BBCodeMarkupsExpander(this))
+                    return new TextSelection(Document.ContentStart, Document.ContentEnd).Text;
+            }
+        }
+
         public BBCodeVisibility BBCodeMarkupVisibility
         {
             get => (BBCodeVisibility)GetValue(BBCodeMarkupVisibilityProperty);
@@ -360,21 +359,22 @@ namespace Emoji.Wpf
 
         public void UpdateBBCodeMarkupsVisibility()
         {
-            m_pending_change = true;
-            switch (BBCodeMarkupVisibility)
+            using (new PendingChangeBlock(this))
             {
-                case BBCodeVisibility.Visible:
-                    BBCodeSpans.ForAll(x => x.IsExpanded = true);
-                    break;
-                case BBCodeVisibility.Hidden:
-                    BBCodeSpans.ForAll(x => x.IsExpanded = false);
-                    break;
-                case BBCodeVisibility.OnCaretInside:
-                    var selected_spans = this.GetSelectedBBCodeSpans().ToList();
-                    BBCodeSpans.ForAll(x => x.IsExpanded = selected_spans.Contains(x));
-                    break;
+                switch (BBCodeMarkupVisibility)
+                {
+                    case BBCodeVisibility.Visible:
+                        BBCodeSpans.ForAll(x => x.IsExpanded = true);
+                        break;
+                    case BBCodeVisibility.Hidden:
+                        BBCodeSpans.ForAll(x => x.IsExpanded = false);
+                        break;
+                    case BBCodeVisibility.OnCaretInside:
+                        var selected_spans = this.GetSelectedBBCodeSpans().ToList();
+                        BBCodeSpans.ForAll(x => x.IsExpanded = selected_spans.Contains(x));
+                        break;
+                }
             }
-            m_pending_change = false;
         }
 
         public BBCodeConfig BBCodeConfig
@@ -390,20 +390,63 @@ namespace Emoji.Wpf
 
         public void OnBBCodeConfigChanged()
         {
-            m_pending_change = true;
+            using (new PendingChangeBlock(this))
+            {
+                if (IsBBCodeEnabled)
+                    Document.ApplyBBCode(BBCodeConfig);
 
-            if (IsBBCodeEnabled)
-                Document.ApplyBBCode(BBCodeConfig);
-
-            Document.SubstituteGlyphs(
-                (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
-                (ColorBlend ? SubstituteOptions.ColorBlend : SubstituteOptions.None));
-
-            m_pending_change = false;
+                Document.SubstituteGlyphs(
+                    (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
+                    (ColorBlend ? SubstituteOptions.ColorBlend : SubstituteOptions.None));
+            }
 
             // When it's on control initialization, override first undo state
             if (!IsLoaded)
                 m_undo_manager.Update(this, Controls.UndoAction.Clear);
+        }
+
+        /// <summary>
+        /// Allows temporary disable of OnTextChanged call
+        /// </summary>
+        private class PendingChangeBlock : IDisposable
+        {
+            private RichTextBox m_rtb;
+            private bool m_pending_change_before;
+
+            public PendingChangeBlock(RichTextBox rtb)
+            {
+                m_rtb = rtb;
+                m_pending_change_before = rtb.m_pending_change;
+                m_rtb.m_pending_change = true;
+            }
+
+            public void Dispose()
+            {
+                m_rtb.m_pending_change = m_pending_change_before;
+            }
+        }
+
+        /// <summary>
+        /// Allows temporary enable of all markups in a using block
+        /// </summary>
+        private class BBCodeMarkupsExpander : IDisposable
+        {
+            private RichTextBox m_rtb;
+
+            public BBCodeMarkupsExpander(RichTextBox rtb)
+            {
+                m_rtb = rtb;
+                if (m_rtb.IsBBCodeEnabled)
+                    using (new PendingChangeBlock(m_rtb))
+                        rtb.Document.GetBBCodeSpans().ForAll(x => x.IsExpanded = true);
+            }
+
+            public void Dispose()
+            {
+                if (m_rtb.IsBBCodeEnabled)
+                    using (new PendingChangeBlock(m_rtb))
+                        m_rtb.UpdateBBCodeMarkupsVisibility();
+            }
         }
 
         #endregion
@@ -424,18 +467,20 @@ namespace Emoji.Wpf
 
         private new void Undo()
         {
-            m_pending_undo = true;
-            m_undo_manager.Undo(this);
-            m_pending_undo = false;
-            UpdateBBCodeMarkupsVisibility();
+            using (new PendingChangeBlock(this))
+            {
+                m_undo_manager.Undo(this);
+                UpdateBBCodeMarkupsVisibility();
+            }
         }
 
         private new void Redo()
         {
-            m_pending_undo = true;
-            m_undo_manager.Redo(this);
-            m_pending_undo = false;
-            UpdateBBCodeMarkupsVisibility();
+            using (new PendingChangeBlock(this))
+            {
+                m_undo_manager.Redo(this);
+                UpdateBBCodeMarkupsVisibility();
+            }
         }
 
         #endregion
