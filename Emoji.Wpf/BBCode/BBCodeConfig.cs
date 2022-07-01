@@ -31,6 +31,6 @@ namespace Emoji.Wpf.BBCode
         /// <summary>
         /// Scale factor for markups font size.
         /// </summary>
-        public double MarkupFontScale { get; set; } = 2.0/3.0;
+        public double MarkupFontScale { get; set; } = 0.7;
     }
 }
