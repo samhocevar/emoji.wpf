@@ -46,7 +46,13 @@ namespace Editor
             {
                 Markups = new List<BBCodeMarkup>()
                 {
-                    new BBCodeMarkup("Test", "test", foreground: Colors.Blue, font_weight: FontWeights.SemiBold),
+                    new BBCodeMarkup
+                    {
+                        Name = "Test",
+                        Markup = "test",
+                        Foreground = Colors.Blue,
+                        FontWeight = FontWeights.SemiBold
+                    },
                 }
             };
         }

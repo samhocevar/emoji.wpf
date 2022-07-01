@@ -32,10 +32,30 @@ namespace Emoji.Wpf.BBCode
 
         private readonly static List<BBCodeMarkup> _default_markups = new List<BBCodeMarkup>()
         {
-            new BBCodeMarkup("Bold", "b", font_weight: FontWeights.Bold),
-            new BBCodeMarkup("Italic", "i", font_style: FontStyles.Italic),
-            new BBCodeMarkup("Underline", "u", text_decorations: TextDecorations.Underline),
-            new BBCodeMarkup("Strikethrough", "s", text_decorations: TextDecorations.Strikethrough),
+            new BBCodeMarkup
+            {
+                Name = "Bold",
+                Markup = "b",
+                FontWeight = FontWeights.Bold
+            },
+            new BBCodeMarkup
+            {
+                Name = "Italic",
+                Markup = "i",
+                FontStyle = FontStyles.Italic
+            },
+            new BBCodeMarkup
+            {
+                Name = "Underline",
+                Markup = "u",
+                TextDecorations = TextDecorations.Underline
+            },
+            new BBCodeMarkup
+            {
+                Name = "Strikethrough",
+                Markup = "s",
+                TextDecorations = TextDecorations.Strikethrough
+            }
         };
 
         private static List<BBCodeSpan> GetPointerParentSpans(TextPointer pointer, FlowDocument document)
