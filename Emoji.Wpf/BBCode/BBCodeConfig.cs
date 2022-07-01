@@ -26,7 +26,7 @@ namespace Emoji.Wpf.BBCode
         /// <summary>
         /// List of BBCode markup definitions.
         /// </summary>
-        public List<BBCodeMarkup> Markups { get; set; }
+        public List<BBCodeMarkup> Markups { get; set; } = new List<BBCodeMarkup>();
 
         /// <summary>
         /// Scale factor for markups font size.
