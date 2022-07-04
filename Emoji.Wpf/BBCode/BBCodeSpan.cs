@@ -29,6 +29,8 @@ namespace Emoji.Wpf.BBCode
 
         public BBCodeMarkup Markup { get; }
 
+        public bool IsValid => Markup != null && MarkupOpen != null && MarkupText != null && MarkupClose != null;
+
         public bool IsExpanded 
         {
             set => Inlines.OfType<BBCodeMarkupInline>().ToList().ForAll(x => x.IsVisible = value);

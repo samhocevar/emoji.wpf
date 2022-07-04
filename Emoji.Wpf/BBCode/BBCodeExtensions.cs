@@ -106,7 +106,7 @@ namespace Emoji.Wpf.BBCode
         {
             for (var p = text_range.Start; p != null && p != text_range.End; p = p.GetNextContextPosition(LogicalDirection.Forward))
                 if (p.GetPointerContext(LogicalDirection.Forward) == TextPointerContext.ElementStart)
-                    if (p.GetAdjacentElement(LogicalDirection.Forward) is BBCodeSpan bbcode)
+                    if (p.GetAdjacentElement(LogicalDirection.Forward) is BBCodeSpan bbcode && bbcode.IsValid)
                         yield return bbcode;
         }
 
