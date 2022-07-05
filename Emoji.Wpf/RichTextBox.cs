@@ -285,7 +285,6 @@ namespace Emoji.Wpf
             => EmojiInlines.ForAll(e => e.Foreground = color_blend ? Foreground : Brushes.Black);
 
         private bool m_pending_change = false;
-        private bool m_pending_undo = false;
 
         private TextSelection m_override_selection;
 
@@ -459,6 +458,7 @@ namespace Emoji.Wpf
         #region Undo/Redo Override
 
         private UndoManager m_undo_manager = new UndoManager();
+        private bool m_pending_undo = false;
 
         private int m_last_caret_pos = -1;
         public int LastCaretPosition => m_last_caret_pos;
@@ -475,20 +475,18 @@ namespace Emoji.Wpf
 
         private void CustomUndo()
         {
-            using (new PendingChangeBlock(this))
-            {
-                m_undo_manager.Undo(this);
-                UpdateBBCodeMarkupsVisibility();
-            }
+            m_pending_undo = true;
+            m_undo_manager.Undo(this);
+            UpdateBBCodeMarkupsVisibility();
+            m_pending_undo = false;
         }
 
         private void CustomRedo()
         {
-            using (new PendingChangeBlock(this))
-            {
-                m_undo_manager.Redo(this);
-                UpdateBBCodeMarkupsVisibility();
-            }
+            m_pending_undo = true;
+            m_undo_manager.Redo(this);
+            UpdateBBCodeMarkupsVisibility();
+            m_pending_undo = false;
         }
 
         #endregion

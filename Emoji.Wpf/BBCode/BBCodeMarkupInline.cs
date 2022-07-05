@@ -25,6 +25,9 @@ namespace Emoji.Wpf.BBCode
         public BBCodeMarkupInlineType Type { get; set; }
         public string Markup { get; set; }
 
+        private static readonly SolidColorBrush _defaultForeground
+            = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFBBBBBB"));
+
         private bool _is_visible = false;
         public bool IsVisible
         {
@@ -42,14 +45,14 @@ namespace Emoji.Wpf.BBCode
         public BBCodeMarkupInline()
             : base()
         {
-            Foreground = new SolidColorBrush(Colors.LightGray);
+            Foreground = _defaultForeground;
         }
 
         public BBCodeMarkupInline(BBCodeMarkup markup, BBCodeMarkupInlineType type)
         {
             Markup = markup.Markup;
             Type = type;
-            Foreground = Brushes.LightGray;
+            Foreground = _defaultForeground;
             IsVisible = true;
         }
     }
