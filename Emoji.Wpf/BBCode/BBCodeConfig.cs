@@ -19,7 +19,7 @@ using System.Text;
 namespace Emoji.Wpf.BBCode
 {
     /// <summary>
-    /// Configuration class for an Emoji RichTextBox supporting BBCode
+    /// BBCode parameters encapsulation class
     /// </summary>
     public class BBCodeConfig
     {

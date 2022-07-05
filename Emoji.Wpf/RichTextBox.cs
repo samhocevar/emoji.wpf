@@ -378,19 +378,24 @@ namespace Emoji.Wpf
             }
         }
 
-        public BBCodeConfig BBCodeConfig
+        private BBCodeConfig BBCodeConfig = new BBCodeConfig();
+
+        public List<BBCodeMarkup> BBCodeMarkups
         {
-            get => (BBCodeConfig)GetValue(BBCodeConfigProperty);
-            set => SetValue(BBCodeConfigProperty, value);
+            get => (List<BBCodeMarkup>)GetValue(BBCodeMarkupsProperty);
+            set => SetValue(BBCodeMarkupsProperty, value);
         }
 
-        public static readonly DependencyProperty BBCodeConfigProperty = DependencyProperty.Register(
-            nameof(BBCodeConfig), typeof(BBCodeConfig), typeof(RichTextBox),
-            new FrameworkPropertyMetadata(null, (o,e) => (o as RichTextBox)?.OnBBCodeConfigChanged())
+        public static readonly DependencyProperty BBCodeMarkupsProperty = DependencyProperty.Register(
+            nameof(BBCodeMarkups), typeof(List<BBCodeMarkup>), typeof(RichTextBox),
+            new FrameworkPropertyMetadata(new List<BBCodeMarkup>(), (o,e) => (o as RichTextBox)?.OnBBCodeConfigChanged())
             { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
 
         public void OnBBCodeConfigChanged()
         {
+            BBCodeConfig.Markups = BBCodeMarkups;
+            BBCodeConfig.MarkupFontScale = BBCodeMarkupFontScale;
+
             using (new PendingChangeBlock(this))
             {
                 if (IsBBCodeEnabled)
@@ -405,6 +410,17 @@ namespace Emoji.Wpf
             if (!IsLoaded)
                 m_undo_manager.Update(this, Controls.UndoAction.Clear);
         }
+
+        public double BBCodeMarkupFontScale
+        {
+            get => Math.Max((double)GetValue(BBCodeMarkupFontScaleProperty), 0.5);
+            set => SetValue(BBCodeMarkupFontScaleProperty, value);
+        }
+
+        public static readonly DependencyProperty BBCodeMarkupFontScaleProperty = DependencyProperty.Register(
+            nameof(BBCodeMarkupFontScale), typeof(double), typeof(RichTextBox),
+            new FrameworkPropertyMetadata(1.0, (o, e) => (o as RichTextBox)?.OnBBCodeConfigChanged())
+            { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
 
         #endregion
 

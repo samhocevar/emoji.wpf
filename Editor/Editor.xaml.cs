@@ -42,18 +42,15 @@ namespace Editor
         {
             InitializeComponent();
             Loaded += (o, e) => Update();
-            EmojiTextBox.BBCodeConfig = new BBCodeConfig()
+            EmojiTextBox.BBCodeMarkups = new List<BBCodeMarkup>
             {
-                Markups = new List<BBCodeMarkup>()
+                new BBCodeMarkup
                 {
-                    new BBCodeMarkup
-                    {
-                        Name = "Test",
-                        Markup = "test",
-                        Foreground = Colors.Blue,
-                        FontWeight = FontWeights.SemiBold
-                    },
-                }
+                    Name = "Test",
+                    Markup = "test",
+                    Foreground = Colors.Blue,
+                    FontWeight = FontWeights.SemiBold
+                },
             };
         }
 

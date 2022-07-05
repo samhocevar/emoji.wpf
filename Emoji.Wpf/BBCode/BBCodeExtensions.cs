@@ -115,7 +115,7 @@ namespace Emoji.Wpf.BBCode
         /// </summary>
         public static void ApplyBBCode(this FlowDocument document, BBCodeConfig config)
         {
-            if (document.Blocks.FirstBlock == null || config == null)
+            if (document.Blocks.FirstBlock == null || config == null || config.Markups == null)
                 return;
 
             var rtb = document.Parent as RichTextBox;

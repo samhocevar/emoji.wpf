@@ -28,7 +28,8 @@
                                VerticalContentAlignment="Stretch"
                                TextChanged="EmojiTextBox_TextChanged"
                                SelectionChanged="EmojiTextBox_SelectionChanged"
-                               BBCodeMarkupVisibility="OnCaretInside"/>
+                               BBCodeMarkupVisibility="OnCaretInside"
+                               BBCodeMarkupFontScale="{Binding Value, ElementName=FontScaleSlider, UpdateSourceTrigger=PropertyChanged}"/>
         </ScrollViewer>
 
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="10" HorizontalAlignment="Center">
@@ -37,6 +38,15 @@
             </Viewbox>
             <Viewbox Height="30" Margin="40,10">
                 <RadioButton GroupName="Feature" IsChecked="False" Checked="OnCaretChecked" Content="Caret Context"/>
+            </Viewbox>
+            <Viewbox Height="30" Margin="40,10">
+                <StackPanel>
+                    <TextBlock Text="Markup Scale" HorizontalAlignment="Center"/>
+                    <Slider x:Name="FontScaleSlider" Value="0.7" Minimum="0.5" Maximum="2.0" SmallChange="0.05" LargeChange="0.2" Width="200"/>
+                </StackPanel>
+            </Viewbox>
+            <Viewbox Height="30" Margin="0,10,40,10">
+                <TextBlock Text="{Binding Value, ElementName=FontScaleSlider, StringFormat=N2}"/>
             </Viewbox>
         </StackPanel>
         
