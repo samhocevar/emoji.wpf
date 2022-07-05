@@ -79,7 +79,7 @@ namespace Emoji.Wpf
         }
     }
 
-    public enum BBCodeVisibility
+    public enum BBCodeMarkupVisibility
     {
         Visible,
         Hidden,
@@ -347,15 +347,15 @@ namespace Emoji.Wpf
             }
         }
 
-        public BBCodeVisibility BBCodeMarkupVisibility
+        public BBCodeMarkupVisibility BBCodeMarkupVisibility
         {
-            get => (BBCodeVisibility)GetValue(BBCodeMarkupVisibilityProperty);
+            get => (BBCodeMarkupVisibility)GetValue(BBCodeMarkupVisibilityProperty);
             set => SetValue(BBCodeMarkupVisibilityProperty, value);
         }
 
         public static readonly DependencyProperty BBCodeMarkupVisibilityProperty = DependencyProperty.Register(
-            nameof(BBCodeMarkupVisibility), typeof(BBCodeVisibility), typeof(RichTextBox),
-            new FrameworkPropertyMetadata(BBCodeVisibility.Visible, (o,e) => (o as RichTextBox)?.UpdateBBCodeMarkupsVisibility())
+            nameof(BBCodeMarkupVisibility), typeof(BBCodeMarkupVisibility), typeof(RichTextBox),
+            new FrameworkPropertyMetadata(BBCodeMarkupVisibility.Visible, (o,e) => (o as RichTextBox)?.UpdateBBCodeMarkupsVisibility())
             { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
 
         public void UpdateBBCodeMarkupsVisibility()
@@ -364,13 +364,13 @@ namespace Emoji.Wpf
             {
                 switch (BBCodeMarkupVisibility)
                 {
-                    case BBCodeVisibility.Visible:
+                    case BBCodeMarkupVisibility.Visible:
                         BBCodeSpans.ForAll(x => x.IsExpanded = true);
                         break;
-                    case BBCodeVisibility.Hidden:
+                    case BBCodeMarkupVisibility.Hidden:
                         BBCodeSpans.ForAll(x => x.IsExpanded = false);
                         break;
-                    case BBCodeVisibility.OnCaretInside:
+                    case BBCodeMarkupVisibility.OnCaretInside:
                         var selected_spans = this.GetSelectedBBCodeSpans().ToList();
                         BBCodeSpans.ForAll(x => x.IsExpanded = selected_spans.Contains(x));
                         break;
@@ -389,6 +389,17 @@ namespace Emoji.Wpf
         public static readonly DependencyProperty BBCodeMarkupsProperty = DependencyProperty.Register(
             nameof(BBCodeMarkups), typeof(List<BBCodeMarkup>), typeof(RichTextBox),
             new FrameworkPropertyMetadata(new List<BBCodeMarkup>(), (o,e) => (o as RichTextBox)?.OnBBCodeConfigChanged())
+            { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
+
+        public double BBCodeMarkupFontScale
+        {
+            get => Math.Max((double)GetValue(BBCodeMarkupFontScaleProperty), 0.5);
+            set => SetValue(BBCodeMarkupFontScaleProperty, value);
+        }
+
+        public static readonly DependencyProperty BBCodeMarkupFontScaleProperty = DependencyProperty.Register(
+            nameof(BBCodeMarkupFontScale), typeof(double), typeof(RichTextBox),
+            new FrameworkPropertyMetadata(1.0, (o, e) => (o as RichTextBox)?.OnBBCodeConfigChanged())
             { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
 
         public void OnBBCodeConfigChanged()
@@ -410,17 +421,6 @@ namespace Emoji.Wpf
             if (!IsLoaded)
                 m_undo_manager.Update(this, Controls.UndoAction.Clear);
         }
-
-        public double BBCodeMarkupFontScale
-        {
-            get => Math.Max((double)GetValue(BBCodeMarkupFontScaleProperty), 0.5);
-            set => SetValue(BBCodeMarkupFontScaleProperty, value);
-        }
-
-        public static readonly DependencyProperty BBCodeMarkupFontScaleProperty = DependencyProperty.Register(
-            nameof(BBCodeMarkupFontScale), typeof(double), typeof(RichTextBox),
-            new FrameworkPropertyMetadata(1.0, (o, e) => (o as RichTextBox)?.OnBBCodeConfigChanged())
-            { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
 
         #endregion
 
