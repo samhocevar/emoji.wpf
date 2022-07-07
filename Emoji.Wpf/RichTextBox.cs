@@ -119,7 +119,7 @@ namespace Emoji.Wpf
             // behaviour is to select the whole InlineUIContainer instead of positioning the
             // caret, so in the case of a single click we want to cancel that.
             var hit = VisualTreeHelper.HitTest(this, e.GetPosition(this));
-            if (hit.VisualHit is Controls.Image im && im.Parent is EmojiInline emoji)
+            if (hit?.VisualHit is Controls.Image im && im.Parent is EmojiInline emoji)
             {
                 // Single click: cancel selection and position caret instead.
                 // Double click: select a single emoji glyph
@@ -237,28 +237,27 @@ namespace Emoji.Wpf
                 return;
             }
 
-            m_pending_change = true;
+            using (new PendingChangeBlock(this))
+            {
+                BeginChange();
 
-            BeginChange();
+                if (IsBBCodeEnabled)
+                    Document.ApplyBBCode(BBCodeConfig);
 
-            if (IsBBCodeEnabled)
-                Document.ApplyBBCode(BBCodeConfig);
+                Document.SubstituteGlyphs(
+                    (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
+                    (ColorBlend ? SubstituteOptions.ColorBlend : SubstituteOptions.None));
 
-            Document.SubstituteGlyphs(
-                (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
-                (ColorBlend ? SubstituteOptions.ColorBlend : SubstituteOptions.None));
+                EndChange();
 
-            EndChange();
+                base.OnTextChanged(e);
 
-            base.OnTextChanged(e);
+                // FIXME: make this call lazy inside Text.get()
+                SetValue(TextProperty, new TextSelection(Document.ContentStart, Document.ContentEnd).Text);
 
-            // FIXME: make this call lazy inside Text.get()
-            SetValue(TextProperty, new TextSelection(Document.ContentStart, Document.ContentEnd).Text);
-
-            m_pending_change = false;
-
-            if (IsBBCodeEnabled)
-                m_undo_manager.Update(this, e.UndoAction);
+                if (IsBBCodeEnabled)
+                    m_undo_manager.Update(this, e.UndoAction);
+            }
 
 #if DEBUG
             try
@@ -280,7 +279,7 @@ namespace Emoji.Wpf
                 Document.Blocks.Clear();
 
             Document.Blocks.Add(new Paragraph(new Run(text)));
-            CaretPosition = Document.ContentEnd;
+            UpdateBBCodeMarkupsVisibility();
         }
 
         private void OnColorBlendChanged(bool color_blend)
