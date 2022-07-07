@@ -277,11 +277,10 @@ namespace Emoji.Wpf
                 return;
 
             using (new PendingChangeBlock(this))
-            {
                 Document.Blocks.Clear();
-                Document.Blocks.Add(new Paragraph(new Run(text)));
-                CaretPosition = Document.ContentEnd;
-            }
+
+            Document.Blocks.Add(new Paragraph(new Run(text)));
+            CaretPosition = Document.ContentEnd;
         }
 
         private void OnColorBlendChanged(bool color_blend)
