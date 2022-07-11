@@ -49,6 +49,7 @@ namespace Emoji.Wpf.BBCode
         }
 
         public BBCodeMarkupInline(BBCodeMarkup markup, BBCodeMarkupInlineType type)
+            : base()
         {
             Markup = markup.Markup;
             Type = type;

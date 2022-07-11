@@ -26,6 +26,7 @@ namespace Emoji.Wpf.BBCode
         public string Name { get; set; }
         public string Markup { get; set; }
         public Color? Foreground { get; set; }
+        public Color? Background { get; set; }
         public FontWeight? FontWeight { get; set; }
         public FontStyle? FontStyle { get; set; }
         public TextDecorationCollection TextDecorations { get; set; }
@@ -38,6 +39,8 @@ namespace Emoji.Wpf.BBCode
 
             if (Foreground.HasValue)
                 result.Foreground = new SolidColorBrush(Foreground.Value);
+            if (Background.HasValue)
+                result.Background = new SolidColorBrush(Background.Value);
             if (FontWeight.HasValue)
                 result.FontWeight = FontWeight.Value;
             if (FontStyle.HasValue)
