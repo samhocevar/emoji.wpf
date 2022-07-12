@@ -26,9 +26,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-#if DEBUG
 using System.Windows.Markup;
-#endif
 using System.Windows.Media;
 
 using Controls = System.Windows.Controls;
