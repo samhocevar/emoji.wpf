@@ -47,6 +47,7 @@ namespace Emoji.Wpf
             get
             {
                 var buf = new StringBuilder();
+                var is_first_paragraph = true;
 
                 for (TextPointer p = Start, next = null;
                      p != null && p.CompareTo(End) < 0;
@@ -59,12 +60,21 @@ namespace Emoji.Wpf
                     switch (p.GetPointerContext(LogicalDirection.Forward))
                     {
                         case TextPointerContext.ElementStart:
-                            if (p.GetAdjacentElement(LogicalDirection.Forward) is EmojiInline emoji)
+                            var element = p.GetAdjacentElement(LogicalDirection.Forward);
+                            if (element is EmojiInline emoji)
                                 buf.Append(emoji.Text);
+                            else if (element is Paragraph && !is_first_paragraph)
+                                buf.Append('\n');
                             break;
+
                         case TextPointerContext.ElementEnd:
+                            if (p.GetAdjacentElement(LogicalDirection.Forward) is Paragraph)
+                                is_first_paragraph = false;
+                            break;
+
                         case TextPointerContext.EmbeddedElement:
                             break;
+
                         case TextPointerContext.Text:
                             // Get text from the Run but don’t go past end
                             buf.Append(new TextRange(p, next.CompareTo(End) < 0 ? next : End).Text);
@@ -276,7 +286,8 @@ namespace Emoji.Wpf
             using (new PendingChangeBlock(this))
                 Document.Blocks.Clear();
 
-            Document.Blocks.Add(new Paragraph(new Run(text)));
+            var paragraphs = text.Split('\n').Select(x => new Paragraph(new Run(x)));
+            Document.Blocks.AddRange(paragraphs);
             UpdateBBCodeMarkupsVisibility();
         }
 
