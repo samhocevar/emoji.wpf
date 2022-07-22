@@ -103,6 +103,7 @@ namespace Emoji.Wpf
             SetValue(Block.LineHeightProperty, 1.0);
             Selection = new TextSelection(Document.ContentStart, Document.ContentStart);
             Language = XmlLanguage.GetLanguage(CultureInfo.CurrentCulture.IetfLanguageTag);
+            BBCodeShortcutCommand = new BBCodeShortcutCommand(this);
         }
 
         protected override void OnSelectionChanged(RoutedEventArgs e)
@@ -344,6 +345,8 @@ namespace Emoji.Wpf
 
         #region BBCode
 
+        private readonly BBCodeShortcutCommand BBCodeShortcutCommand;
+
         public IEnumerable<BBCodeSpan> BBCodeSpans => Document.GetBBCodeSpans();
 
         public bool IsBBCodeEnabled => BBCodeConfig != null;
@@ -381,7 +384,7 @@ namespace Emoji.Wpf
                         BBCodeSpans.ForAll(x => x.IsExpanded = false);
                         break;
                     case BBCodeMarkupVisibility.OnCaretInside:
-                        var selected_spans = this.GetSelectedBBCodeSpans().ToList();
+                        var selected_spans = Selection.GetParentBBCodeSpans(Document).ToList();
                         BBCodeSpans.ForAll(x => x.IsExpanded = selected_spans.Contains(x));
                         break;
                 }
@@ -417,6 +420,20 @@ namespace Emoji.Wpf
             BBCodeConfig.Markups = BBCodeMarkups;
             BBCodeConfig.MarkupFontScale = BBCodeMarkupFontScale;
 
+            InputBindings.Clear();
+            var converter = new KeyGestureConverter();
+            var markups = BBCodeExtensions.DefaultMarkups.Union(BBCodeConfig.Markups);
+
+            foreach (var markup in markups.Where(x => x.Shortcut != null))
+            {
+                try
+                {
+                    var key_gesture = converter.ConvertFrom(markup.Shortcut) as KeyGesture;
+                    InputBindings.Add(new KeyBinding(BBCodeShortcutCommand, key_gesture) { CommandParameter = markup });
+                }
+                catch { }
+            }
+
             using (new PendingChangeBlock(this))
             {
                 if (IsBBCodeEnabled)
@@ -430,6 +447,42 @@ namespace Emoji.Wpf
             // When it's on control initialization, override first undo state
             if (!IsLoaded)
                 m_undo_manager.Update(this, Controls.UndoAction.Clear);
+        }
+
+        #endregion
+
+        #region BBCode Undo/Redo Override
+
+        private UndoManager m_undo_manager = new UndoManager();
+        private bool m_pending_undo = false;
+
+        private int m_last_caret_pos = -1;
+        public int LastCaretPosition => m_last_caret_pos;
+
+        public int GetCaretPosition()
+            => Document.ContentStart.GetOffsetToPosition(CaretPosition);
+
+        public void SetCaretPosition(int char_offset)
+        {
+            var pointer = Document.ContentStart.GetPositionAtOffset(char_offset);
+            if (pointer != null)
+                CaretPosition = pointer;
+        }
+
+        private void CustomUndo()
+        {
+            m_pending_undo = true;
+            m_undo_manager.Undo(this);
+            UpdateBBCodeMarkupsVisibility();
+            m_pending_undo = false;
+        }
+
+        private void CustomRedo()
+        {
+            m_pending_undo = true;
+            m_undo_manager.Redo(this);
+            UpdateBBCodeMarkupsVisibility();
+            m_pending_undo = false;
         }
 
         #endregion
@@ -477,42 +530,6 @@ namespace Emoji.Wpf
                 if (m_rtb.IsBBCodeEnabled)
                     m_rtb.UpdateBBCodeMarkupsVisibility();
             }
-        }
-
-        #endregion
-
-        #region Undo/Redo Override
-
-        private UndoManager m_undo_manager = new UndoManager();
-        private bool m_pending_undo = false;
-
-        private int m_last_caret_pos = -1;
-        public int LastCaretPosition => m_last_caret_pos;
-
-        public int GetCaretPosition()
-            => Document.ContentStart.GetOffsetToPosition(CaretPosition);
-
-        public void SetCaretPosition(int char_offset)
-        {
-            var pointer = Document.ContentStart.GetPositionAtOffset(char_offset);
-            if (pointer != null)
-                CaretPosition = pointer;
-        }
-
-        private void CustomUndo()
-        {
-            m_pending_undo = true;
-            m_undo_manager.Undo(this);
-            UpdateBBCodeMarkupsVisibility();
-            m_pending_undo = false;
-        }
-
-        private void CustomRedo()
-        {
-            m_pending_undo = true;
-            m_undo_manager.Redo(this);
-            UpdateBBCodeMarkupsVisibility();
-            m_pending_undo = false;
         }
 
         #endregion

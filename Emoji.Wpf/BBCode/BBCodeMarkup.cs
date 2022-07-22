@@ -30,6 +30,7 @@ namespace Emoji.Wpf.BBCode
         public FontWeight? FontWeight { get; set; }
         public FontStyle? FontStyle { get; set; }
         public TextDecorationCollection TextDecorations { get; set; }
+        public string Shortcut { get; set; } = null;
 
         public BBCodeMarkupInline CreateMarkupInline(BBCodeMarkupInlineType type) => new BBCodeMarkupInline(this, type);
 

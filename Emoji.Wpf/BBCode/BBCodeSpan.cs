@@ -27,9 +27,9 @@ namespace Emoji.Wpf.BBCode
         public BBCodeTextInline MarkupText => Inlines.OfType<BBCodeTextInline>().FirstOrDefault();
         public BBCodeMarkupInline MarkupClose => Inlines.OfType<BBCodeMarkupInline>().FirstOrDefault(x => x.Type == BBCodeMarkupInlineType.Closing);
 
-        public BBCodeMarkup Markup { get; }
+        public string Markup { get; set; }
 
-        public bool IsValid => Markup != null && MarkupOpen != null && MarkupText != null && MarkupClose != null;
+        public bool IsValid => !string.IsNullOrEmpty(Markup) && MarkupOpen != null && MarkupText != null && MarkupClose != null;
 
         public bool IsExpanded 
         {
@@ -46,7 +46,7 @@ namespace Emoji.Wpf.BBCode
         public BBCodeSpan(BBCodeMarkup markup, string text, FlowDocument parent, BBCodeConfig config)
             : base()
         {
-            Markup = markup;
+            Markup = markup.Markup;
             Inlines.Add(markup.CreateMarkupInline(BBCodeMarkupInlineType.Opening));
             Inlines.Add(markup.CreateTextInline(text));
             Inlines.Add(markup.CreateMarkupInline(BBCodeMarkupInlineType.Closing));

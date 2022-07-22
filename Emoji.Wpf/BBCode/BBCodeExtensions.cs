@@ -19,6 +19,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
+using System.Windows.Input;
 
 namespace Emoji.Wpf.BBCode
 {
@@ -30,25 +31,28 @@ namespace Emoji.Wpf.BBCode
     {
         private readonly static Regex _bbcode_regex = new Regex(@"\[(.+?)\](.*?)\[\/\1\]", RegexOptions.Compiled);
 
-        private readonly static List<BBCodeMarkup> _default_markups = new List<BBCodeMarkup>()
+        public readonly static List<BBCodeMarkup> DefaultMarkups = new List<BBCodeMarkup>()
         {
             new BBCodeMarkup
             {
                 Name = "Bold",
                 Markup = "b",
-                FontWeight = FontWeights.Bold
+                FontWeight = FontWeights.Bold,
+                Shortcut = "Ctrl+B"
             },
             new BBCodeMarkup
             {
                 Name = "Italic",
                 Markup = "i",
-                FontStyle = FontStyles.Italic
+                FontStyle = FontStyles.Italic,
+                Shortcut = "Ctrl+I"
             },
             new BBCodeMarkup
             {
                 Name = "Underline",
                 Markup = "u",
-                TextDecorations = TextDecorations.Underline
+                TextDecorations = TextDecorations.Underline,
+                Shortcut = "Ctrl+U"
             },
             new BBCodeMarkup
             {
@@ -58,56 +62,67 @@ namespace Emoji.Wpf.BBCode
             }
         };
 
-        private static List<BBCodeSpan> GetPointerParentSpans(TextPointer pointer, FlowDocument document)
-        {
-            var result = new List<BBCodeSpan>();
-            var startb = pointer.GetNextContextPosition(LogicalDirection.Backward);
-            var startf = pointer.GetNextContextPosition(LogicalDirection.Forward);
-
-            if (startb != null && startf != null)
-            {
-                var elementb = startb.GetAdjacentElement(LogicalDirection.Backward);
-                var elementf = startf.GetAdjacentElement(LogicalDirection.Forward);
-                if (elementb is BBCodeSpan span1 && !result.Contains(span1)) result.Add(span1);
-                if (elementf is BBCodeSpan span2 && !result.Contains(span2)) result.Add(span2);
-
-                var parentb = document.GetBBCodeSpans().FirstOrDefault(x => x.Inlines.Contains(elementb));
-                var parentf = document.GetBBCodeSpans().FirstOrDefault(x => x.Inlines.Contains(elementf));
-                if (parentb != null && !result.Contains(parentb)) result.Add(parentb);
-                if (parentf != null && !result.Contains(parentf)) result.Add(parentf);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Gets all BBCode spans containing the start or the end of the current selection in a <see cref="RichTextBox"/>
-        /// </summary>
-        public static IEnumerable<BBCodeSpan> GetSelectedBBCodeSpans(this RichTextBox rtb)
-        {
-            var spans = GetPointerParentSpans(rtb.Selection.Start, rtb.Document);
-
-            if (rtb.Selection.Start != rtb.Selection.End)
-                spans.AddRange(GetPointerParentSpans(rtb.Selection.End, rtb.Document));
-
-            return spans.Distinct();
-        }
-
         /// <summary>
         /// Gets all BBCode spans in a <see cref="FlowDocument"/>
         /// </summary>
         public static IEnumerable<BBCodeSpan> GetBBCodeSpans(this FlowDocument document)
-            => GetBBCodeSpans(new TextRange(document.ContentStart, document.ContentEnd));
+            => new TextRange(document.ContentStart, document.ContentEnd).GetElements<BBCodeSpan>().Where(x => x.IsValid);
 
         /// <summary>
-        /// Gets all BBCode spans between two <see cref="TextPointer"/>s
+        /// Get the BBCode span that contains this <see cref="TextPointer"/>.
         /// </summary>
-        public static IEnumerable<BBCodeSpan> GetBBCodeSpans(this TextRange text_range)
+        public static BBCodeSpan GetParentBBCodeSpan(this TextPointer pointer, FlowDocument document)
+            => document.GetBBCodeSpans().FirstOrDefault(x => x.ContentStart.CompareTo(pointer) <= 0 && x.ContentEnd.CompareTo(pointer) >= 0);
+
+        /// <summary>
+        /// Gets all BBCode spans containing the start or the end of the current selection in a <see cref="RichTextBox"/>
+        /// </summary>
+        public static IEnumerable<BBCodeSpan> GetParentBBCodeSpans(this TextRange text_range, FlowDocument document)
         {
-            for (var p = text_range.Start; p != null && p != text_range.End; p = p.GetNextContextPosition(LogicalDirection.Forward))
-                if (p.GetPointerContext(LogicalDirection.Forward) == TextPointerContext.ElementStart)
-                    if (p.GetAdjacentElement(LogicalDirection.Forward) is BBCodeSpan bbcode && bbcode.IsValid)
-                        yield return bbcode;
+            var span = text_range.Start.GetParentBBCodeSpan(document);
+            if (span != null)
+                yield return span;
+
+            if (text_range.Start != text_range.End)
+            {
+                span = text_range.End.GetParentBBCodeSpan(document);
+                yield return span;
+            }
+        }
+
+        /// <summary>
+        /// Insert markup tags around a text range.
+        /// </summary>
+        /// <param name="text_range">Range of text to enclose with the markup tags.</param>
+        /// <param name="markup">Markup to apply.</param>
+        /// <param name="document">Text range parent document.</param>
+        public static void ApplyBBCodeMarkup(this TextRange text_range, BBCodeMarkup markup, FlowDocument document)
+        {
+            // TODO: improve markup overriding and overlapping
+            var text = text_range.Text;
+            var markup_open = $"[{markup.Markup}]";
+            var markup_close = $"[/{markup.Markup}]";
+
+            // Get parent spans of the start and end pointers of the text range
+            var parent1 = text_range.Start.GetParentBBCodeSpan(document);
+            var parent2 = text_range.End.GetParentBBCodeSpan(document);
+
+            // If the range is inside a bbcode span, nothing needs to be done
+            if (parent1 != null && parent2 != null && parent1.Markup == markup.Markup && parent1 == parent2)
+                return;
+
+            // Remove all markup tags
+            text = text.Replace(markup_open, "");
+            text = text.Replace(markup_close, "");
+
+            // Do not write opening/closing tags when they are already within a tagged range
+            if (parent1?.Markup == markup.Markup)
+                markup_open = "";
+            if (parent2?.Markup == markup.Markup)
+                markup_close = "";
+
+            // Replace the text. This will call OntextChanged and apply formatting.
+            text_range.Text = markup_open + text + markup_close;
         }
 
         /// <summary>
@@ -140,11 +155,13 @@ namespace Emoji.Wpf.BBCode
                 var cur = 0;
                 var matches = _bbcode_regex.Matches(text);
 
+                // TODO: merge consecutive matches having the same markup
+
                 foreach (Match match in matches)
                 {
                     var match_markup = match.Groups[1].Value;
                     var match_text = match.Groups[2].Value;
-                    var markup = _default_markups.Find(x => x.Markup == match_markup) ??
+                    var markup = DefaultMarkups.Find(x => x.Markup == match_markup) ??
                                  config.Markups.Find(x => x.Markup == match_markup);
 
                     if (markup == null)
