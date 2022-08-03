@@ -242,8 +242,12 @@ namespace Emoji.Wpf
 
             if (IsBBCodeEnabled && m_pending_undo)
             {
-                base.OnTextChanged(e);
-                return;
+                using (new PendingChangeBlock(this))
+                {
+                    base.OnTextChanged(e);
+                    SetValue(TextProperty, BBCodeText);
+                    return;
+                }
             }
 
             using (new PendingChangeBlock(this))

@@ -72,7 +72,13 @@ namespace Emoji.Wpf.BBCode
         /// Get the BBCode span that contains this <see cref="TextPointer"/>.
         /// </summary>
         public static BBCodeSpan GetParentBBCodeSpan(this TextPointer pointer, FlowDocument document)
-            => document.GetBBCodeSpans().FirstOrDefault(x => x.ContentStart.CompareTo(pointer) <= 0 && x.ContentEnd.CompareTo(pointer) >= 0);
+        {
+            if (!pointer.IsInSameDocument(document.ContentStart))
+                return null;
+
+            return document.GetBBCodeSpans().FirstOrDefault(x => x.ContentStart.CompareTo(pointer) <= 0 &&
+                                                                 x.ContentEnd.CompareTo(pointer) >= 0);
+        }
 
         /// <summary>
         /// Gets all BBCode spans containing the start or the end of the current selection in a <see cref="RichTextBox"/>
@@ -86,7 +92,8 @@ namespace Emoji.Wpf.BBCode
             if (text_range.Start != text_range.End)
             {
                 span = text_range.End.GetParentBBCodeSpan(document);
-                yield return span;
+                if (span != null)
+                    yield return span;
             }
         }
 
