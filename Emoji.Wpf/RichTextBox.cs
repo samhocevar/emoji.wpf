@@ -312,8 +312,10 @@ namespace Emoji.Wpf
         }
 
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
-            nameof(Text), typeof(string), typeof(RichTextBox), new FrameworkPropertyMetadata("",
-                (o, e) => (o as RichTextBox)?.OnTextPropertyChanged(e.NewValue as string))
+            nameof(Text),
+            typeof(string),
+            typeof(RichTextBox),
+            new FrameworkPropertyMetadata("", (o, e) => (o as RichTextBox)?.OnTextPropertyChanged(e.NewValue as string))
             { DefaultUpdateSourceTrigger = UpdateSourceTrigger.LostFocus });
 
         public bool ColonSyntax
@@ -322,8 +324,10 @@ namespace Emoji.Wpf
             set => SetValue(ColonSyntaxProperty, value);
         }
 
-        public static readonly DependencyProperty ColonSyntaxProperty =
-             DependencyProperty.Register(nameof(ColonSyntax), typeof(bool), typeof(RichTextBox),
+        public static readonly DependencyProperty ColonSyntaxProperty = DependencyProperty.Register(
+                 nameof(ColonSyntax),
+                 typeof(bool),
+                 typeof(RichTextBox),
                  new PropertyMetadata(false));
 
         public bool ColorBlend
@@ -332,9 +336,11 @@ namespace Emoji.Wpf
             set => SetValue(ColorBlendProperty, value);
         }
 
-        public static readonly DependencyProperty ColorBlendProperty =
-             DependencyProperty.Register(nameof(ColorBlend), typeof(bool), typeof(RichTextBox),
-                 new PropertyMetadata(false, (o, e) => (o as RichTextBox)?.OnColorBlendChanged((bool)e.NewValue)));
+        public static readonly DependencyProperty ColorBlendProperty = DependencyProperty.Register(
+            nameof(ColorBlend),
+            typeof(bool),
+            typeof(RichTextBox),
+            new PropertyMetadata(false, (o, e) => (o as RichTextBox)?.OnColorBlendChanged((bool)e.NewValue)));
 
         public IEnumerable<EmojiInline> EmojiInlines
         {
@@ -353,7 +359,18 @@ namespace Emoji.Wpf
 
         public IEnumerable<BBCodeSpan> BBCodeSpans => Document.GetBBCodeSpans();
 
-        public bool IsBBCodeEnabled => BBCodeConfig != null;
+        public bool IsBBCodeEnabled
+        {
+            get => (bool)GetValue(IsBBCodeEnabledProperty) && BBCodeConfig != null;
+            set => SetValue(IsBBCodeEnabledProperty, value);
+        }
+
+        public static readonly DependencyProperty IsBBCodeEnabledProperty = DependencyProperty.Register(
+            nameof(IsBBCodeEnabled),
+            typeof(bool),
+            typeof(RichTextBox),
+            new FrameworkPropertyMetadata(true)
+            { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
 
         public string BBCodeText
         {
@@ -371,7 +388,9 @@ namespace Emoji.Wpf
         }
 
         public static readonly DependencyProperty BBCodeMarkupVisibilityProperty = DependencyProperty.Register(
-            nameof(BBCodeMarkupVisibility), typeof(BBCodeMarkupVisibility), typeof(RichTextBox),
+            nameof(BBCodeMarkupVisibility),
+            typeof(BBCodeMarkupVisibility),
+            typeof(RichTextBox),
             new FrameworkPropertyMetadata(BBCodeMarkupVisibility.Visible, (o,e) => (o as RichTextBox)?.UpdateBBCodeMarkupsVisibility())
             { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
 
@@ -404,7 +423,9 @@ namespace Emoji.Wpf
         }
 
         public static readonly DependencyProperty BBCodeMarkupsProperty = DependencyProperty.Register(
-            nameof(BBCodeMarkups), typeof(List<BBCodeMarkup>), typeof(RichTextBox),
+            nameof(BBCodeMarkups),
+            typeof(List<BBCodeMarkup>),
+            typeof(RichTextBox),
             new FrameworkPropertyMetadata(new List<BBCodeMarkup>(), (o,e) => (o as RichTextBox)?.OnBBCodeConfigChanged())
             { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
 
@@ -415,7 +436,9 @@ namespace Emoji.Wpf
         }
 
         public static readonly DependencyProperty BBCodeMarkupFontScaleProperty = DependencyProperty.Register(
-            nameof(BBCodeMarkupFontScale), typeof(double), typeof(RichTextBox),
+            nameof(BBCodeMarkupFontScale),
+            typeof(double),
+            typeof(RichTextBox),
             new FrameworkPropertyMetadata(1.0, (o, e) => (o as RichTextBox)?.OnBBCodeConfigChanged())
             { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
 

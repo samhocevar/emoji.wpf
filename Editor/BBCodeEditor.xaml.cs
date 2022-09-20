@@ -21,7 +21,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 
-namespace Editor
+namespace BBCodeEditor
 {
     /// <summary>
     /// Interaction logic for Editor.xaml
@@ -34,7 +34,7 @@ namespace Editor
         public static void Main()
         {
             Application app = new Application();
-            app.StartupUri = new Uri("Editor.xaml", UriKind.Relative);
+            app.StartupUri = new Uri("BBCodeEditor.xaml", UriKind.Relative);
             app.Run();
         }
 
@@ -49,7 +49,8 @@ namespace Editor
                     Name = "Test",
                     Markup = "test",
                     Foreground = Colors.Blue,
-                    FontWeight = FontWeights.SemiBold
+                    FontWeight = FontWeights.SemiBold,
+                    Shortcut = "Ctrl+T"
                 },
             };
         }
