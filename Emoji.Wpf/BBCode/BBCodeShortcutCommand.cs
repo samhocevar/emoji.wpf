@@ -20,7 +20,7 @@ namespace Emoji.Wpf.BBCode
             _owner = owner;
         }
 
-        public bool CanExecute(object parameter) => true;
+        public bool CanExecute(object parameter) => _owner.IsBBCodeEnabled;
 
         public void Execute(object parameter)
         {
