@@ -369,7 +369,7 @@ namespace Emoji.Wpf
             nameof(IsBBCodeEnabled),
             typeof(bool),
             typeof(RichTextBox),
-            new FrameworkPropertyMetadata(true)
+            new FrameworkPropertyMetadata(false)
             { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
 
         public string BBCodeText
