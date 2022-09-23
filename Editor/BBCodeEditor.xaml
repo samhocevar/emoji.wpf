@@ -28,12 +28,15 @@
                                VerticalContentAlignment="Stretch"
                                TextChanged="EmojiTextBox_TextChanged"
                                SelectionChanged="EmojiTextBox_SelectionChanged"
-                               IsBBCodeEnabled="False"
+                               IsBBCodeEnabled="{Binding IsChecked, ElementName=IsBBCodeEnabledCheckBox, UpdateSourceTrigger=PropertyChanged}"
                                BBCodeMarkupVisibility="OnCaretInside"
                                BBCodeMarkupFontScale="{Binding Value, ElementName=FontScaleSlider, UpdateSourceTrigger=PropertyChanged}"/>
         </ScrollViewer>
 
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="10" HorizontalAlignment="Center">
+            <Viewbox Height="30" Margin="40,10">
+                <CheckBox Name="IsBBCodeEnabledCheckBox" IsChecked="True" Content="Enable BBCode"/>
+            </Viewbox>
             <Viewbox Height="30" Margin="40,10">
                 <RadioButton GroupName="Feature" IsChecked="True" Checked="OnXamlChecked" Content="XAML"/>
             </Viewbox>

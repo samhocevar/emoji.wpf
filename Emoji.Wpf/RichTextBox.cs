@@ -283,6 +283,33 @@ namespace Emoji.Wpf
 #endif
         }
 
+        private void OnColorBlendChanged(bool color_blend)
+            => EmojiInlines.ForAll(e => e.Foreground = color_blend ? Foreground : Brushes.Black);
+
+        private bool m_pending_change = false;
+
+        private TextSelection m_override_selection;
+
+        public new TextSelection Selection { get; private set; }
+
+        #region Text Property
+
+        public string Text
+        {
+            get => (string)GetValue(TextProperty);
+            set => SetValue(TextProperty, value);
+        }
+
+        public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
+            nameof(Text),
+            typeof(string),
+            typeof(RichTextBox),
+            new FrameworkPropertyMetadata("", (o, e) => (o as RichTextBox)?.OnTextPropertyChanged(e.NewValue as string))
+            {
+                DefaultUpdateSourceTrigger = UpdateSourceTrigger.LostFocus,
+                BindsTwoWayByDefault = true
+            });
+
         private void OnTextPropertyChanged(string text)
         {
             if (m_pending_change)
@@ -296,27 +323,7 @@ namespace Emoji.Wpf
             UpdateBBCodeMarkupsVisibility();
         }
 
-        private void OnColorBlendChanged(bool color_blend)
-            => EmojiInlines.ForAll(e => e.Foreground = color_blend ? Foreground : Brushes.Black);
-
-        private bool m_pending_change = false;
-
-        private TextSelection m_override_selection;
-
-        public new TextSelection Selection { get; private set; }
-
-        public string Text
-        {
-            get => (string)GetValue(TextProperty);
-            set => SetValue(TextProperty, value);
-        }
-
-        public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
-            nameof(Text),
-            typeof(string),
-            typeof(RichTextBox),
-            new FrameworkPropertyMetadata("", (o, e) => (o as RichTextBox)?.OnTextPropertyChanged(e.NewValue as string))
-            { DefaultUpdateSourceTrigger = UpdateSourceTrigger.LostFocus });
+        #endregion
 
         public bool ColonSyntax
         {
@@ -369,8 +376,10 @@ namespace Emoji.Wpf
             nameof(IsBBCodeEnabled),
             typeof(bool),
             typeof(RichTextBox),
-            new FrameworkPropertyMetadata(false)
+            new FrameworkPropertyMetadata(false, (o, e) => (o as RichTextBox)?.OnIsBBCodeEnabledPropertyChanged((bool)e.NewValue))
             { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
+
+        private void OnIsBBCodeEnabledPropertyChanged(bool value) => OnTextPropertyChanged(BBCodeText);
 
         public string BBCodeText
         {
@@ -547,9 +556,8 @@ namespace Emoji.Wpf
             public BBCodeMarkupsExpander(RichTextBox rtb)
             {
                 m_rtb = rtb;
-                if (m_rtb.IsBBCodeEnabled)
-                    using (new PendingChangeBlock(m_rtb))
-                        rtb.Document.GetBBCodeSpans().ForAll(x => x.IsExpanded = true);
+                using (new PendingChangeBlock(m_rtb))
+                    rtb.Document.GetBBCodeSpans().ForAll(x => x.IsExpanded = true);
             }
 
             public void Dispose()
