@@ -315,10 +315,13 @@ namespace Emoji.Wpf
             if (m_pending_change)
                 return;
 
+            if (text == null)
+                text = "";
+
             using (new PendingChangeBlock(this))
                 Document.Blocks.Clear();
 
-            var paragraphs = text.Split('\n').Select(x => new Paragraph(new Run(x)));
+            var paragraphs = text.Replace("\r\n", "\n").Split('\n').Select(x => new Paragraph(new Run(x)));
             Document.Blocks.AddRange(paragraphs);
             UpdateBBCodeMarkupsVisibility();
         }
