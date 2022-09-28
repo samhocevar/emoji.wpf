@@ -263,10 +263,10 @@ namespace Emoji.Wpf
 
                 EndChange();
 
-                base.OnTextChanged(e);
-
                 // FIXME: make this call lazy inside Text.get()
                 SetValue(TextProperty, new TextSelection(Document.ContentStart, Document.ContentEnd).Text);
+
+                base.OnTextChanged(e);
 
                 if (IsBBCodeEnabled)
                     m_undo_manager.Update(this, e.UndoAction);
