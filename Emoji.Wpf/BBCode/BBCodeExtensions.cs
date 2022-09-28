@@ -11,15 +11,11 @@
 //  See http://www.wtfpl.net/ for more details.
 //
 
-using Stfu.Linq;
-using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Documents;
-using System.Windows.Media;
-using System.Windows.Input;
 
 namespace Emoji.Wpf.BBCode
 {
@@ -29,7 +25,10 @@ namespace Emoji.Wpf.BBCode
 
     public static class BBCodeExtensions
     {
-        private readonly static Regex _bbcode_regex = new Regex(@"\[(.+?)\](.*?)\[\/\1\]", RegexOptions.Compiled);
+        private readonly static Regex _span_regex = new Regex(@"\[(.+?)\](.*?)\[\/\1\]", RegexOptions.Compiled);
+        private readonly static Regex _tag_regex = new Regex(@"\[.+?\]", RegexOptions.Compiled);
+
+        public static string GetBBCodePlainText(this string text) => _tag_regex.Replace(text, "");
 
         public readonly static List<BBCodeMarkup> DefaultMarkups = new List<BBCodeMarkup>()
         {
@@ -160,7 +159,7 @@ namespace Emoji.Wpf.BBCode
                 paragraph.Inlines.Clear();
 
                 var cur = 0;
-                var matches = _bbcode_regex.Matches(text);
+                var matches = _span_regex.Matches(text);
 
                 // TODO: merge consecutive matches having the same markup
 

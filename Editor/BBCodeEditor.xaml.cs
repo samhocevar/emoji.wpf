@@ -58,7 +58,11 @@ namespace BBCodeEditor
         private void Update()
         {
             if (IsLoaded)
+            {
                 CodeTextBox.Text = m_display_method?.Invoke(EmojiTextBox.Document);
+                BBCodeTextBox.Text = EmojiTextBox.BBCodeText;
+                PlainTextBox.Text = EmojiTextBox.BBCodeText.GetBBCodePlainText();
+            }
         }
 
         private void EmojiTextBox_TextChanged(object sender, TextChangedEventArgs e) => Update();

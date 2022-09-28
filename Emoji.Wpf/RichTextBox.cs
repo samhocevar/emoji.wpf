@@ -369,6 +369,15 @@ namespace Emoji.Wpf
 
         public IEnumerable<BBCodeSpan> BBCodeSpans => Document.GetBBCodeSpans();
 
+        public string BBCodeText
+        {
+            get
+            {
+                using (new BBCodeMarkupsExpander(this))
+                    return new TextSelection(Document.ContentStart, Document.ContentEnd).Text;
+            }
+        }
+
         public bool IsBBCodeEnabled
         {
             get => (bool)GetValue(IsBBCodeEnabledProperty) && BBCodeConfig != null;
@@ -383,15 +392,6 @@ namespace Emoji.Wpf
             { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
 
         private void OnIsBBCodeEnabledPropertyChanged(bool value) => OnTextPropertyChanged(BBCodeText);
-
-        public string BBCodeText
-        {
-            get
-            {
-                using (new BBCodeMarkupsExpander(this))
-                    return new TextSelection(Document.ContentStart, Document.ContentEnd).Text;
-            }
-        }
 
         public BBCodeMarkupVisibility BBCodeMarkupVisibility
         {
@@ -556,11 +556,11 @@ namespace Emoji.Wpf
         {
             private RichTextBox m_rtb;
 
-            public BBCodeMarkupsExpander(RichTextBox rtb)
+            public BBCodeMarkupsExpander(RichTextBox rtb, bool expand = true)
             {
                 m_rtb = rtb;
                 using (new PendingChangeBlock(m_rtb))
-                    rtb.Document.GetBBCodeSpans().ForAll(x => x.IsExpanded = true);
+                    rtb.Document.GetBBCodeSpans().ForAll(x => x.IsExpanded = expand);
             }
 
             public void Dispose()

@@ -53,6 +53,20 @@
                 <TextBlock Text="{Binding Value, ElementName=FontScaleSlider, StringFormat=N2}"/>
             </Viewbox>
         </StackPanel>
+
+        <StackPanel DockPanel.Dock="Bottom" Margin="10">
+            <Label Content="PlainText:" FontSize="20"/>
+            <ScrollViewer>
+                <TextBox Name="PlainTextBox" IsReadOnly="True" FontSize="18" Padding="10"/>
+            </ScrollViewer>
+        </StackPanel>
+
+        <StackPanel DockPanel.Dock="Bottom" Margin="10">
+            <Label Content="BBCodeText:" FontSize="20"/>
+            <ScrollViewer>
+                <TextBox Name="BBCodeTextBox" IsReadOnly="True" FontSize="18" Padding="10"/>
+            </ScrollViewer>
+        </StackPanel>
         
         <ScrollViewer Margin="10">
             <TextBox Name="CodeTextBox"
