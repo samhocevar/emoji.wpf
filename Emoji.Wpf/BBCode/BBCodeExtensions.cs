@@ -30,6 +30,8 @@ namespace Emoji.Wpf.BBCode
 
         public static string GetBBCodePlainText(this string text) => _tag_regex.Replace(text, "");
 
+        public static bool IsBBCode(this string text) => _span_regex.IsMatch(text);
+
         public readonly static List<BBCodeMarkup> DefaultMarkups = new List<BBCodeMarkup>()
         {
             new BBCodeMarkup
