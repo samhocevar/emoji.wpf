@@ -319,6 +319,29 @@ namespace Emoji.Wpf
             UpdateBBCodeMarkupsVisibility();
         }
 
+        /// <summary>
+        /// Show or hide BBCode markups according to <see cref="BBCodeMarkupVisibility"/> property value.
+        /// </summary>
+        private void UpdateBBCodeMarkupsVisibility()
+        {
+            using (new PendingChangeBlock(this))
+            {
+                switch (BBCodeMarkupVisibility)
+                {
+                    case BBCodeMarkupVisibility.Visible:
+                        BBCodeSpans.ForAll(x => x.IsExpanded = true);
+                        break;
+                    case BBCodeMarkupVisibility.Hidden:
+                        BBCodeSpans.ForAll(x => x.IsExpanded = false);
+                        break;
+                    case BBCodeMarkupVisibility.OnCaretInside:
+                        var selected_spans = Selection.GetParentBBCodeSpans(Document).ToList();
+                        BBCodeSpans.ForAll(x => x.IsExpanded = selected_spans.Contains(x));
+                        break;
+                }
+            }
+        }
+
         private void OnColorBlendChanged(bool color_blend)
             => EmojiInlines.ForAll(e => e.Foreground = color_blend ? Foreground : Brushes.Black);
 
@@ -433,26 +456,6 @@ namespace Emoji.Wpf
             new FrameworkPropertyMetadata(BBCodeMarkupVisibility.Visible, (o,e) => (o as RichTextBox)?.UpdateBBCodeMarkupsVisibility())
             { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
 
-        public void UpdateBBCodeMarkupsVisibility()
-        {
-            using (new PendingChangeBlock(this))
-            {
-                switch (BBCodeMarkupVisibility)
-                {
-                    case BBCodeMarkupVisibility.Visible:
-                        BBCodeSpans.ForAll(x => x.IsExpanded = true);
-                        break;
-                    case BBCodeMarkupVisibility.Hidden:
-                        BBCodeSpans.ForAll(x => x.IsExpanded = false);
-                        break;
-                    case BBCodeMarkupVisibility.OnCaretInside:
-                        var selected_spans = Selection.GetParentBBCodeSpans(Document).ToList();
-                        BBCodeSpans.ForAll(x => x.IsExpanded = selected_spans.Contains(x));
-                        break;
-                }
-            }
-        }
-
         private BBCodeConfig BBCodeConfig = new BBCodeConfig();
 
         public List<BBCodeMarkup> BBCodeMarkups
@@ -481,7 +484,7 @@ namespace Emoji.Wpf
             new FrameworkPropertyMetadata(1.0, (o, e) => (o as RichTextBox)?.OnBBCodeConfigChanged())
             { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
 
-        public void OnBBCodeConfigChanged()
+        private void OnBBCodeConfigChanged()
         {
             BBCodeConfig.Markups = BBCodeMarkups;
             BBCodeConfig.MarkupFontScale = BBCodeMarkupFontScale;
