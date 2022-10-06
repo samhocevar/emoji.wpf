@@ -28,7 +28,6 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
-
 using Controls = System.Windows.Controls;
 
 namespace Emoji.Wpf
@@ -283,6 +282,43 @@ namespace Emoji.Wpf
 #endif
         }
 
+        /// <summary>
+        /// Set the document structure from a string.
+        /// </summary>
+        private void SetDocumentText(string text)
+        {
+            if (text == null)
+                text = "";
+
+            using (new PendingChangeBlock(this))
+                Document.Blocks.Clear();
+
+            var paragraphs = text.Replace("\r\n", "\n").Split('\n').Select(x => new Paragraph(new Run(x)));
+            Document.Blocks.AddRange(paragraphs);
+        }
+
+        /// <summary>
+        /// Update BBCode text formatting according to <see cref="IsBBCodeEnabled"/> value
+        /// without triggering a property changed event on TextProperty.
+        /// </summary>
+        private void UpdateBBCodeDisplay()
+        {
+            using (new PendingChangeBlock(this))
+            {
+                // Reset document structure
+                SetDocumentText(BBCodeText);
+
+                if (IsBBCodeEnabled)
+                    Document.ApplyBBCode(BBCodeConfig);
+
+                Document.SubstituteGlyphs(
+                    (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
+                    (ColorBlend ? SubstituteOptions.ColorBlend : SubstituteOptions.None));
+            }
+
+            UpdateBBCodeMarkupsVisibility();
+        }
+
         private void OnColorBlendChanged(bool color_blend)
             => EmojiInlines.ForAll(e => e.Foreground = color_blend ? Foreground : Brushes.Black);
 
@@ -315,14 +351,7 @@ namespace Emoji.Wpf
             if (m_pending_change)
                 return;
 
-            if (text == null)
-                text = "";
-
-            using (new PendingChangeBlock(this))
-                Document.Blocks.Clear();
-
-            var paragraphs = text.Replace("\r\n", "\n").Split('\n').Select(x => new Paragraph(new Run(x)));
-            Document.Blocks.AddRange(paragraphs);
+            SetDocumentText(text);
             UpdateBBCodeMarkupsVisibility();
         }
 
@@ -388,10 +417,8 @@ namespace Emoji.Wpf
             nameof(IsBBCodeEnabled),
             typeof(bool),
             typeof(RichTextBox),
-            new FrameworkPropertyMetadata(false, (o, e) => (o as RichTextBox)?.OnIsBBCodeEnabledPropertyChanged((bool)e.NewValue))
+            new FrameworkPropertyMetadata(false, (o, e) => (o as RichTextBox)?.UpdateBBCodeDisplay())
             { DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
-
-        private void OnIsBBCodeEnabledPropertyChanged(bool value) => OnTextPropertyChanged(BBCodeText);
 
         public BBCodeMarkupVisibility BBCodeMarkupVisibility
         {
@@ -473,15 +500,7 @@ namespace Emoji.Wpf
                 catch { }
             }
 
-            using (new PendingChangeBlock(this))
-            {
-                if (IsBBCodeEnabled)
-                    Document.ApplyBBCode(BBCodeConfig);
-
-                Document.SubstituteGlyphs(
-                    (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
-                    (ColorBlend ? SubstituteOptions.ColorBlend : SubstituteOptions.None));
-            }
+            UpdateBBCodeDisplay();
 
             // When it's on control initialization, override first undo state
             if (!IsLoaded)

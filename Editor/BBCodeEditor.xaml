@@ -12,7 +12,7 @@
 
     <Window.Resources>
         <clr:String x:Key="SampleTextBackup">Hi👨🏻‍👩🏿‍👧🏽‍👦🏽‍👦🏿lol</clr:String>
-        <clr:String x:Key="SampleText">Hello👨🏻‍👩🏿‍👧🏽‍👦🏽‍👦🏿, here is some bold text, also here is a custom markup, and that's all folks.</clr:String>
+        <clr:String x:Key="SampleText">Hello👨🏻‍👩🏿‍👧🏽‍👦🏽‍👦🏿, here is [b]some bold text[/b], also here is a [test]custom markup[/test], and [i]that's all folks[/i].</clr:String>
     </Window.Resources>
 
     <DockPanel Background="LightGray">
