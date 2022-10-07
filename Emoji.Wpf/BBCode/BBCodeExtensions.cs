@@ -76,10 +76,8 @@ namespace Emoji.Wpf.BBCode
         }
 
         /// <summary>
-        /// Shortcut for getting valid BBCode spans in a FlowDocument.
+        /// Shortcut for getting valid BBCode spans in a <see cref="FlowDocument"/>.
         /// </summary>
-        /// <param name="document"></param>
-        /// <returns></returns>
         public static IEnumerable<BBCodeSpan> GetBBCodeSpans(this FlowDocument document)
             => document.GetElements<BBCodeSpan>().Where(x => x.IsValid);
 

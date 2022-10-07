@@ -232,13 +232,14 @@ namespace Emoji.Wpf
         }
 
         /// <summary>
-        /// Force hide BBCode markups when losing keyboard focus.
+        /// Force hide BBCode markups when losing keyboard focus
+        /// while BBCodeMarkupVisibility value is OnCaretInside.
         /// </summary>
         protected override void OnLostKeyboardFocus(KeyboardFocusChangedEventArgs e)
         {
             base.OnLostKeyboardFocus(e);
 
-            if (BBCodeMarkupVisibility == BBCodeMarkupVisibility.OnCaretInside)
+            if (IsBBCodeEnabled && BBCodeMarkupVisibility == BBCodeMarkupVisibility.OnCaretInside)
                 using (new PendingChangeBlock(this))
                     BBCodeSpans.ForAll(x => x.IsExpanded = false);
         }
@@ -347,8 +348,8 @@ namespace Emoji.Wpf
                         BBCodeSpans.ForAll(x => x.IsExpanded = false);
                         break;
                     case BBCodeMarkupVisibility.OnCaretInside:
-                        var selected_spans = Selection.GetParentBBCodeSpans(Document).ToList();
-                        BBCodeSpans.ForAll(x => x.IsExpanded = selected_spans.Contains(x));
+                        var selected_spans = Selection?.GetParentBBCodeSpans(Document).ToList();
+                        BBCodeSpans.ForAll(x => x.IsExpanded = selected_spans != null && selected_spans.Contains(x));
                         break;
                 }
             }
