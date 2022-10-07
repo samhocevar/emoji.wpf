@@ -232,6 +232,18 @@ namespace Emoji.Wpf
         }
 
         /// <summary>
+        /// Force hide BBCode markups when losing keyboard focus.
+        /// </summary>
+        protected override void OnLostKeyboardFocus(KeyboardFocusChangedEventArgs e)
+        {
+            base.OnLostKeyboardFocus(e);
+
+            if (BBCodeMarkupVisibility == BBCodeMarkupVisibility.OnCaretInside)
+                using (new PendingChangeBlock(this))
+                    BBCodeSpans.ForAll(x => x.IsExpanded = false);
+        }
+
+        /// <summary>
         /// Replace Emoji characters with EmojiInline objects inside the document.
         /// </summary>
         protected override void OnTextChanged(Controls.TextChangedEventArgs e)
@@ -404,16 +416,7 @@ namespace Emoji.Wpf
             typeof(RichTextBox),
             new PropertyMetadata(false, (o, e) => (o as RichTextBox)?.OnColorBlendChanged((bool)e.NewValue)));
 
-        public IEnumerable<EmojiInline> EmojiInlines
-        {
-            get
-            {
-                for (var p = Document.ContentStart; p != null; p = p.GetNextContextPosition(LogicalDirection.Forward))
-                    if (p.GetPointerContext(LogicalDirection.Forward) == TextPointerContext.ElementStart)
-                        if (p.GetAdjacentElement(LogicalDirection.Forward) is EmojiInline emoji)
-                            yield return emoji;
-            }
-        }
+        public IEnumerable<EmojiInline> EmojiInlines => Document.GetElements<EmojiInline>();
 
         #region BBCode
 

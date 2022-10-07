@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Documents;
+using System.Windows.Controls;
 
 namespace Emoji.Wpf.BBCode
 {
@@ -64,10 +65,23 @@ namespace Emoji.Wpf.BBCode
         };
 
         /// <summary>
-        /// Gets all BBCode spans in a <see cref="FlowDocument"/>
+        /// Gets all elements of a given type in a <see cref="FlowDocument"/>.
         /// </summary>
+        public static IEnumerable<T> GetElements<T>(this FlowDocument document)
+        {
+            for (var p = document.ContentStart; p != null; p = p.GetNextContextPosition(LogicalDirection.Forward))
+                if (p.GetPointerContext(LogicalDirection.Forward) == TextPointerContext.ElementStart)
+                    if (p.GetAdjacentElement(LogicalDirection.Forward) is T element)
+                        yield return element;
+        }
+
+        /// <summary>
+        /// Shortcut for getting valid BBCode spans in a FlowDocument.
+        /// </summary>
+        /// <param name="document"></param>
+        /// <returns></returns>
         public static IEnumerable<BBCodeSpan> GetBBCodeSpans(this FlowDocument document)
-            => new TextRange(document.ContentStart, document.ContentEnd).GetElements<BBCodeSpan>().Where(x => x.IsValid);
+            => document.GetElements<BBCodeSpan>().Where(x => x.IsValid);
 
         /// <summary>
         /// Get the BBCode span that contains this <see cref="TextPointer"/>.

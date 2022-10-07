@@ -38,16 +38,5 @@ namespace Emoji.Wpf
             }
             return p ?? fallback;
         }
-
-        /// <summary>
-        /// Gets all elements of a given type between two <see cref="TextPointer"/>s
-        /// </summary>
-        public static IEnumerable<T> GetElements<T>(this TextRange text_range)
-        {
-            for (var p = text_range.Start; p != null && p.CompareTo(text_range.End) < 0; p = p.GetNextContextPosition(LogicalDirection.Forward))
-                if (p.GetPointerContext(LogicalDirection.Forward) == TextPointerContext.ElementStart)
-                    if (p.GetAdjacentElement(LogicalDirection.Forward) is T element)
-                        yield return element;
-        }
     }
 }
