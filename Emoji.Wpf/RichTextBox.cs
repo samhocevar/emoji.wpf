@@ -122,6 +122,15 @@ namespace Emoji.Wpf
             base.OnSelectionChanged(e);
         }
 
+        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+        {
+            base.OnPropertyChanged(e);
+
+            if (e.Property == ForegroundProperty && IsBBCodeEnabled)
+                using (new PendingChangeBlock(this))
+                    BBCodeSpans.ForAll(x => x.UpdateForeground(Document, BBCodeConfig));
+        }
+
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
             // If the user clicked on an emoji, remember where it was. The default RichTextBox

@@ -53,6 +53,18 @@ namespace Emoji.Wpf.BBCode
             MarkupOpen.FontSize = parent.FontSize * config.MarkupFontScale;
             MarkupClose.FontSize = parent.FontSize * config.MarkupFontScale;
             IsExpanded = true;
+            UpdateForeground(parent, config);
+        }
+
+        public void UpdateForeground(FlowDocument parent, BBCodeConfig config)
+        {
+            if (parent.Foreground is SolidColorBrush colorBrush)
+            {
+                var color = colorBrush.Color;
+                color.A = Math.Max(Math.Min((byte)(color.A * config.MarkupColorAlpha), byte.MaxValue), byte.MinValue);
+                MarkupOpen.Foreground = new SolidColorBrush(color);
+                MarkupClose.Foreground = new SolidColorBrush(color);
+            }
         }
     }
 }

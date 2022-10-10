@@ -32,5 +32,10 @@ namespace Emoji.Wpf.BBCode
         /// Scale factor for markups font size.
         /// </summary>
         public double MarkupFontScale { get; set; } = 1.0;
+
+        /// <summary>
+        /// Factor applied to the alpha component of the markups text color.
+        /// </summary>
+        public double MarkupColorAlpha { get; set; } = 0.5;
     }
 }

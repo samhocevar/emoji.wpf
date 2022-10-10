@@ -170,7 +170,7 @@ namespace Emoji.Wpf.BBCode
 
                 // Save the text before rebuilding the paragraph inlines
                 var text = new TextSelection(paragraph.ContentStart, paragraph.ContentEnd).Text;
-                paragraph.Inlines.Clear();
+                paragraph.Inlines.Clear(); //FIXME: this call has a big impact on performance!
 
                 var cur = 0;
                 var matches = _span_regex.Matches(text);
