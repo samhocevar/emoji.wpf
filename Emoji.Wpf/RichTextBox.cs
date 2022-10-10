@@ -107,7 +107,6 @@ namespace Emoji.Wpf
 
         protected override void OnSelectionChanged(RoutedEventArgs e)
         {
-            base.OnSelectionChanged(e);
             if (m_override_selection != null)
             {
                 var tmp = m_override_selection; // Prevent infinite recursion
@@ -119,6 +118,8 @@ namespace Emoji.Wpf
 
             if (IsBBCodeEnabled && !m_pending_change)
                 UpdateBBCodeMarkupsVisibility();
+
+            base.OnSelectionChanged(e);
         }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
