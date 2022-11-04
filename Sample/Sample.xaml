@@ -82,16 +82,41 @@
                 <ColumnDefinition Width="5*" />
                 <ColumnDefinition Width="3*" />
             </Grid.ColumnDefinitions>
-            <GroupBox Grid.Column="0" Header="emoji:Picker" Margin="4">
-                <StackPanel Orientation="Horizontal">
-                    <StackPanel Orientation="Vertical" Margin="4">
-                        <emoji:Picker x:Name="EmojiPicker" FontSize="40" Margin="0,0,0,4"
+            <DockPanel Grid.Column="0" LastChildFill="True">
+                <GroupBox DockPanel.Dock="Top" Header="emoji:Picker" Margin="4">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
+                        <emoji:Picker x:Name="EmojiPicker" FontSize="24" Margin="0,0,0,4"
                                       Selection="{StaticResource PickerEmoji}"/>
                         <emoji:TextBlock FontSize="20" HorizontalAlignment="Center"
                                          Text="{Binding Selection, ElementName=EmojiPicker, Mode=TwoWay}"/>
                     </StackPanel>
-                </StackPanel>
-            </GroupBox>
+                </GroupBox>
+                <GroupBox Header="Animation" Margin="4">
+                    <emoji:TextBlock Name="myTextBlock" FontSize="24">
+                        <emoji:TextBlock.Triggers>
+                            <EventTrigger RoutedEvent="Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <StringAnimationUsingKeyFrames Storyboard.TargetName="myTextBlock"
+                                                                       Storyboard.TargetProperty="Text"
+                                                                       Duration="0:0:1.2" FillBehavior="HoldEnd"
+                                                                       RepeatBehavior="Forever">
+                                            <DiscreteStringKeyFrame KeyTime="0:0:0.00" Value="🌕⬆️" />
+                                            <DiscreteStringKeyFrame KeyTime="0:0:0.15" Value="🌖↗️" />
+                                            <DiscreteStringKeyFrame KeyTime="0:0:0.30" Value="🌗➡️" />
+                                            <DiscreteStringKeyFrame KeyTime="0:0:0.45" Value="🌘↘️" />
+                                            <DiscreteStringKeyFrame KeyTime="0:0:0.60" Value="🌑⬇️" />
+                                            <DiscreteStringKeyFrame KeyTime="0:0:0.75" Value="🌒↙️" />
+                                            <DiscreteStringKeyFrame KeyTime="0:0:0.90" Value="🌓⬅️" />
+                                            <DiscreteStringKeyFrame KeyTime="0:0:1.05" Value="🌔↖️" />
+                                        </StringAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </emoji:TextBlock.Triggers>
+                    </emoji:TextBlock>
+                </GroupBox>
+            </DockPanel>
             <GroupBox Grid.Column="1" Header="emoji:RichTextBox" Margin="4">
                 <DockPanel LastChildFill="True">
                     <StackPanel DockPanel.Dock="Left">
