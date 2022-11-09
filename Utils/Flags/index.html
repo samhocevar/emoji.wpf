@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8"></meta>
   <title>SVG.js</title>
   <script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@3.0/dist/svg.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.topath.js@2.0.3/dist/svg.topath.min.js"></script>
@@ -14,9 +15,13 @@
 </head>
 <body style="background-color-DISABLED: #e0fff0; overflow: scroll">
 
-<a href="#" onClick="doAll();">Generate XAML for all</a>
+<p style="margin:10px">
+    <input id="win11" type="checkbox">Windows 11 style</input>
+    <button onClick="doAll();">Generate XAML for all flags</button>
+</p>
 
 <div id="menubar"></div>
+<div id="desc"></div>
 <div id="crumbs"></div>
 <div id="anchor"></div>
 

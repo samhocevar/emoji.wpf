@@ -9,8 +9,13 @@ all: .allflags.js
 
 .allflags.js: Makefile
 	echo 'flags = {' > $@
-	for x in $(ALL_FLAGS); do echo "'$$x': '"`sed "s/'/\\\\\\\\'/g" $$x`"',"; done >> $@
-	echo '}' >> $@
+	for x in $(filter-out $(REMOVE_FLAGS), $(ALL_FLAGS)); do \
+	    echo "'$$x': '"`sed "s/'/\\\\\\\\'/g" $$x`"',"; \
+	done >> $@
+	echo '};' >> $@
+	echo 'openmoji = ' >> $@
+	sed 's/^  *//' openmoji/data/openmoji.json | tr -d '\r\n' >> $@
+	echo ';' >> $@
 
 clean:
 	rm -f .allflags.js
