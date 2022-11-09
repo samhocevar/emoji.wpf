@@ -78,6 +78,9 @@ function svgToXaml(svg, unicode_id) {
             ret += '/>\n';
         }
     }
+    //ret += '        <DrawingGroup.ClipGeometry>\n';
+    //ret += '            <RectangleGeometry Rect="0 0 160 160"/>\n';
+    //ret += '        </DrawingGroup.ClipGeometry>\n';
     ret += '    </DrawingGroup>\n';
     return ret;
 }

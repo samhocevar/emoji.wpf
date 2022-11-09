@@ -73,6 +73,8 @@ namespace Emoji.Wpf
 
             // Some custom flags that we like to have
             RegisterEmoji("anarchy flag", "🏴️‍🅰️", after: "transgender-flag");
+            RegisterEmoji("flag: Asturias", "🏴󠁥󠁳󠁡󠁳󠁿", after: "flag-american-samoa");
+            RegisterEmoji("flag: Québec", "🏴󠁣󠁡󠁱󠁣󠁿", after: "flag-qatar");
             RegisterEmoji("flag: Basque Country", "🏴󠁥󠁳󠁰󠁶󠁿", after: "flag-bosnia-herzegovina");
             RegisterEmoji("flag: Bretagne", "🏴󠁦󠁲󠁢󠁲󠁥󠁿", after: "flag-brazil");
             RegisterEmoji("flag: Catalonia", "🏴󠁥󠁳󠁣󠁴󠁿", after: "flag-canada");
