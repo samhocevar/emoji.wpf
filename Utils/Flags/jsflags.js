@@ -276,6 +276,8 @@ function removeGrid(svg) {
             return;
         } else if (e.node.id == 'line') {
             if (e.x() && e.width()) {
+                for (let e2 of e.children())
+                    e2.attr('stroke', '#fff');
                 //e.root().attr('viewBox', `${e.x()} ${e.y()} ${e.width()} ${e.height()}`);
             }
         }
