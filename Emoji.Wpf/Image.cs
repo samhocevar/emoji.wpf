@@ -46,7 +46,7 @@ namespace Emoji.Wpf
             }
         }
 
-        private static FlagData m_flag_data = new FlagData();
+        private static Win10Flags m_flag_data = new Win10Flags();
 
         // Metrics from Segoe UI Emoji, measured on 😄 U+1F600 GRINNING FACE.
         private const double FONT_EM_SIZE = 2048;
