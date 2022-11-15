@@ -49,6 +49,9 @@ namespace Emoji.Wpf
         public bool HasFlagGlyphs
             => m_fonts[0].HasFlagGlyphs;
 
+        public bool HasWin11Emoji
+            => m_fonts[0].HasWin11Emoji;
+
         public IEnumerable<ushort> MakeGlyphIndexList(string s)
             => MakeGlyphPlanList(s).Select(x => x.glyphIndex);
 
@@ -107,6 +110,15 @@ namespace Emoji.Wpf
             // Check whether the font has flag glyphs (Segoe UI Emoji doesn’t)
             HasFlagGlyphs = StringToGlyphPlans("\U0001f1fa\U0001f1f8", use_gpos: false)
                                 .Count(x => x.glyphIndex != 0) == 1;
+
+            // Check whether the font is the Win11 Emoji font; it seems to have started with version 1.33
+            if (m_openfont.Name.ToLower() == "segoe ui emoji")
+            {
+                var version = m_openfont.VersionString.Split(new char[] {' ', '.'});
+                HasWin11Emoji = version.Length >= 3 && version[0].ToLower() == "version"
+                    && int.TryParse(version[1], out var major) && (major >= 2 || (major == 1
+                        && int.TryParse(version[2], out var minor) && minor >= 33));
+            }
         }
 
         private GlyphTypeface GetGlyphTypeface(string first_candidate)
@@ -173,6 +185,7 @@ namespace Emoji.Wpf
         public double Baseline => m_openfont.ClipedAscender / (double)m_openfont.UnitsPerEm;
         public ushort ZwjGlyph { get; private set; }
         public bool HasFlagGlyphs { get; private set; }
+        public bool HasWin11Emoji { get; private set; }
 
         public IEnumerable<(GlyphRun, Brush)> DrawGlyph(ushort gid)
         {

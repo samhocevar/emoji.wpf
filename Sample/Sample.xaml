@@ -16,7 +16,7 @@
         <clr:String x:Key="DisabledButtonText">💾 Disabled</clr:String>
         <clr:String x:Key="QualifiedEmoji">▶︎ ▶ ▶️</clr:String>
         <clr:String x:Key="EditableText" xml:space="preserve">I💖emoji! Edit me, or use the picker😄&#x0a;🐍🏍️📞🍰☘️🖋️💩</clr:String>
-        <clr:String x:Key="FlagsText">🏁🇨🇭🇺🇳🇸🇰🏳️‍⚧️🏴󠁧󠁢󠁷󠁬󠁳󠁿🇧🇷🇦🇺🏳️‍🌈🇳🇵🇲🇰🏴󠁦󠁲󠁢󠁲󠁥󠁿</clr:String>
+        <clr:String x:Key="FlagsText">🏁🇨🇭🇺🇳🇸🇰🏳️‍⚧️🏴󠁧󠁢󠁷󠁬󠁳󠁿🇧🇷🇦🇺🏳️‍🌈🇳🇵🏴󠁦󠁲󠁢󠁲󠁥󠁿</clr:String>
         <clr:String x:Key="Run1Text">🕺</clr:String>
         <clr:String x:Key="Run2Text">💃</clr:String>
         <clr:String x:Key="StringImageSource">👩‍💻</clr:String>
