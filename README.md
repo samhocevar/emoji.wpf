@@ -11,6 +11,7 @@
  - **Colour emoji**! 😨 💩 🍰 ✈️ ✏️ 📞 ☘️
  - **Multiracial family emoji**! 👩🏿‍👩🏻‍👦🏽 👨🏻‍👩🏿‍👧🏽‍👦🏽 👩🏻‍👶🏽
  - **Emoji for flags**! <img src="https://github.com/samhocevar/emoji.wpf/raw/main/Resources/flags.png" height="24"/>
+ - **Win11 style flags**! <img src="https://github.com/samhocevar/emoji.wpf/raw/main/Resources/newflags.png" height="24"/>
  - **Full vector emoji**! Render at huge sizes without quality loss.
  - Optional support for subpixel antialiasing.
  - **Lightweight**; does not embed a font or emoji images; just uses the system font.
@@ -72,6 +73,11 @@ useful and robust library if given enough care. Any help appreciated!
 
 ### Version changelog
 
+ - v0.3.4 (2022/11/16):
+   - fix a crash in `emoji:RichTextBox`
+   - fix multiple issues with drag-and-drop in `emoji:RichTextBox`
+   - glyph colourisation is now done on the GPU
+   - new Windows 11 style flags on Windows 11
  - v0.3.3 (2021/06/03):
    - fix a crash on Windows 8
    - fix flag rendering with the Twemoji font
