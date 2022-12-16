@@ -1,8 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017—2021 Sam Hocevar <sam@hocevar.net>
-//                   2022 Charles Spitzer <charles.spitzer@dont-nod.com>
+//  Copyright © 2017–2022 Sam Hocevar <sam@hocevar.net>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -135,11 +134,12 @@ namespace Emoji.Wpf
         {
             // If the user clicked on an emoji, remember where it was. The default RichTextBox
             // behaviour is to select the whole InlineUIContainer instead of positioning the
-            // caret, so in the case of a single click we want to cancel that.
+            // caret. But in the case of a single click we do want to position the caret, so
+            // we override the unwanted behaviour.
             var hit = VisualTreeHelper.HitTest(this, e.GetPosition(this));
             if (hit?.VisualHit is Controls.Image im && im.Parent is EmojiInline emoji)
             {
-                // Single click: cancel selection and position caret instead.
+                // Single click: cancel selection and position caret instead
                 // Double click: select a single emoji glyph
                 // Triple click: default RichTextBox behaviour (select all)
                 if (e.ClickCount == 1)

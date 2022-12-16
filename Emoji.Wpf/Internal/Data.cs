@@ -1,7 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017—2021 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017–2022 Sam Hocevar <sam@hocevar.net>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -73,6 +73,8 @@ namespace Emoji.Wpf
 
             // Some custom flags that we like to have
             RegisterEmoji("anarchy flag", "🏴️‍🅰️", after: "transgender-flag");
+            RegisterEmoji("flag: Asturias", "🏴󠁥󠁳󠁡󠁳󠁿", after: "flag-american-samoa");
+            RegisterEmoji("flag: Québec", "🏴󠁣󠁡󠁱󠁣󠁿", after: "flag-qatar");
             RegisterEmoji("flag: Basque Country", "🏴󠁥󠁳󠁰󠁶󠁿", after: "flag-bosnia-herzegovina");
             RegisterEmoji("flag: Bretagne", "🏴󠁦󠁲󠁢󠁲󠁥󠁿", after: "flag-brazil");
             RegisterEmoji("flag: Catalonia", "🏴󠁥󠁳󠁣󠁴󠁿", after: "flag-canada");

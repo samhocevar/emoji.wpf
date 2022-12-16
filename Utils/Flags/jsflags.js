@@ -1,5 +1,4 @@
-﻿
-// More robust version, see https://github.com/poilu/raphael-boolean/issues/3
+﻿// More robust version, see https://github.com/poilu/raphael-boolean/issues/3
 // and https://github.com/DmitryBaranovskiy/raphael/issues/1130
 Raphael.isPointInsidePath = function (path, x, y) {
     var bbox = Raphael.pathBBox(path);
@@ -48,9 +47,10 @@ function formatXml(xml) {
 
 function svgToXaml(svg, unicode_id) {
     let g = svg.findOne('g');
-    let ret = `<DrawingGroup x:Key="${unicode_id}">\n`;
+    let ret = `    <!-- ${all_flags[unicode_id].annotation} -->\n`;
+    ret += `    <DrawingGroup x:Key="${unicode_id}">\n`;
     for (let p of g.children()) {
-        ret += `    <GeometryDrawing`;
+        ret += `        <GeometryDrawing`;
         if (p.attr()['fill'] && p.attr('fill') != 'none')
             ret += ` Brush="${compressColor(p.attr('fill'))}"`;
         ret += ` Geometry="`;
@@ -59,8 +59,8 @@ function svgToXaml(svg, unicode_id) {
         ret += `${compressPath(p.attr('d'))}"`;
         if (p.attr()['stroke']) {
             ret += '>\n';
-            ret += '        <GeometryDrawing.Pen>\n';
-            ret += '            <Pen';
+            ret += '            <GeometryDrawing.Pen>\n';
+            ret += '                <Pen';
             if (p.attr()['stroke'])
                 ret += ` Brush="${compressColor(p.attr('stroke'))}"`;
             if (p.attr()['stroke-width'])
@@ -72,13 +72,16 @@ function svgToXaml(svg, unicode_id) {
             if (p.attr()['stroke-miterlimit'])
                 ret += ` MiterLimit="${p.attr('stroke-miterlimit')}"`;
             ret += '/>\n';
-            ret += '        </GeometryDrawing.Pen>\n';
-            ret += '    </GeometryDrawing>\n';
+            ret += '            </GeometryDrawing.Pen>\n';
+            ret += '        </GeometryDrawing>\n';
         } else {
             ret += '/>\n';
         }
     }
-    ret += '</DrawingGroup>\n';
+    //ret += '        <DrawingGroup.ClipGeometry>\n';
+    //ret += '            <RectangleGeometry Rect="0 0 160 160"/>\n';
+    //ret += '        </DrawingGroup.ClipGeometry>\n';
+    ret += '    </DrawingGroup>\n';
     return ret;
 }
 
@@ -273,6 +276,8 @@ function removeGrid(svg) {
             return;
         } else if (e.node.id == 'line') {
             if (e.x() && e.width()) {
+                for (let e2 of e.children())
+                    e2.attr('stroke', '#fff');
                 //e.root().attr('viewBox', `${e.x()} ${e.y()} ${e.width()} ${e.height()}`);
             }
         }
@@ -569,8 +574,11 @@ function debugSvg(name, svg) {
 function handleSvg(filepath, debug) {
     let img_id = all_ids[filepath][0];
     let unicode_id = all_ids[filepath][1];
+    let name = all_flags[unicode_id].annotation;
 
     if (debug) {
+        _desc = document.getElementById('desc');
+        _desc.innerHTML = '';
         _anchor = document.getElementById('anchor');
         _anchor.innerHTML = '';
         _crumbs = document.getElementById('crumbs');
@@ -580,7 +588,10 @@ function handleSvg(filepath, debug) {
     // Load clicked SVG as text
     svg = loadSvg(flags[filepath]);
     if (debug)
-        debugSvg(`Original: ${img_id} / ${unicode_id} (${filepath.toLowerCase()})`, svg);
+    {
+        _desc.innerHTML = `<h3>Processing ${name}</h3><h4>${img_id} / ${unicode_id} (${filepath.toLowerCase()})</h4>`;
+        debugSvg('Original', svg);
+    }
 
     //substituteClones(svg);
 
@@ -599,13 +610,16 @@ function handleSvg(filepath, debug) {
     //clipPaths(svg);
     //debugSvg('Clip paths', text);
 
-    let style = (unicode_id == '🇨🇭' || unicode_id == '🇻🇦') ? FLAG_SQUARE
-               : unicode_id == '🇳🇵' ? FLAG_NEPAL : FLAG_RECTANGULAR;
-    waveEffect(svg, style);
-    if (debug)
-        debugSvg('Wave effect', svg);
+    if (!document.getElementById('win11').checked) {
+        let style = (unicode_id == '🇨🇭' || unicode_id == '🇻🇦') ? FLAG_SQUARE
+                   : unicode_id == '🇳🇵' ? FLAG_NEPAL : FLAG_RECTANGULAR;
+        waveEffect(svg, style);
+        if (debug)
+            debugSvg('Wave effect', svg);
 
-    addFlag(svg, style);
+        addFlag(svg, style);
+    }
+
     simplifyPaths(svg, 2);
     if (debug)
         debugSvg('Add flag', svg);
@@ -650,6 +664,11 @@ const FLAG_RECTANGULAR = 1;
 const FLAG_SQUARE = 2;
 const FLAG_NEPAL = 3;
 
+let all_flags = {}
+for (const [_, emoji] of Object.entries(openmoji)) {
+    all_flags[emoji.emoji] = emoji;
+}
+
 let all_ids = {}
 for (const [filepath, data] of Object.entries(flags)) {
     let filename = filepath.replace(/.*\/([^\/]*)[.].*/, '$1');
@@ -672,7 +691,7 @@ for (const [filepath, data] of Object.entries(flags)) {
     all_ids[filepath] = [img_id, unicode_id];
     img = createFlagImage(filepath, 30);
     img.id = filepath;
-    img.style.margin = '3px';
+    img.style.margin = '0px 3px';
     img.addEventListener("click", function(e) {
         handleSvg(filepath, true);
     });

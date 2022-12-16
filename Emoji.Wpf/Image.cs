@@ -1,7 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017—2021 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017–2022 Sam Hocevar <sam@hocevar.net>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -46,7 +46,8 @@ namespace Emoji.Wpf
             }
         }
 
-        private static FlagData m_flag_data = new FlagData();
+        private static ResourceDictionary m_win10_flags = new Win10Flags();
+        private static ResourceDictionary m_win11_flags = new Win11Flags();
 
         // Metrics from Segoe UI Emoji, measured on 😄 U+1F600 GRINNING FACE.
         private const double FONT_EM_SIZE = 2048;
@@ -68,6 +69,7 @@ namespace Emoji.Wpf
         internal static DrawingGroup RenderEmoji(string text, out double width, out double height)
         {
             var dg = new DrawingGroup();
+            var flags = EmojiData.Typeface.HasWin11Emoji ? m_win11_flags : m_win10_flags;
 
             using (var dc = dg.Open())
             {
@@ -82,19 +84,39 @@ namespace Emoji.Wpf
                     height = (FONT_TOP_PADDING + FONT_GLYPH_SIZE + FONT_BOTTOM_PADDING) / FONT_EM_SIZE;
                     width = height * padding.Width / padding.Height;
                 }
-                else if (EmojiData.EnableWindowsStyleFlags && m_flag_data[text] is DrawingGroup flag)
+                else if (EmojiData.EnableWindowsStyleFlags && flags[text] is DrawingGroup flag)
                 {
-                    // Draw the flag colours first
+                    GeometryDrawing clip = null, outline;
+
+                    // Switzerland and Vatican City have square flags, Nepal has a special shape
+                    var style = text == "🇨🇭" || text == "🇻🇦" ? "square"
+                              : text == "🇳🇵" ? "nepal" : "rectangle";
+
+                    if (EmojiData.Typeface.HasWin11Emoji)
+                    {
+                        clip = flags["clip_" + style] as GeometryDrawing;
+                        if (clip != null)
+                            dc.PushClip(clip.Geometry);
+                    }
+
+                    // Draw the actual flag geometry
                     foreach (var child in flag.Children)
                         dc.DrawDrawing(child);
 
-                    // Draw the flag outline; Switzerland and Vatican City have square flags, Nepal has a special shape
-                    var style = text == "🇨🇭" || text == "🇻🇦" ? "square"
-                              : text == "🇳🇵" ? "nepal" : "rectangle";
-                    var outline = m_flag_data[style] as GeometryDrawing;
-                    dc.DrawDrawing(outline);
-                    var pole = m_flag_data["pole"] as GeometryDrawing;
-                    dc.DrawDrawing(pole);
+                    if (EmojiData.Typeface.HasWin11Emoji)
+                    {
+                        outline = flags["bounds_" + style] as GeometryDrawing;
+                        if (clip != null)
+                            dc.Pop();
+                    }
+                    else
+                    {
+                        // Draw the flag outline
+                        outline = flags[style] as GeometryDrawing;
+                        dc.DrawDrawing(outline);
+                        var pole = flags["pole"] as GeometryDrawing;
+                        dc.DrawDrawing(pole);
+                    }
 
                     var padding = PadRect(outline.Bounds);
                     dc.DrawRectangle(Brushes.Transparent, null, padding);
