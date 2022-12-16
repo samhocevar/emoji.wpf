@@ -54,6 +54,10 @@ namespace Emoji.Wpf
                                              Brush default_foreground, System.Windows.DependencyObject parent,
                                              SubstituteOptions options)
         {
+            // Quick and dirty performance fix to avoid executing this method if the text range does not contain any emoji.
+            if (!EmojiData.MatchOne.Match(new TextRange(range_start, range_end).Text).Success)
+                return;
+
             // If our parent is a RichTextBox, try to retain the caret position
             RichTextBox rtb = parent as RichTextBox;
 
