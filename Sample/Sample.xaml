@@ -16,6 +16,7 @@
         <clr:String x:Key="DisabledButtonText">💾 Disabled</clr:String>
         <clr:String x:Key="QualifiedEmoji">▶︎ ▶ ▶️</clr:String>
         <clr:String x:Key="EditableText" xml:space="preserve">I💖emoji! Edit me, or use the picker😄&#x0a;🐍🏍️📞🍰☘️🖋️💩</clr:String>
+        <clr:String x:Key="ShortEditableText" xml:space="preserve">I💖emoji!</clr:String>
         <clr:String x:Key="FlagsText">🏁🇨🇭🇺🇳🇸🇰🏳️‍⚧️🏴󠁧󠁢󠁷󠁬󠁳󠁿🇧🇷🇦🇺🏳️‍🌈🇳🇵🏴󠁦󠁲󠁢󠁲󠁥󠁿</clr:String>
         <clr:String x:Key="Run1Text">🕺</clr:String>
         <clr:String x:Key="Run2Text">💃</clr:String>
@@ -135,10 +136,31 @@
                     </emoji:RichTextBox>
                 </DockPanel>
             </GroupBox>
-            <GroupBox Grid.Column="2" Header="emoji:TextBox (WIP)" Margin="4">
-                <emoji:TextBox FontSize="10" Margin="5" Foreground="Red" IsReadOnly="True"
-                               Text="{Binding Text, ElementName=EmojiRichTextBox, Mode=TwoWay}"/>
-            </GroupBox>
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <GroupBox Grid.Row ="0" Header="emoji:TextBox (WIP)" Margin="4">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <emoji:TextBox Grid.Row="0" FontSize="10" Margin="5" Foreground="DarkMagenta" x:Name="EmojiTextBox"
+                                       IsReadOnly="{Binding IsChecked, ElementName=ReadOnlyCheckBox}"
+                                       Text="{Binding Text, ElementName=WpfTextBox, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <CheckBox Grid.Row="1" VerticalAlignment="Center" Margin="4 0"
+                                  x:Name="ReadOnlyCheckBox" IsChecked="False">
+                            <TextBlock Margin="0 2 0 0" Text="Read-only"/>
+                        </CheckBox>
+                    </Grid>
+                </GroupBox>
+                <GroupBox Grid.Row="1" Header="wpf:TextBox" Margin="4 0 4 4">
+                        <TextBox Grid.Row="2" FontSize="10" Margin="5" x:Name="WpfTextBox"
+                                 Text="{StaticResource ShortEditableText}"/>
+                </GroupBox>
+            </Grid>
         </Grid>
 
         <Grid Grid.Row="2">
