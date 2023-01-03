@@ -1,7 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017–2022 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017–2023 Sam Hocevar <sam@hocevar.net>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -12,6 +12,7 @@
 
 using Stfu.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 #if DEBUG
 using System.Text.RegularExpressions;
@@ -171,6 +172,7 @@ namespace Emoji.Wpf
         /// <param name="e"></param>
         protected override void OnTextChanged(Controls.TextChangedEventArgs e)
         {
+            // Protect against recursive changes (triggered by EndChange)
             if (m_pending_change)
                 return;
 
@@ -181,13 +183,30 @@ namespace Emoji.Wpf
             // Prevent our operation from polluting the undo buffer
             BeginChange();
 
-            Document.SubstituteGlyphs(
-                (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
-                (ColorBlend ? SubstituteOptions.ColorBlend : SubstituteOptions.None));
+            foreach (var change in e.Changes.Where(c => c.AddedLength > 0).Reverse())
+            {
+                // FIXME: when using keyboard input methods, characters are received one by one.
+                // We need to backtrack to the possible beginning of the emoji to make sure we
+                // perform a full substitution. The below code works in simple cases, but will
+                // not work if a substitution was already performed before the end of the emoji.
+                int start = change.Offset, end = start + change.AddedLength;
+                if (start == m_last_change_end)
+                    start = m_last_change_start;
+                m_last_change_start = start;
+                m_last_change_end = end;
+
+                var range = new TextRange(Document.ContentStart.GetPositionAtOffset(start),
+                                          Document.ContentStart.GetPositionAtOffset(end));
+
+                FlowDocumentExtensions.SubstituteGlyphsInRange(range,
+                    Document.FontSize, Document.Foreground, this,
+                    (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
+                    (ColorBlend ? SubstituteOptions.ColorBlend : SubstituteOptions.None));
+            }
 
             EndChange();
 
-            // FIXME: make this call lazy inside Text.get()
+            // FIXME: make this call lazy inside Text.get()?
             SetValue(TextProperty, new TextSelection(Document.ContentStart, Document.ContentEnd).Text);
 
             m_pending_change = false;
@@ -216,6 +235,9 @@ namespace Emoji.Wpf
             => EmojiInlines.ForAll(e => e.Foreground = color_blend ? Foreground : Brushes.Black);
 
         private bool m_pending_change = false;
+
+        private int m_last_change_start = -1;
+        private int m_last_change_end = -1;
 
         private TextSelection m_override_selection;
 

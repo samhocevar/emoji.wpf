@@ -1,7 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017–2021 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017–2023 Sam Hocevar <sam@hocevar.net>
 //                   2021 Victor Irzak <victor.irzak@zomp.com>
 //
 //  This library is free software. It comes without any warranty, to
@@ -37,8 +37,8 @@ namespace Emoji.Wpf
             => SubstituteGlyphs(document, SubstituteOptions.None);
 
         public static void SubstituteGlyphs(this FlowDocument document, SubstituteOptions options)
-            => SubstituteGlyphs(document.ContentStart, document.ContentEnd, document.FontSize,
-                                document.Foreground, document.Parent, options);
+            => SubstituteGlyphsInRange(new TextRange(document.ContentStart, document.ContentEnd),
+                                       document.FontSize, document.Foreground, document.Parent, options);
 
         /// <summary>
         /// Substitute emoji glyphs with emoji inlines in a text Run
@@ -47,12 +47,15 @@ namespace Emoji.Wpf
             => SubstituteGlyphs(run, SubstituteOptions.None);
 
         public static void SubstituteGlyphs(this Run run, SubstituteOptions options)
-            => SubstituteGlyphs(run.ContentStart, run.ContentEnd, run.FontSize,
-                                run.Foreground, run.Parent, options);
+            => SubstituteGlyphsInRange(new TextRange(run.ContentStart, run.ContentEnd),
+                                       run.FontSize, run.Foreground, run.Parent, options);
 
-        private static void SubstituteGlyphs(TextPointer range_start, TextPointer range_end, double default_font_size,
-                                             Brush default_foreground, System.Windows.DependencyObject parent,
-                                             SubstituteOptions options)
+        /// <summary>
+        /// Generic method to substitute emoji glyphs with emoji inlines
+        /// </summary>
+        internal static void SubstituteGlyphsInRange(TextRange range, double default_font_size,
+                                                     Brush default_foreground, System.Windows.DependencyObject parent,
+                                                     SubstituteOptions options)
         {
             // If our parent is a RichTextBox, try to retain the caret position
             RichTextBox rtb = parent as RichTextBox;
@@ -61,8 +64,8 @@ namespace Emoji.Wpf
             var color_blend = (options & SubstituteOptions.ColorBlend) != 0;
 
             TextPointer caret = rtb?.CaretPosition;
-            TextPointer cur = range_start;
-            while (cur.CompareTo(range_end) < 0)
+            TextPointer cur = range.Start;
+            while (cur.CompareTo(range.End) < 0)
             {
                 TextPointer next = cur.GetNextInsertionPosition(LogicalDirection.Forward);
                 if (next == null)
