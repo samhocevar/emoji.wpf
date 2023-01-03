@@ -3,7 +3,7 @@
     <Title>Emoji.Wpf</Title>
     <Product>Emoji.Wpf</Product>
     <Authors>Sam Hocevar</Authors>
-    <Copyright>Copyright © 2017–2021 Sam Hocevar</Copyright>
+    <Copyright>Copyright © 2017–2023 Sam Hocevar</Copyright>
     <Description>Emoji rendering for WPF applications</Description>
     <PackageLicenseExpression>WTFPL</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/samhocevar/emoji.wpf</PackageProjectUrl>
@@ -70,8 +70,8 @@
     <PackageReference Include="GitVersion.MsBuild" Version="5.11.1" PrivateAssets="all">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="JeremyAnsel.HLSL.Targets" Version="1.0.13" />
-    <PackageReference Include="Stfu" Version="0.1.1" />
+    <PackageReference Include="JeremyAnsel.HLSL.Targets" Version="2.0.16" />
+    <PackageReference Include="Stfu" Version="0.1.7" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Typography\Build\N20\Typography.GlyphLayout\Typography.GlyphLayout.csproj" PrivateAssets="all" />
