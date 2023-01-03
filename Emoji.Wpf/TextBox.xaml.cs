@@ -1,7 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017–2021 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017–2023 Sam Hocevar <sam@hocevar.net>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -20,6 +20,14 @@ using System.Windows.Data;
 
 namespace Emoji.Wpf
 {
+    /// <summary>
+    /// The Emoji.Wpf.TextBox class inherits from the WPF TextBox, but it actually uses an
+    /// Emoji.Wpf.RichTextBox internally, through the template system. This is because only
+    /// a RichTextBox can render colour images.
+    /// The trick is then to forward all property changes to the container.
+    /// FIXME: the "Text" property changes ignore UpdateSourceTrigger=PropertyChanged and
+    /// act as if the default UpdateSourceTrigger=LostFocus was still in use.
+    /// </summary>
     public partial class TextBox : System.Windows.Controls.TextBox
     {
         public TextBox()
@@ -30,7 +38,7 @@ namespace Emoji.Wpf
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
 #if DEBUG
-            Console.WriteLine($"Property Changed: {e.Property}");
+            System.Diagnostics.Debug.WriteLine($"Property Changed: {e.Property}");
 #endif
             base.OnPropertyChanged(e);
         }
@@ -53,8 +61,8 @@ namespace Emoji.Wpf
             tmp2.ExceptWith(tmp1);
             tmp1.ExceptWith(propset);
 
-            Console.WriteLine("RichTextBox properties not in TextBox: " + string.Join(" ", tmp1));
-            Console.WriteLine("TextBox properties not in RichTextBox: " + string.Join(" ", tmp2));
+            System.Diagnostics.Debug.WriteLine("RichTextBox properties not in TextBox: " + string.Join(" ", tmp1));
+            System.Diagnostics.Debug.WriteLine("TextBox properties not in RichTextBox: " + string.Join(" ", tmp2));
 #endif
 
             // Add some Control properties that we want to inherit
