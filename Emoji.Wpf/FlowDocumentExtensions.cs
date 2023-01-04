@@ -47,11 +47,16 @@ namespace Emoji.Wpf
             => SubstituteGlyphs(run, SubstituteOptions.None);
 
         public static void SubstituteGlyphs(this Run run, SubstituteOptions options)
-            => SubstituteGlyphsInRange(new TextRange(run.ContentStart, run.ContentEnd),
-                                       run.FontSize, run.Foreground, run.Parent, options);
+        {
+            if (run.Parent == null)
+                throw new Exception("Cannot substitute Emoji glyphs in an unattached Run");
+
+            SubstituteGlyphsInRange(new TextRange(run.ContentStart, run.ContentEnd),
+                                    run.FontSize, run.Foreground, run.Parent, options);
+        }
 
         /// <summary>
-        /// Generic method to substitute emoji glyphs with emoji inlines
+        /// Generic method to substitute emoji glyphs with emoji inlines inside a TextRange.
         /// </summary>
         internal static void SubstituteGlyphsInRange(TextRange range, double default_font_size,
                                                      Brush default_foreground, System.Windows.DependencyObject parent,
