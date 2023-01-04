@@ -1,7 +1,7 @@
 ﻿//
 //  Emoji.Wpf — Emoji support for WPF
 //
-//  Copyright © 2017–2021 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2017–2023 Sam Hocevar <sam@hocevar.net>
 //
 //  This program is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -16,22 +16,22 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Media;
 
-namespace Sample
+namespace ShowCase
 {
     /// <summary>
-    /// Interaction logic for Sample.xaml
+    /// Interaction logic for ShowCase.xaml
     /// </summary>
-    public partial class SampleWindow : Window
+    public partial class ShowCaseWindow : Window
     {
         [STAThread]
         public static void Main()
         {
             Application app = new Application();
-            app.StartupUri = new Uri("Sample.xaml", UriKind.Relative);
+            app.StartupUri = new Uri("ShowCase.xaml", UriKind.Relative);
             app.Run();
         }
 
-        public SampleWindow()
+        public ShowCaseWindow()
         {
             InitializeComponent();
 
