@@ -1,0 +1,46 @@
+﻿<Window x:Class="LoremIpsum.LoremIpsumWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:clr="clr-namespace:System;assembly=mscorlib"
+        xmlns:local="clr-namespace:LoremIpsum"
+        xmlns:stfu="clr-namespace:Stfu.Wpf;assembly=Stfu"
+        xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
+        mc:Ignorable="d"
+        Title="Emoji.Wpf LoremIpsum" Width="640" Height="480">
+
+    <ListBox Margin="4" Name="ListBox" AlternationCount="2"
+             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+             VirtualizingStackPanel.VirtualizationMode="Recycling"
+             stfu:Behaviors.SmoothScrolling="True">
+        <ListBox.ItemsPanel>
+            <ItemsPanelTemplate>
+                <VirtualizingStackPanel stfu:Behaviors.SmoothScrolling="True"/>
+            </ItemsPanelTemplate>
+        </ListBox.ItemsPanel>
+
+        <!-- Fancy background colours -->
+        <ListBox.ItemContainerStyle>
+            <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                <Style.Triggers>
+                    <Trigger Property="ItemsControl.AlternationIndex" Value="0">
+                        <Setter Property="Background" Value="#180000ff"></Setter>
+                    </Trigger>
+                    <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                        <Setter Property="Background" Value="#1800ff00"></Setter>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </ListBox.ItemContainerStyle>
+
+        <!-- Each list item is rendered in an emoji:TextBlock -->
+        <ListBox.ItemTemplate>
+            <DataTemplate>
+                <StackPanel>
+                    <emoji:TextBlock Width="580" Text="{Binding Text}" TextWrapping="Wrap" FontSize="16"/>
+                </StackPanel>
+            </DataTemplate>
+        </ListBox.ItemTemplate>
+    </ListBox>
+</Window>
