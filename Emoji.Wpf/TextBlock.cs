@@ -47,7 +47,17 @@ namespace Emoji.Wpf
                 (o, e) => (o as TextBlock)?.OnTextWrappingChanged((TextWrapping)e.NewValue)));
         }
 
-        public TextBlock()
+        /// <summary>
+        /// Implement the same constructor as Controls.TextBlock
+        /// </summary>
+        public TextBlock() => Init();
+
+        /// <summary>
+        /// Implement the same constructor as Controls.TextBlock
+        /// </summary>
+        public TextBlock(Inline inline) : base(inline) => Init();
+
+        private void Init()
         {
             // If the client does not use the Text property, nothing will notify us that
             // inlines have been created and may need glyph substitution, so we do it
