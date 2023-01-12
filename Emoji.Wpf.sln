@@ -5,7 +5,7 @@ VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emoji.Wpf", "Emoji.Wpf\Emoji.Wpf.csproj", "{6A9C0AD6-14F7-451A-A0D4-38987A275F0D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShowCase", "Samples\ShowCase\ShowCase.csproj", "{4C358318-FF04-4FF7-9F5C-18165927A7E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo", "Samples\Demo\Demo.csproj", "{4C358318-FF04-4FF7-9F5C-18165927A7E2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tiny", "Samples\Tiny\Tiny.csproj", "{A1AD34BF-A47B-42D2-B9DB-DF382B1D8F0C}"
 EndProject

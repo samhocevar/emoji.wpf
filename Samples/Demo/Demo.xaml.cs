@@ -16,22 +16,22 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Media;
 
-namespace ShowCase
+namespace Demo
 {
     /// <summary>
-    /// Interaction logic for ShowCase.xaml
+    /// Interaction logic for Demo.xaml
     /// </summary>
-    public partial class ShowCaseWindow : Window
+    public partial class DemoWindow : Window
     {
         [STAThread]
         public static void Main()
         {
             Application app = new Application();
-            app.StartupUri = new Uri("ShowCase.xaml", UriKind.Relative);
+            app.StartupUri = new Uri("Demo.xaml", UriKind.Relative);
             app.Run();
         }
 
-        public ShowCaseWindow()
+        public DemoWindow()
         {
             InitializeComponent();
 

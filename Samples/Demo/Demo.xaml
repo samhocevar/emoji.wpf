@@ -1,4 +1,4 @@
-﻿<Window x:Class="ShowCase.ShowCaseWindow"
+﻿<Window x:Class="Demo.DemoWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,7 +6,7 @@
         xmlns:clr="clr-namespace:System;assembly=mscorlib"
         xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
         mc:Ignorable="d"
-        Title="Emoji.Wpf ShowCase" Width="640" Height="480">
+        Title="Emoji.Wpf Demo" Width="640" Height="480">
 
     <Window.Resources>
         <clr:String x:Key="SampleText">Hello! 😁🎀🇬🇧👨‍👦👨🏻‍👩🏿‍👧🏽‍👦🏽‍‍😶‍🌫️</clr:String>
