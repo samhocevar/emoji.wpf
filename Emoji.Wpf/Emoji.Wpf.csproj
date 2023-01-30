@@ -23,38 +23,66 @@
     <!--Remove this section when https://github.com/nuget/home/issues/3891 is resolved -->
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
-  <UsingTask TaskName="GZipTask" TaskFactory="CodeTaskFactory"
-             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+
+  <UsingTask TaskName="GZipTask" TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
     <ParameterGroup>
-      <InputFile ParameterType="System.String" Required="true" />
-      <OutputFile ParameterType="System.String" Required="true" />
+      <InputFiles ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <OutDir ParameterType="System.String" Required="true" />
+      <OutputFiles ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
     </ParameterGroup>
     <Task>
-      <Reference Include="System.IO.Compression" />
       <Using Namespace="System.IO.Compression" />
       <Code Type="Fragment" Language="cs"><![CDATA[
-          Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
-          var data = File.ReadAllBytes(InputFile);
-          using (var s = new FileStream(OutputFile, FileMode.Create))
-              using (var gs = new GZipStream(s, CompressionMode.Compress, false))
-                  gs.Write(data, 0, data.Length);
+          Directory.CreateDirectory(OutDir);
+          OutputFiles = new TaskItem[InputFiles.Length];
+          for (int i = 0; i < InputFiles.Length; ++i)
+          {
+              var input = InputFiles[i];
+
+              // Cannot use "Filename" metadata because it drops the extension
+              var outputName = Path.GetFileName(input.ItemSpec) + ".gz";
+              var output = new TaskItem(Path.Combine(OutDir, outputName));
+
+              Log.LogMessage(MessageImportance.High, $"{input.ItemSpec} -> {output.ItemSpec}");
+
+              string inputFile = input.GetMetadata("FullPath");
+              string outputFile = output.GetMetadata("FullPath");
+              var data = File.ReadAllBytes(inputFile);
+              using (var s = new FileStream(outputFile, FileMode.Create))
+                  using (var gs = new GZipStream(s, CompressionMode.Compress, false))
+                      gs.Write(data, 0, data.Length);
+
+              // Drop the assembly prefix from the LogicalName
+              output.SetMetadata("LogicalName", outputName);
+              OutputFiles[i] = output;
+          }
       ]]></Code>
     </Task>
   </UsingTask>
-  <Target Name="CompressResources" BeforeTargets="BeforeBuild"
-          Inputs="UnicodeEmoji\emoji-test.txt"
-          Outputs="$(OutputPath)\emoji-test.txt.gz">
-    <GZipTask InputFile="UnicodeEmoji\emoji-test.txt"
-              OutputFile="$(OutputPath)\emoji-test.txt.gz" />
+
+  <ItemGroup>
+    <LargeResources Include="UnicodeEmoji\emoji-test.txt" />
+  </ItemGroup>
+
+  <Target Name="CompressResources" BeforeTargets="BeforeBuild">
+    <GZipTask InputFiles="@(LargeResources)" OutDir="$(OutputPath)">
+        <Output ItemName="CompressedLargeResources" TaskParameter="OutputFiles" />
+    </GZipTask>
+    <ItemGroup>
+      <EmbeddedResource Include="@(CompressedLargeResources)" />
+      <FileWrites Include="@(CompressedLargeResources)" />
+    </ItemGroup>
   </Target>
+
   <ItemGroup>
     <None Include="..\Resources\icon.png" Pack="true" PackagePath="" />
-    <None Include="UnicodeEmoji\emoji-test.txt" />
+    <None Include="@(LargeResources)" />
   </ItemGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="WinFonts\webdings.txt" LogicalName="webdings.txt" />
     <EmbeddedResource Include="WinFonts\wingdings.txt" LogicalName="wingdings.txt" />
-    <EmbeddedResource Include="$(OutputPath)\emoji-test.txt.gz" LogicalName="emoji-test.txt.gz" />
   </ItemGroup>
 
   <ItemGroup>
