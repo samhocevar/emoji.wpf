@@ -23,7 +23,8 @@
     <!--Remove this section when https://github.com/nuget/home/issues/3891 is resolved -->
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
-  <UsingTask TaskName="GZipTask" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+  <UsingTask TaskName="GZipTask" TaskFactory="CodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
     <ParameterGroup>
       <InputFile ParameterType="System.String" Required="true" />
       <OutputFile ParameterType="System.String" Required="true" />
@@ -40,8 +41,11 @@
       ]]></Code>
     </Task>
   </UsingTask>
-  <Target Name="CompressResources" BeforeTargets="BeforeBuild" Inputs="UnicodeEmoji\emoji-test.txt" Outputs="$(OutputPath)\emoji-test.txt.gz">
-    <GZipTask InputFile="UnicodeEmoji\emoji-test.txt" OutputFile="$(OutputPath)\emoji-test.txt.gz" />
+  <Target Name="CompressResources" BeforeTargets="BeforeBuild"
+          Inputs="UnicodeEmoji\emoji-test.txt"
+          Outputs="$(OutputPath)\emoji-test.txt.gz">
+    <GZipTask InputFile="UnicodeEmoji\emoji-test.txt"
+              OutputFile="$(OutputPath)\emoji-test.txt.gz" />
   </Target>
   <ItemGroup>
     <None Include="..\Resources\icon.png" Pack="true" PackagePath="" />
