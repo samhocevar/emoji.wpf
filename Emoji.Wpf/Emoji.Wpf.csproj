@@ -62,9 +62,8 @@
     </Task>
   </UsingTask>
 
-  <ItemGroup>
-    <LargeResources Include="UnicodeEmoji\emoji-test.txt" />
-  </ItemGroup>
+  <UsingTask TaskName="HLSLShaderCompile"
+             AssemblyFile="$(PkgJeremyAnsel_HLSL_Targets)\tools\net6.0\JeremyAnsel.HLSL.Targets.dll" />
 
   <Target Name="CompressResources" BeforeTargets="BeforeBuild">
     <GZipTask InputFiles="@(LargeResources)" OutDir="$(OutputPath)">
@@ -75,6 +74,21 @@
       <FileWrites Include="@(CompressedLargeResources)" />
     </ItemGroup>
   </Target>
+
+  <Target Name="CompileShaders" BeforeTargets="BeforeBuild">
+    <HLSLShaderCompile Source="@(EmbeddedShader)"
+        ShaderProfile="%(EmbeddedShader.ShaderProfile)" EntryPointName="main"
+        ObjectFileOutput="$(OutputPath)\$([System.IO.Path]::GetFileNameWithoutExtension('%(EmbeddedShader.Identity)')).ps" />
+    <ItemGroup>
+      <EmbeddedResource Include="%(EmbeddedShader.ObjectFileOutput)"
+          LogicalName="$([System.IO.Path]::GetFileNameWithoutExtension('%(EmbeddedShader.Identity)')).ps" />
+      <FileWrites Include="%(EmbeddedShader.ObjectFileOutput)" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <LargeResources Include="UnicodeEmoji\emoji-test.txt" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\Resources\icon.png" Pack="true" PackagePath="" />
@@ -87,19 +101,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="**\*.hlsl" />
-    <HLSLShader Include="**\*.hlsl">
-      <ShaderProfile>ps_3_0</ShaderProfile>
-      <ObjectFileOutput>$(OutputPath)\$([System.IO.Path]::GetFileNameWithoutExtension('%(Identity)')).ps</ObjectFileOutput>
-    </HLSLShader>
-    <EmbeddedResource Include="$(OutputPath)\*.ps" LogicalName="$([System.IO.Path]::GetFileName('%(Identity)'))" Visible="False" />
+    <EmbeddedShader Include="**/*.hlsl" ShaderProfile="ps_3_0" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="GitVersion.MsBuild" Version="5.6.6" PrivateAssets="all">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="JeremyAnsel.HLSL.Targets" Version="2.0.16" />
+    <PackageReference Include="JeremyAnsel.HLSL.Targets" Version="2.0.16" GeneratePathProperty="True" />
     <PackageReference Include="Stfu" Version="0.1.7" />
   </ItemGroup>
   <ItemGroup>
