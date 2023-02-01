@@ -4,7 +4,8 @@
     <Product>Emoji.Wpf</Product>
     <Authors>Sam Hocevar</Authors>
     <Copyright>Copyright © 2017–2023 Sam Hocevar</Copyright>
-    <Description>Emoji rendering for WPF applications</Description>
+    <Description>Emoji rendering for WPF applications (experimental BBCode branch)</Description>
+    <PackageId>Emoji.Wpf.BBCode</PackageId>
     <PackageLicenseExpression>WTFPL</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/samhocevar/emoji.wpf</PackageProjectUrl>
     <PackageIcon>icon.png</PackageIcon>
