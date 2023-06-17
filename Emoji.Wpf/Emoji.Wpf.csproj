@@ -19,6 +19,8 @@
         $(DefaultItemExcludes);gitversion.json;**\*.swp;**\*~;
         UnicodeCLDR\**;UnicodeEmoji\**
     </DefaultItemExcludes>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>Properties\StrongName.snk</AssemblyOriginatorKeyFile>
 
     <!--Remove this section when https://github.com/nuget/home/issues/3891 is resolved -->
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
