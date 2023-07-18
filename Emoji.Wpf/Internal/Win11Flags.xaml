@@ -847,7 +847,7 @@
     <DrawingGroup x:Key="🇩🇪">
         <GeometryDrawing Brush="#f1b31c" Geometry="F1M5,17C5,17,67,17,67,17C67,17,67,55,67,55C67,55,5,55,5,55C5,55,5,17,5,17"/>
         <GeometryDrawing Brush="#d22f27" Geometry="F1M5,30C5,30,67,30,67,30C67,30,67,42,67,42C67,42,5,42,5,42C5,42,5,30,5,30"/>
-        <GeometryDrawing Geometry="F1M5,17C5,17,67,17,67,17C67,17,67,30,67,30C67,30,5,30,5,30C5,30,5,17,5,17"/>
+        <GeometryDrawing Brush="#383838" Geometry="F1M5,17C5,17,67,17,67,17C67,17,67,30,67,30C67,30,5,30,5,30C5,30,5,17,5,17"/>
     </DrawingGroup>
 
     <!-- flag: Diego Garcia -->
