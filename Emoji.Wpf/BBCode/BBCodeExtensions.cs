@@ -11,8 +11,10 @@
 //  See http://www.wtfpl.net/ for more details.
 //
 
+using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Documents;
@@ -168,57 +170,137 @@ namespace Emoji.Wpf.BBCode
 
             var rtb = document.Parent as RichTextBox;
 
-            // Expand all bbcode spans in order to have a correct caret position
+            // Expand all bbcode spans so paragraph texts and caret offsets include the tags
             foreach (var span in document.GetBBCodeSpans())
                 span.IsExpanded = true;
 
-            // Rebuild the paragraph inlines
             foreach (var paragraph in paragraphs)
             {
+                var text = new TextSelection(paragraph.ContentStart, paragraph.ContentEnd).Text;
+                var segments = ParseBBCode(text, config);
+
+                // Clearing and rebuilding the inlines is only worth it when they no longer match the text
+                if (paragraph.HasBBCodeSegments(segments))
+                    continue;
+
                 // If caret is in this paragraph, retain its position
                 var caret_index = -1;
                 if (rtb.CaretPosition.CompareTo(paragraph.ContentStart) >= 0 &&
                     rtb.CaretPosition.CompareTo(paragraph.ContentEnd) <= 0)
                     caret_index = new TextSelection(paragraph.ContentStart, rtb.CaretPosition).Text.Length;
 
-                // Save the text before rebuilding the paragraph inlines
-                var text = new TextSelection(paragraph.ContentStart, paragraph.ContentEnd).Text;
-                paragraph.Inlines.Clear(); //FIXME: this call has a big impact on performance!
-
-                var cur = 0;
-                var matches = _span_regex.Matches(text);
-
-                // TODO: merge consecutive matches having the same markup
-
-                foreach (Match match in matches)
-                {
-                    var match_markup = match.Groups[1].Value;
-                    var match_text = match.Groups[2].Value;
-                    var markup = DefaultMarkups.Find(x => x.Markup == match_markup) ??
-                                 config.Markups.Find(x => x.Markup == match_markup);
-
-                    if (markup == null)
-                        continue;
-
-                    // Insert unformatted text before the match
-                    var unmatched_text = text.Substring(cur, match.Index - cur);
-                    if (unmatched_text.Length > 0)
-                        paragraph.Inlines.Add(unmatched_text);
-
-                    // Insert BBCode span
-                    paragraph.Inlines.Add(new BBCodeSpan(markup, match_text, document, config));
-
-                    // Move cursor to the end of the match
-                    cur = match.Index + match.Length;
-                }
-
-                var unformatted_end_text = text.Substring(cur, text.Length - cur);
-                paragraph.Inlines.Add(unformatted_end_text);
+                // Rebuild the paragraph inlines
+                paragraph.Inlines.Clear();
+                foreach (var segment in segments)
+                    if (segment.Markup == null)
+                        paragraph.Inlines.Add(segment.Text);
+                    else
+                        paragraph.Inlines.Add(new BBCodeSpan(FindMarkup(config, segment.Markup), segment.Text, document, config));
 
                 // Restore caret position
                 if (caret_index > -1)
                     rtb.CaretPosition = paragraph.ContentStart.GetPositionAtCharOffset(caret_index);
             }
+        }
+
+        /// <summary>
+        /// Finds a markup by its tag among the default markups then the configured ones.
+        /// </summary>
+        private static BBCodeMarkup FindMarkup(BBCodeConfig config, string markup)
+            => DefaultMarkups.Find(x => x.Markup == markup) ?? config.Markups.Find(x => x.Markup == markup);
+
+        /// <summary>
+        /// Split a paragraph text into plain and marked-up segments.
+        /// </summary>
+        private static List<BBCodeSegment> ParseBBCode(string text, BBCodeConfig config)
+        {
+            var segments = new List<BBCodeSegment>();
+            var cur = 0;
+
+            // TODO: merge consecutive matches having the same markup
+            foreach (Match match in _span_regex.Matches(text))
+            {
+                var markup = match.Groups[1].Value;
+                if (FindMarkup(config, markup) == null)
+                    continue;
+
+                // Unformatted text before the match
+                if (match.Index > cur)
+                    segments.Add(new BBCodeSegment(null, text.Substring(cur, match.Index - cur)));
+
+                segments.Add(new BBCodeSegment(markup, match.Groups[2].Value));
+                cur = match.Index + match.Length;
+            }
+
+            // Unformatted end text, added even when empty
+            segments.Add(new BBCodeSegment(null, text.Substring(cur)));
+            return segments;
+        }
+
+        /// <summary>
+        /// Checks whether the paragraph inlines already hold the given segments. Anything else than
+        /// plain runs, emoji and valid BBCode spans among the inlines counts as a mismatch.
+        /// </summary>
+        private static bool HasBBCodeSegments(this Paragraph paragraph, List<BBCodeSegment> segments)
+        {
+            var current = new List<BBCodeSegment>();
+            var plain = new StringBuilder();
+
+            foreach (var inline in paragraph.Inlines)
+            {
+                if (inline is BBCodeSpan span)
+                {
+                    if (!span.IsValid)
+                        return false;
+
+                    var text = new StringBuilder();
+                    foreach (var child in span.Inlines.Where(x => !(x is BBCodeMarkupInline)))
+                        if (!AppendText<BBCodeTextInline>(text, child))
+                            return false;
+
+                    if (plain.Length > 0)
+                        current.Add(new BBCodeSegment(null, plain.ToString()));
+                    plain.Clear();
+                    current.Add(new BBCodeSegment(span.Markup, text.ToString()));
+                }
+                else if (!AppendText<Run>(plain, inline))
+                    return false;
+            }
+
+            current.Add(new BBCodeSegment(null, plain.ToString()));
+            return current.SequenceEqual(segments);
+        }
+
+        /// <summary>
+        /// Appends the text of a run of the exact given type or of an emoji, any other inline is refused.
+        /// </summary>
+        private static bool AppendText<TRun>(StringBuilder text, Inline inline) where TRun : Run
+        {
+            if (inline is EmojiInline emoji)
+                text.Append(emoji.Text);
+            else if (inline.GetType() == typeof(TRun))
+                text.Append(((Run)inline).Text);
+            else
+                return false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// A stretch of paragraph text, formatted by the markup it names or plain when the markup is null.
+        /// </summary>
+        private struct BBCodeSegment : IEquatable<BBCodeSegment>
+        {
+            public string Markup { get; }
+            public string Text { get; }
+
+            public BBCodeSegment(string markup, string text)
+            {
+                Markup = markup;
+                Text = text;
+            }
+
+            public bool Equals(BBCodeSegment other) => Markup == other.Markup && Text == other.Text;
         }
     }
 }
