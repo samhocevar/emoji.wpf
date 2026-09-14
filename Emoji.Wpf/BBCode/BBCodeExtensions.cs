@@ -146,11 +146,24 @@ namespace Emoji.Wpf.BBCode
         }
 
         /// <summary>
+        /// Gets the paragraphs of a <see cref="FlowDocument"/> overlapping the given text ranges.
+        /// </summary>
+        public static IEnumerable<Paragraph> GetParagraphs(this FlowDocument document, IEnumerable<TextRange> ranges)
+            => document.Blocks.OfType<Paragraph>()
+                       .Where(x => ranges.Any(y => x.ContentStart.CompareTo(y.End) <= 0 && x.ContentEnd.CompareTo(y.Start) >= 0));
+
+        /// <summary>
         /// Apply formatting on text containing BBCode markups in a <see cref="FlowDocument"/>
         /// </summary>
         public static void ApplyBBCode(this FlowDocument document, BBCodeConfig config)
+            => document.ApplyBBCode(config, document.Blocks.OfType<Paragraph>().ToList());
+
+        /// <summary>
+        /// Apply formatting on text containing BBCode markups in some paragraphs of a <see cref="FlowDocument"/>
+        /// </summary>
+        public static void ApplyBBCode(this FlowDocument document, BBCodeConfig config, IEnumerable<Paragraph> paragraphs)
         {
-            if (document.Blocks.FirstBlock == null || config == null || config.Markups == null)
+            if (config == null || config.Markups == null)
                 return;
 
             var rtb = document.Parent as RichTextBox;
@@ -159,8 +172,8 @@ namespace Emoji.Wpf.BBCode
             foreach (var span in document.GetBBCodeSpans())
                 span.IsExpanded = true;
 
-            // Rebuild every paragraph inlines
-            foreach (var paragraph in document.Blocks.OfType<Paragraph>().ToList())
+            // Rebuild the paragraph inlines
+            foreach (var paragraph in paragraphs)
             {
                 // If caret is in this paragraph, retain its position
                 var caret_index = -1;

@@ -223,7 +223,7 @@ namespace Emoji.Wpf
                 BeginChange();
 
                 if (IsBBCodeEnabled)
-                    Document.ApplyBBCode(BBCodeConfig);
+                    Document.ApplyBBCode(BBCodeConfig, Document.GetParagraphs(GetChangedRanges(e.Changes)).ToList());
 
                 Document.SubstituteGlyphs(
                     (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
@@ -250,6 +250,14 @@ namespace Emoji.Wpf
             catch { }
 #endif
         }
+
+        /// <summary>
+        /// Resolve text changes to ranges, their offsets being relative to the document start.
+        /// </summary>
+        private List<TextRange> GetChangedRanges(ICollection<Controls.TextChange> changes)
+            => changes.Select(x => new TextRange(Document.ContentStart.GetPositionAtOffset(x.Offset),
+                                                 Document.ContentStart.GetPositionAtOffset(x.Offset + x.AddedLength)))
+                      .ToList();
 
         /// <summary>
         /// Set the document structure from a string.
