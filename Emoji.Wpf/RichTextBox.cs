@@ -208,16 +208,6 @@ namespace Emoji.Wpf
             if (m_pending_change)
                 return;
 
-            if (IsBBCodeEnabled && m_pending_undo)
-            {
-                using (new PendingChangeBlock(this))
-                {
-                    base.OnTextChanged(e);
-                    SetValue(TextProperty, BBCodeText);
-                    return;
-                }
-            }
-
             using (new PendingChangeBlock(this))
             {
                 BeginChange();
@@ -230,10 +220,8 @@ namespace Emoji.Wpf
                     foreach (var paragraph in Document.ApplyBBCode(BBCodeConfig, Document.GetParagraphs(ranges).ToList()))
                         ranges.Add(new TextRange(paragraph.ContentStart, paragraph.ContentEnd));
 
-                var options = (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
-                              (ColorBlend ? SubstituteOptions.ColorBlend : SubstituteOptions.None);
                 foreach (var range in ranges)
-                    Document.SubstituteGlyphs(range, options);
+                    Document.SubstituteGlyphs(range, SubstituteOptions);
 
                 EndChange();
 
@@ -242,7 +230,7 @@ namespace Emoji.Wpf
 
                 base.OnTextChanged(e);
 
-                if (IsBBCodeEnabled)
+                if (IsBBCodeEnabled && !m_pending_undo)
                     m_undo_manager.Update(this, e.UndoAction);
             }
 
@@ -286,7 +274,7 @@ namespace Emoji.Wpf
         /// <summary>
         /// Set the document structure from a string.
         /// </summary>
-        private void SetDocumentText(string text)
+        internal void SetDocumentText(string text)
         {
             if (text == null)
                 text = "";
@@ -312,9 +300,7 @@ namespace Emoji.Wpf
                 if (IsBBCodeEnabled)
                     Document.ApplyBBCode(BBCodeConfig);
 
-                Document.SubstituteGlyphs(
-                    (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
-                    (ColorBlend ? SubstituteOptions.ColorBlend : SubstituteOptions.None));
+                Document.SubstituteGlyphs(SubstituteOptions);
             }
 
             UpdateBBCodeMarkupsVisibility();
@@ -407,6 +393,10 @@ namespace Emoji.Wpf
             typeof(bool),
             typeof(RichTextBox),
             new PropertyMetadata(false, (o, e) => (o as RichTextBox)?.OnColorBlendChanged((bool)e.NewValue)));
+
+        private SubstituteOptions SubstituteOptions
+            => (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
+               (ColorBlend ? SubstituteOptions.ColorBlend : SubstituteOptions.None);
 
         public IEnumerable<EmojiInline> EmojiInlines => Document.GetElements<EmojiInline>();
 

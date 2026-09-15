@@ -187,7 +187,8 @@ namespace Emoji.Wpf.BBCode
 
                 // If caret is in this paragraph, retain its position
                 var caret_index = -1;
-                if (rtb.CaretPosition.CompareTo(paragraph.ContentStart) >= 0 &&
+                if (rtb != null &&
+                    rtb.CaretPosition.CompareTo(paragraph.ContentStart) >= 0 &&
                     rtb.CaretPosition.CompareTo(paragraph.ContentEnd) <= 0)
                     caret_index = new TextSelection(paragraph.ContentStart, rtb.CaretPosition).Text.Length;
 

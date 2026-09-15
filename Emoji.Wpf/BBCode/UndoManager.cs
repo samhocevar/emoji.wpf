@@ -11,13 +11,9 @@
 //  See http://www.wtfpl.net/ for more details.
 //
 
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Markup;
 
 namespace Emoji.Wpf.BBCode
 {
@@ -26,38 +22,22 @@ namespace Emoji.Wpf.BBCode
         public int StartPosition { get; private set; }
         public int EndPosition { get; private set; }
 
-        private byte[] _data;
-        private int _data_length;
+        private string _text;
 
         public UndoState(RichTextBox rtb)
         {
-            var stream = new MemoryStream();
-            XamlWriter.Save(rtb.Document, stream);
-            _data_length = (int)stream.Length;
-            _data = new byte[(int)(_data_length * 1.5)];
-            var data_stream = new MemoryStream(_data);
-            stream.WriteTo(data_stream);
+            _text = rtb.Text;
             StartPosition = rtb.LastCaretPosition;
             EndPosition = rtb.GetCaretPosition();
         }
 
         public void Update(RichTextBox rtb)
         {
-            var stream = new MemoryStream();
-            XamlWriter.Save(rtb.Document, stream);
-            _data_length = (int)stream.Length;
-            if (_data.LongLength < _data_length)
-                Array.Resize(ref _data, (int)(_data_length * 1.5));
-            var data_stream = new MemoryStream(_data);
-            stream.WriteTo(data_stream);
+            _text = rtb.Text;
             EndPosition = rtb.GetCaretPosition();
         }
 
-        public void Load(RichTextBox rtb)
-        {
-            var stream = new MemoryStream(_data, 0, _data_length);
-            rtb.Document = XamlReader.Load(stream) as FlowDocument;
-        }
+        public void Load(RichTextBox rtb) => rtb.SetDocumentText(_text);
     }
 
     public class UndoManager
