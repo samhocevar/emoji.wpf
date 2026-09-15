@@ -41,6 +41,13 @@ namespace Emoji.Wpf
                                 document.Foreground, document.Parent, options);
 
         /// <summary>
+        /// Substitute emoji glyphs with emoji inlines in a range of a FlowDocument
+        /// </summary>
+        public static void SubstituteGlyphs(this FlowDocument document, TextRange range, SubstituteOptions options)
+            => SubstituteGlyphs(range.Start, range.End, document.FontSize,
+                                document.Foreground, document.Parent, options);
+
+        /// <summary>
         /// Substitute emoji glyphs with emoji inlines in a text Run
         /// </summary>
         public static void SubstituteGlyphs(this Run run)

@@ -222,12 +222,18 @@ namespace Emoji.Wpf
             {
                 BeginChange();
 
-                if (IsBBCodeEnabled)
-                    Document.ApplyBBCode(BBCodeConfig, Document.GetParagraphs(GetChangedRanges(e.Changes)).ToList());
+                // Resolve the changed ranges before the BBCode rebuild moves the offsets
+                var ranges = GetChangedRanges(e.Changes);
 
-                Document.SubstituteGlyphs(
-                    (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
-                    (ColorBlend ? SubstituteOptions.ColorBlend : SubstituteOptions.None));
+                // A paragraph rebuilt from its text lost its emoji inlines, substitute it entirely
+                if (IsBBCodeEnabled)
+                    foreach (var paragraph in Document.ApplyBBCode(BBCodeConfig, Document.GetParagraphs(ranges).ToList()))
+                        ranges.Add(new TextRange(paragraph.ContentStart, paragraph.ContentEnd));
+
+                var options = (ColonSyntax ? SubstituteOptions.ColonSyntax : SubstituteOptions.None) |
+                              (ColorBlend ? SubstituteOptions.ColorBlend : SubstituteOptions.None);
+                foreach (var range in ranges)
+                    Document.SubstituteGlyphs(range, options);
 
                 EndChange();
 
@@ -255,9 +261,27 @@ namespace Emoji.Wpf
         /// Resolve text changes to ranges, their offsets being relative to the document start.
         /// </summary>
         private List<TextRange> GetChangedRanges(ICollection<Controls.TextChange> changes)
-            => changes.Select(x => new TextRange(Document.ContentStart.GetPositionAtOffset(x.Offset),
-                                                 Document.ContentStart.GetPositionAtOffset(x.Offset + x.AddedLength)))
-                      .ToList();
+        {
+            var ranges = new List<TextRange>();
+
+            foreach (var change in changes)
+            {
+                // FIXME: when using keyboard input methods, characters are received one by one.
+                // We need to backtrack to the possible beginning of the emoji to make sure we
+                // perform a full substitution. The below code works in simple cases, but will
+                // not work if a substitution was already performed before the end of the emoji.
+                int start = change.Offset, end = start + change.AddedLength;
+                if (start == m_last_change_end)
+                    start = m_last_change_start;
+                m_last_change_start = start;
+                m_last_change_end = end;
+
+                ranges.Add(new TextRange(Document.ContentStart.GetPositionAtOffset(start),
+                                         Document.ContentStart.GetPositionAtOffset(end)));
+            }
+
+            return ranges;
+        }
 
         /// <summary>
         /// Set the document structure from a string.
@@ -323,6 +347,9 @@ namespace Emoji.Wpf
             => EmojiInlines.ForAll(e => e.Foreground = color_blend ? Foreground : Brushes.Black);
 
         private bool m_pending_change = false;
+
+        private int m_last_change_start = -1;
+        private int m_last_change_end = -1;
 
         private TextSelection m_override_selection;
 

@@ -162,11 +162,13 @@ namespace Emoji.Wpf.BBCode
 
         /// <summary>
         /// Apply formatting on text containing BBCode markups in some paragraphs of a <see cref="FlowDocument"/>
+        /// and returns the paragraphs whose inlines were rebuilt
         /// </summary>
-        public static void ApplyBBCode(this FlowDocument document, BBCodeConfig config, IEnumerable<Paragraph> paragraphs)
+        public static List<Paragraph> ApplyBBCode(this FlowDocument document, BBCodeConfig config, IEnumerable<Paragraph> paragraphs)
         {
+            var rebuilt = new List<Paragraph>();
             if (config == null || config.Markups == null)
-                return;
+                return rebuilt;
 
             var rtb = document.Parent as RichTextBox;
 
@@ -200,7 +202,11 @@ namespace Emoji.Wpf.BBCode
                 // Restore caret position
                 if (caret_index > -1)
                     rtb.CaretPosition = paragraph.ContentStart.GetPositionAtCharOffset(caret_index);
+
+                rebuilt.Add(paragraph);
             }
+
+            return rebuilt;
         }
 
         /// <summary>
