@@ -264,8 +264,9 @@ namespace Emoji.Wpf
                 m_last_change_start = start;
                 m_last_change_end = end;
 
-                ranges.Add(new TextRange(Document.ContentStart.GetPositionAtOffset(start),
-                                         Document.ContentStart.GetPositionAtOffset(end)));
+                // Offsets are stale past the document end when an OnTextChanged override edited the document before calling base
+                ranges.Add(new TextRange(Document.ContentStart.GetPositionAtOffset(start) ?? Document.ContentEnd,
+                                         Document.ContentStart.GetPositionAtOffset(end) ?? Document.ContentEnd));
             }
 
             return ranges;
